@@ -116,7 +116,7 @@ class mod_stratumtwo_mod_form extends moodleform_mod {
                 get_string('latesbmsdl', $mod),
                 array(
                         'step' => 1, // minutes step in the drop-down menu
-                        'optional' => true, // can be disabled
+                        'optional' => false, // cannot be disabled
                 ));
         $mform->addHelpButton('latesbmsdl', 'latesbmsdl', $mod);
         $mform->setDefault('latesbmsdl', array()); // disabled by default -> not set
@@ -137,6 +137,7 @@ class mod_stratumtwo_mod_form extends moodleform_mod {
     }
 
     function validation($data, $files) {
+        $mod = mod_stratumtwo_exercise_round::MODNAME; // for get_string()
         $errors = parent::validation($data, $files);
 
         // if point values are given, they cannot be negative
@@ -149,15 +150,26 @@ class mod_stratumtwo_mod_form extends moodleform_mod {
                 $data['closingtime'] < $data['openingtime']) {
             $errors['closingtime'] = get_string('closingbeforeopeningerror', $mod);
         }
-        // late submission deadline must be later than the closing time
-        if ($data['closingtime'] !== '' && $data['latesbmsdl'] !== '' &&
-                $data['latesbmsdl'] <= $data['closingtime']) {
-            $errors['latesbmsdl'] = get_string('latedlbeforeclosingerror', $mod);
-        }
-        // late submission penalty must be between 0 and 1
-        if ($data['latesbmspenalty'] !== '' && (
-                $data['latesbmspenalty'] < 0 || $data['latesbmspenalty'] > 1)) {
-            $errors['latesbmspenalty'] = get_string('zerooneerror', $mod);
+        
+        if ($data['latesbmsallowed'] == 1 ) {
+            if (empty($data['latesbmsdl'])) {
+                $errors['latesbmsdl'] = get_string('mustbesetwithlate', $mod);
+            } else {
+                // late submission deadline must be later than the closing time
+                if ($data['closingtime'] !== '' &&
+                        $data['latesbmsdl'] <= $data['closingtime']) {
+                    $errors['latesbmsdl'] = get_string('latedlbeforeclosingerror', $mod);
+                }
+            }
+            
+            if (empty($data['latesbmspenalty'])) {
+                $errors['latesbmspenalty'] = get_string('mustbesetwithlate', $mod);
+            } else {
+                // late submission penalty must be between 0 and 1
+                if ($data['latesbmspenalty'] < 0 || $data['latesbmspenalty'] > 1) {
+                    $errors['latesbmspenalty'] = get_string('zerooneerror', $mod);
+                }
+            }
         }
         return $errors;
     }

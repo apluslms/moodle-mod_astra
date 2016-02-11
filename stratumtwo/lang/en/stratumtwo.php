@@ -49,6 +49,7 @@ $string['negativeerror'] = 'This value can not be negative.';
 $string['closingbeforeopeningerror'] = 'The closing time must be later than the opening time.';
 $string['latedlbeforeclosingerror'] = 'Late submission deadline must be later than the closing time.';
 $string['zerooneerror'] = 'This value must be between zero and one.';
+$string['mustbesetwithlate'] = 'This field must be set when late submissions are enabled.';
 
 /*
 $string['stratumfieldset'] = 'Stratum assignment settings';

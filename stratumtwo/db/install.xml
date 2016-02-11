@@ -9,7 +9,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course id that this Stratum activity belongs to."/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name that is displayed to users."/>
-        <FIELD NAME="intro" TYPE="text" NOTNULL="true" DEFAULT="" SEQUENCE="false" 
+        <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false" 
                COMMENT="General introduction of the activity (exercise round). Used by Moodle feature MOD_INTRO."/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of the intro field (MOODLE, HTML, MARKDOWN...)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Unix timestamp of creation time."/>
@@ -90,9 +90,9 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="category" TYPE="foreign" FIELDS="category" REFTABLE="stratumtwo_categories" REFFIELDS="id"/>
-        <KEY NAME="round" TYPE="foreign" FIELDS="round" REFTABLE="stratumtwo" REFFIELDS="id"/>
-        <KEY NAME="parent" TYPE="foreign" FIELDS="parent" REFTABLE="stratumtwo_exercises" REFFIELDS="id" 
+        <KEY NAME="categoryid" TYPE="foreign" FIELDS="categoryid" REFTABLE="stratumtwo_categories" REFFIELDS="id"/>
+        <KEY NAME="roundid" TYPE="foreign" FIELDS="roundid" REFTABLE="stratumtwo" REFFIELDS="id"/>
+        <KEY NAME="parentid" TYPE="foreign" FIELDS="parentid" REFTABLE="stratumtwo_exercises" REFFIELDS="id" 
              COMMENT="Foreign key to another exercise."/>
       </KEYS>
       <INDEXES>
@@ -136,7 +136,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="exercise" TYPE="foreign" FIELDS="exercise" REFTABLE="stratumtwo_exercises" REFFIELDS="id"/>
+        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="stratumtwo_exercises" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="hash" UNIQUE="false" FIELDS="hash" COMMENT="Unique false because there is a random chance it is not unique."/>

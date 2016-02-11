@@ -17,7 +17,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     public function __construct($stratumtwo) {
         parent::__construct($stratumtwo);
         // the Moodle course module may not exist yet if the exercise round is being created
-        if (array_key_exists($stratumtwo->id, $this->getCourse()->instances[self::TABLE])) {
+        if (isset($this->getCourse()->instances[self::TABLE][$stratumtwo->id])) {
             $this->cm = $this->getCourse()->instances[self::TABLE][$stratumtwo->id];
         } else {
             $this->cm = null;

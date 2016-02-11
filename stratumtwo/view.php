@@ -8,6 +8,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
 $n  = optional_param('s', 0, PARAM_INT);  // ... stratum instance ID
 
@@ -30,6 +32,8 @@ if (!$cm->visible && !has_capability('moodle/course:manageactivities', $context)
     throw new required_capability_exception($context,
             'moodle/course:manageactivities', 'nopermissions', '');
 }
+
+//TODO check that the round is open (openingtime, closingtime), and status ready
 
 // Event for logging (viewing the page)
 $event = \mod_stratumtwo\event\course_module_viewed::create(array(
