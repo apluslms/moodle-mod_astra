@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/stratumtwo/db" VERSION="20160203" COMMENT="XMLDB file for Moodle mod/stratumtwo"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="stratumtwo" COMMENT="Store all Stratum exercise rounds (Moodle activity instances) in this table. (Rounds are called course modules in A+.)">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course id that this Stratum activity belongs to."/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name that is displayed to users."/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="true" DEFAULT="" SEQUENCE="false" 
+               COMMENT="General introduction of the activity (exercise round). Used by Moodle feature MOD_INTRO."/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of the intro field (MOODLE, HTML, MARKDOWN...)"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Unix timestamp of creation time."/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Ready = 0. Hidden = 1. Maintenance = 2."/>
+        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="100" SEQUENCE="false" 
+               COMMENT="The maximum grade. Can be negative to indicate the use of a scale (scales not used in Stratum). It is called grade, not maxgrade or maxpoints due to Moodle compatibility."/>
+        <FIELD NAME="remotekey" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Unique module key in the Stratum server. (In Stratum course configuration, it is called 'key'.)"/>
+        <FIELD NAME="pointstopass" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Min points to pass the exercise round."/>
+        <FIELD NAME="openingtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Submissions are not allowed before the opening time."/>
+        <FIELD NAME="closingtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Submissions after the closing time are late: they may be prohibited or they may gain reduced points."/>
+        <FIELD NAME="latesbmsallowed" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Are late submissions allowed?"/>
+        <FIELD NAME="latesbmsdl" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Late submissions deadline. Must be a later date than closingtime."/>
+        <FIELD NAME="latesbmspenalty" TYPE="number" LENGTH="4" DECIMALS="3" NOTNULL="true" DEFAULT="0.5" SEQUENCE="false" 
+               COMMENT="Late submissions penalty: multiplier of points to reduce, as decimal. 0.1 = 10%"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+        <INDEX NAME="remotekey" UNIQUE="false" FIELDS="remotekey" COMMENT="Unique false because it might only be unique within a course."/>
+      </INDEXES>
+    </TABLE>
+    
+    <TABLE NAME="stratumtwo_categories" COMMENT="Each exercise belongs to a category.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Ready = 0. Hidden = 1"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="35" NOTNULL="true" SEQUENCE="false" COMMENT="Name that is displayed to users."/>
+        <FIELD NAME="pointstopass" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Min points to pass a category."/>        
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+      </INDEXES>
+    </TABLE>
+    
+    <TABLE NAME="stratumtwo_exercises" COMMENT="Exercise that accepts submissions and sends them to the serviceurl for grading.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Ready = 0. Hidden = 1. Maintenance = 2."/>
+        <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Category ID"/>
+        <FIELD NAME="roundid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Exercise round ID (course module in A+)."/>
+        <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" 
+               COMMENT="If null, the exercise is listed under the round. If parent is set, the exercise is listed under the parent exercise."/>
+        <FIELD NAME="ordernum" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" 
+               COMMENT="Order for listing the exercises under the round. Smaller comes first."/>
+        <FIELD NAME="remotekey" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Unique exercise key in the Stratum server. ('key' in Stratum configuration.)"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name that is displayed to users."/>
+        <FIELD NAME="serviceurl" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="URL of the exercise service for this exercise."/>
+        <FIELD NAME="allowastgrading" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Allow assistant grading: 0 = no, 1 = yes. If yes, non-editing teachers in Moodle can modify submission points and assistant feedback."/>
+        <FIELD NAME="maxsubmissions" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="10" SEQUENCE="false" 
+               COMMENT="Max number of submissions allowed. Zero for no limit."/>
+        <FIELD NAME="pointstopass" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Min points to pass the exercise."/>
+        <FIELD NAME="maxpoints" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="100" SEQUENCE="false" 
+               COMMENT="Max points available in the exercise."/>
+        <FIELD NAME="sbmsmaxbytes" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Max size of a submission file in bytes. Zero for no limit."/>
+        <FIELD NAME="gradeitemnumber" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Moodle gradebook item number. 0 is reserved for the exercise round and each exercise needs a unique item number within the round."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="category" TYPE="foreign" FIELDS="category" REFTABLE="stratumtwo_categories" REFFIELDS="id"/>
+        <KEY NAME="round" TYPE="foreign" FIELDS="round" REFTABLE="stratumtwo" REFFIELDS="id"/>
+        <KEY NAME="parent" TYPE="foreign" FIELDS="parent" REFTABLE="stratumtwo_exercises" REFFIELDS="id" 
+             COMMENT="Foreign key to another exercise."/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="remotekey" UNIQUE="false" FIELDS="remotekey" COMMENT="Unique false because it might only be unique within a round."/>
+      </INDEXES>
+    </TABLE>
+    
+    <TABLE NAME="stratumtwo_submissions" COMMENT="Submissions to exercises.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Initialized = 0. Waiting/not graded but sent to exercise service = 1. Ready/graded = 2. Error = 3."/>
+        <FIELD NAME="submissiontime" TYPE="int" LENGTH="10" DEFAULT="0" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Unix timestamp. When was the submission received?"/>
+        <FIELD NAME="hash" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Random string."/>
+        <FIELD NAME="exerciseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Exercise ID."/>
+        <FIELD NAME="submitter" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Moodle user ID of the submitter."/>
+        <FIELD NAME="grader" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" 
+               COMMENT="Moodle user ID of the grader (if manual feedback or grading is used)."/>
+        <FIELD NAME="feedback" TYPE="text" NOTNULL="false" SEQUENCE="false" 
+               COMMENT="Machine-generated feedback."/>
+        <FIELD NAME="assistfeedback" TYPE="text" NOTNULL="false" SEQUENCE="false" 
+               COMMENT="Assistant feedback."/>
+        <FIELD NAME="grade" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Grade (points) that the submission is given."/>
+        <FIELD NAME="gradingtime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" 
+               COMMENT="Unix timestamp. When was the submission graded?"/>
+        <FIELD NAME="latepenaltyapplied" TYPE="number" LENGTH="4" DECIMALS="3" NOTNULL="false" SEQUENCE="false" 
+               COMMENT="Late submission penalty applied to this submission. Number between 0 and 1, null if not late."/>
+        <FIELD NAME="servicepoints" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Points that the submission was given in the exercise service (possibly on a different scale)."/>
+        <FIELD NAME="servicemaxpoints" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
+               COMMENT="Max points that the exercise service used in grading."/>
+        <FIELD NAME="submissiondata" TYPE="text" NOTNULL="false" SEQUENCE="false" 
+               COMMENT="Additional submission data. Usually stored as JSON."/>
+        <FIELD NAME="gradingdata" TYPE="text" NOTNULL="false" SEQUENCE="false" 
+               COMMENT="Additional grading data. Usually stored as JSON."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="exercise" TYPE="foreign" FIELDS="exercise" REFTABLE="stratumtwo_exercises" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="hash" UNIQUE="false" FIELDS="hash" COMMENT="Unique false because there is a random chance it is not unique."/>
+      </INDEXES>
+    </TABLE>
+    
+    <TABLE NAME="stratumtwo_course_settings" COMMENT="Course-wide settings concerning Stratum2 exercises">
+      <FIELDS>
+        <FIELD NAME="id" LENGTH="10" SEQUENCE="true" TYPE="int" NOTNULL="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Moodle course ID"/>
+        <FIELD NAME="apikey" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" 
+               COMMENT="Secret API key needed to authorize the use of the Stratum server HTTP course API."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+      </INDEXES>
+    </TABLE>
+    
+  </TABLES>
+</XMLDB>
+<!--
+There are some fields that the Moodle core expects to be present in every activity module's main table 
+(or they just became de-facto standard):
+Field name 	Properties 	Notes
+id 	        INT(10), auto sequence 	primary key for the table (as any other table in Moodle)
+course 	    INT(10), foreign key to the course table 	id of the course this activity is part of
+name 	    CHAR(255) 	holds the name of the activity module instance
+timemodified INT(10) 	timestamp of when the instance was last modified
+intro 	    TEXT 	standard field to hold the activity's description (see FEATURE_MOD_INTRO)
+introformat INT(4) 	the format of the text in the intro field
+grade       INT(10) or maybe better NUMBER(10, 5) 	the maximum grade for this activity, negative value indicates a scale being used (see FEATURE_GRADE_HAS_GRADE)
+-->
