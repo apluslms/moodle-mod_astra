@@ -58,18 +58,18 @@ class mod_stratumtwo_mod_form extends moodleform_mod {
         $this->standard_intro_elements();
 
         // exercise round status
-        $mform->addElement('select', 'roundstatus', get_string('status', $mod), array(
+        $mform->addElement('select', 'status', get_string('status', $mod), array(
                 mod_stratumtwo_exercise_round::STATUS_READY => get_string('statusready', $mod),
                 mod_stratumtwo_exercise_round::STATUS_HIDDEN => get_string('statushidden', $mod),
                 mod_stratumtwo_exercise_round::STATUS_MAINTENANCE => get_string('statusmaintenance', $mod),
         ));
         
         // remote key (URL component in A+)
-        $mform->addElement('text', 'stratumremotekey', get_string('remotekey', $mod));
-        $mform->setType('stratumremotekey', PARAM_NOTAGS);
-        $mform->addHelpButton('stratumremotekey', 'remotekey', $mod);
-        $mform->addRule('stratumremotekey', null, 'required', null, 'client');
-        $mform->addRule('stratumremotekey', null, 'maxlength', 128, 'client');
+        $mform->addElement('text', 'remotekey', get_string('remotekey', $mod));
+        $mform->setType('remotekey', PARAM_NOTAGS);
+        $mform->addHelpButton('remotekey', 'remotekey', $mod);
+        $mform->addRule('remotekey', null, 'required', null, 'client');
+        $mform->addRule('remotekey', null, 'maxlength', 128, 'client');
         
         // points to pass
         $mform->addElement('text', 'pointstopass', get_string('pointstopass', $mod));
@@ -127,7 +127,7 @@ class mod_stratumtwo_mod_form extends moodleform_mod {
         $mform->addHelpButton('latesbmspenalty', 'latesbmspenalty', $mod);
         //$mform->addRule('latesbmspenalty', null, 'required', null, 'client');
         $mform->addRule('latesbmspenalty', null, 'numeric', null, 'client');
-        $mform->addRule('latesbmspenalty', null, 'maxlength', 4, 'client');
+        $mform->addRule('latesbmspenalty', null, 'maxlength', 5, 'client');
         
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();

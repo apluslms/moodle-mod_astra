@@ -467,9 +467,15 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         global $DB;
         
         $stratumtwo->timemodified = time();
+        //TODO Moodle course_module visibility based on status, maybe do it in the block plugin, gradebook item should follow course_module visibility
         $result = $DB->update_record(static::TABLE, $stratumtwo);
         
         if ($result) {
+            // $stratumtwo does not have grade field set since it comes from the Moodle mod_form
+            $stratumtwo->grade = $DB->get_field(static::TABLE, 'grade', array(
+                    'id' => $stratumtwo->id,
+            ), MUST_EXIST);
+            
             $exround = new static($stratumtwo);
             $exround->updateGradebookItem();
             $exround->update_calendar();

@@ -16,7 +16,7 @@
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="status" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
                COMMENT="Ready = 0. Hidden = 1. Maintenance = 2."/>
-        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="100" SEQUENCE="false" 
+        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
                COMMENT="The maximum grade. Can be negative to indicate the use of a scale (scales not used in Stratum). It is called grade, not maxgrade or maxpoints due to Moodle compatibility."/>
         <FIELD NAME="remotekey" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" 
                COMMENT="Unique module key in the Stratum server. (In Stratum course configuration, it is called 'key'.)"/>
