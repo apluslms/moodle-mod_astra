@@ -1,6 +1,13 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Exercise round in a course. An exercise round consists of exercises and the
+ * round has a starting date and a closing date. The round can have required
+ * points to pass that a student should earn in total in the exercises of the round.
+ * The maximum points in a round is defined by the sum of the exercise maximum
+ * points.
+ */
 class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     const TABLE   = 'stratumtwo'; // database table name
     const MODNAME = 'mod_stratumtwo'; // module name for get_string
@@ -16,16 +23,31 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     
     public function __construct($stratumtwo) {
         parent::__construct($stratumtwo);
+        $this->cm = $this->findCourseModule();
+    }
+    
+    /**
+     * Find the Moodle course module corresponding to this stratumtwo activity instance.
+     * @return cm_info|null the Moodle course module. Null if it does not exist.
+     */
+    protected function findCourseModule() {
         // the Moodle course module may not exist yet if the exercise round is being created
-        if (isset($this->getCourse()->instances[self::TABLE][$stratumtwo->id])) {
-            $this->cm = $this->getCourse()->instances[self::TABLE][$stratumtwo->id];
+        if (isset($this->getCourse()->instances[self::TABLE][$this->record->id])) {
+            return $this->getCourse()->instances[self::TABLE][$this->record->id];
         } else {
-            $this->cm = null;
+            return null;
         }
     }
     
-    public function getId() {
-        return $this->record->id;
+    /**
+     * Return the Moodle course module corresponding to this stratumtwo activity instance.
+     * @return cm_info|null the Moodle course module. Null if it does not exist.
+     */
+    public function getCourseModule() {
+        if (is_null($this->cm)) {
+            $this->cm = $this->findCourseModule();
+        }
+        return $this->cm;
     }
     
     public function getCourse() {
@@ -79,6 +101,50 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     
     public function getLateSubmissionPenalty() {
         return $this->record->latesbmspenalty; // float number between 0--1
+    }
+    
+    /**
+     * Return the percentage (0-100) that late submission points are worth.
+     * @return int percentage 0-100
+     */
+    public function getLateSubmissionPointWorth() {
+        $pointWorth = 0;
+        if ($this->isLateSubmissionAllowed()) {
+            $pointWorth = (int) ((1.0 - $this->getLateSubmissionPenalty()) * 100.0);
+        }
+        return $pointWorth;
+    }
+    
+    /**
+     * Return true if this exercise round has closed (not open and the opening time
+     * has passed).
+     * @param int|null $when time to check, null for current time
+     * @return boolean
+     */
+    public function hasExpired($when = null) {
+        if (is_null($when)) {
+            $when = time();
+        }
+        return $when > $this->getClosingTime();
+    }
+    
+    public function isOpen($when = null) {
+        if (is_null($when)) {
+            $when = time();
+        }
+        return $this->getOpeningTime() <= $when && $when <= $this->getClosingTime();
+    }
+    
+    /**
+     * Return true if this exercise round has opened at or before timestamp $when.
+     * @param int|null $when time to check, null for current time
+     * @return boolean
+     */
+    public function hasStarted($when = null) {
+        if (is_null($when)) {
+            $when = time();
+        }
+        return $when >= $this->getOpeningTime();
     }
     
     /** Create or update the course calendar event for the deadline (closing time) 
@@ -181,9 +247,8 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         global $DB;
         
         $exerciseRecords = $DB->get_records(mod_stratumtwo_exercise::TABLE, array(
-            'course'  => $this->record->course, // course ID
             'roundid' => $this->record->id,
-        ));
+        ), 'ordernum ASC, id ASC');
         $exercises = array();
         foreach ($exerciseRecords as $ex) {
             $exercises[] = new mod_stratumtwo_exercise($ex);
@@ -508,6 +573,23 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     /**
+     * Return an array of the exercise rounds (as mod_stratumtwo_exercise_round objects)
+     * in a course.
+     * @param int $courseid
+     * @return array of mod_stratumtwo_exercise_round objects
+     */
+    public static function getExerciseRoundsInCourse($courseid) {
+        global $DB;
+        $rounds = array();
+        $records = $DB->get_records(static::TABLE, array('course' => $courseid),
+                'openingtime ASC, closingtime ASC, id ASC');
+        foreach ($records as $record) {
+            $rounds[] = new static($record);
+        }
+        return $rounds;
+    }
+    
+    /**
      * Create a new exercise to this exercise round.
      * @param stdClass $exercise settings for the nex exercise: object with fields
      * status, parentid, ordernum, remotekey, name, serviceurl, allowastgrading,
@@ -550,5 +632,24 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
             }
         }
         return $max + 1;
+    }
+    
+    public function getTemplateContext() {
+        $ctx = new stdClass();
+        $ctx->id = $this->getId();
+        $ctx->openingtime = $this->getOpeningTime();
+        $ctx->closingtime = $this->getClosingTime();
+        $ctx->name = $this->getName();
+        $ctx->late_submissions_allowed = $this->isLateSubmissionAllowed();
+        $ctx->late_submission_deadline = $this->getLateSubmissionDeadline();
+        $ctx->late_submission_point_worth = $this->getLateSubmissionPointWorth();
+        $ctx->show_late_submission_point_worth = ($ctx->late_submission_point_worth < 100);
+        $ctx->status_ready = ($this->getStatus() === static::STATUS_READY);
+        $ctx->status_maintenance = ($this->getStatus() === static::STATUS_MAINTENANCE);
+        $ctx->introduction = \format_module_intro(static::TABLE, $this->record, $this->cm->id);
+        $ctx->show_required_points = ($ctx->status_ready && $this->getPointsToPass() > 0);
+        $ctx->points_to_pass = $this->getPointsToPass();
+        
+        return $ctx;
     }
 }

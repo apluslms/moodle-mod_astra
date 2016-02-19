@@ -1,6 +1,11 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * One exercise in an exercise round. Each exercise belongs to one exercise round
+ * and one category. An exercise has a service URL that is used to connect to
+ * the exercise service. An exercise has max points and minimum points to pass.
+ */
 class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     const TABLE = 'stratumtwo_exercises'; // database table name
     const STATUS_READY       = 0;
@@ -12,10 +17,6 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     protected $exerciseRound = null;
     protected $parentExercise = null;
     
-    public function getId() {
-        return $this->record->id;
-    }
-    
     public function getStatus() {
         //TODO number or string?
         return $this->record->status;
@@ -26,6 +27,10 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
             $this->category = mod_stratumtwo_category::createFromId($this->record->categoryid);
         }
         return $this->category;
+    }
+    
+    public function getCategoryId() {
+        return $this->record->categoryid;
     }
     
     public function getExerciseRound() {
@@ -138,24 +143,73 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     public function getBestSubmissionForStudent($userid) {
         global $DB;
 
-        $submissions = $DB->get_recordset(mod_stratumtwo_submission::TABLE, array(
-                'exerciseid' => $this->getId(),
-                'submitter'  => $userid,
-        ), 'submissiontime', '*', 0, $this->getMaxSubmissions());
+        $submissions = $this->getSubmissionsForStudent($userid);
         // order by submissiontime, earlier first
-        // take only the max submissions number of submissions (zero means no limit)
-        // TODO submit limit deviations
         $bestSubmission = null;
         foreach ($submissions as $s) {
             $sbms = new mod_stratumtwo_submission($s);
-            if (!$sbms->isLate() && ($bestSubmission === null || 
-                    $sbms->getGrade() > $bestSubmission->getGrade())) {
+            // assume that the grade of a submission is zero if it was not accepted
+            // due to submission limit or deadline
+            if ($bestSubmission === null || $sbms->getGrade() > $bestSubmission->getGrade()) {
                 $bestSubmission = $sbms;
             }
         }
         $submissions->close();
         
         return $bestSubmission;
+    }
+
+    /**
+     * Return the number of submissions a student has made in this exercise.
+     * @param int $userid
+     * @param bool $excludeErrors if true, the submissions with status error are not counted
+     * @return int
+     */
+    public function getSubmissionCountForStudent($userid, $excludeErrors = false) {
+        global $DB;
+        
+        if ($excludeErrors) {
+            // exclude submissions with status error
+            $count = $DB->count_records_select(mod_stratumtwo_submission::TABLE,
+                    'exerciseid = ? AND submitter = ? AND status != ?', array(
+                            $this->getId(),
+                            $userid,
+                            mod_stratumtwo_submission::STATUS_ERROR,
+                    ), "COUNT('id')");
+        } else {
+            $count = $DB->count_records(mod_stratumtwo_submission::TABLE, array(
+                    'exerciseid' => $this->getId(),
+                    'submitter'  => $userid,
+            ));
+        }
+        return $count;
+    }
+    
+    /**
+     * Return the submissions of a student in this exercise.
+     * @param int $userid
+     * @param bool $excludeErrors if true, the submissions with status error are not returned
+     * @return Moodle recordset (iterator) of database records (stdClass).
+     * The caller of this method must call the close() method.
+     */
+    public function getSubmissionsForStudent($userid, $excludeErrors = false) {
+        global $DB;
+        
+        if ($excludeErrors) {
+            // exclude submissions with status error
+            $submissions = $DB->get_recordset_select(mod_stratumtwo_submission::TABLE,
+                    'exerciseid = ? AND submitter = ? AND status != ?', array(
+                            $this->getId(),
+                            $userid,
+                            mod_stratumtwo_submission::STATUS_ERROR,
+                    ), 'submissiontime ASC');
+        } else {
+            $submissions = $DB->get_recordset(mod_stratumtwo_submission::TABLE, array(
+                'exerciseid' => $this->getId(),
+                'submitter'  => $userid,
+            ), 'submissiontime ASC');
+        }
+        return $submissions;
     }
     
     /**
@@ -285,5 +339,16 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         $this->updateGrades($grades);
         
         return $grades;
+    }
+    
+    public function getTemplateContext() {
+        global $CFG;
+        $ctx = new stdClass();
+        $ctx->url = $CFG->wwwroot .'/mod/'. mod_stratumtwo_exercise_round::TABLE . 
+                '/exercise_view.php?id='. $this->getId(); //TODO check url
+        $ctx->name = $this->getName();
+        $ctx->submissionlisturl = $CFG->wwwroot .'/mod/'. mod_stratumtwo_exercise_round::TABLE . 
+                '/submissionlist.php'; // for course staff TODO
+        return $ctx;
     }
 }

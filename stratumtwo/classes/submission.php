@@ -1,6 +1,10 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * One submission to an exercise. Once the submission is graded, it has
+ * feedback and a grade.
+ */
 class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     const TABLE = 'stratumtwo_submissions'; // database table name
     const STATUS_INITIALIZED = 0; // not sent to the exercise service
@@ -12,10 +16,6 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     protected $exercise = null;
     protected $submitter = null;
     protected $grader = null;
-    
-    public function getId() {
-        return $this->record->id;
-    }
     
     public function getStatus() {
         //TODO number or string?
@@ -113,6 +113,14 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         return self::tryToDecodeJSON($this->record->gradingdata);
     }
     
+    /**
+     * Create a new submission to an exercise.
+     * @param mod_stratumtwo_exercise $ex
+     * @param int $submitterId ID of a Moodle user
+     * @param string $submissionData
+     * @param int $status
+     * @return int ID of the new submission record, zero on failure
+     */
     public static function createNewSubmission(mod_stratumtwo_exercise $ex, $submitterId,
             $submissionData, $status = self::STATUS_INITIALIZED) {
         global $DB;
@@ -122,6 +130,8 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         $row->hash = static::getRandomString();
         $row->exerciseid = $ex->getId();
         $row->submitter = $submitterId;
+        //TODO $submissionData
+        $row->submissiondata = $submissionData;
         
         $id = $DB->insert_record(static::TABLE, $row);
         return $id; // 0 if failed
@@ -154,11 +164,6 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         $this->record->gradingdata = $gradingData;
         
         $this->save();
-        // if these new points are better than what the student had, update gradebook
-        $best = $this->getExercise()->getBestSubmissionForStudent($this->record->submitter);
-        if ($this->getId() === $best->getId()) {
-            $this->writeToGradebook();
-        }
     }
     
     /**
@@ -193,25 +198,74 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         // is not done if $noPenalties is true.
         if (!$noPenalties && $this->isLate()) {
             $exround = $exercise->getExerciseRound();
-            if ($exround->isLateSubmissionAllowed()) {
+            if ($exround->isLateSubmissionAllowed() && !$this->isLateFromLateDeadline()) {
                 $this->record->latepenaltyapplied = $exround->getLateSubmissionPenalty();
             } else {
-                $this->record->latepenaltyapplied = 0;
+                $this->record->latepenaltyapplied = 1; // zero points
             }
             $adjustedGrade -= ($adjustedGrade * $this->record->latepenaltyapplied);
         } else {
             $this->record->latepenaltyapplied = null;
         }
         
-        $this->record->grade = round($adjustedGrade);
+        $adjustedGrade = round($adjustedGrade);
+        
+        // check submit limit
+        $submissions = $this->getExercise()->getSubmissionsForStudent($this->record->submitter);
+        $count = 0;
+        $thisIsBest = false;
+        foreach ($submissions as $record) {
+            // count the ordinal number for this submission ("how many'th submission")
+            if ($record->submissiontime <= $this->getSubmissionTime() && $record->id != $this->getId()) {
+                $count += 1;
+            }
+            // check if this submission is the best one
+            if ($record->grade < $adjustedGrade) {
+                $thisIsBest = true;
+            }
+        }
+        $submissions->close();
+        $count += 1;
+        $maxSubmissions = $this->getExercise()->getMaxSubmissions();
+        if ($maxSubmissions > 0 && $count > $maxSubmissions) {
+            // this submission exceeded the submission limit
+            $this->record->grade = 0;
+            if ($count == 1)
+                $thisIsBest = true; // the only submission
+            else
+                $thisIsBest = false; // earlier submissions must be better, at least they were submitted earlier
+        } else {
+            $this->record->grade = $adjustedGrade;
+        }
+        // write to gradebook if this is the best submission
+        if ($thisIsBest) {
+            $this->writeToGradebook();
+        }
     }
     
+    /**
+     * Check if this submission was submitted after the exercise round closing time.
+     */
     public function isLate() {
         if ($this->getSubmissionTime() <= $this->getExercise()->getExerciseRound()->getClosingTime()) {
             return false;
         }
         //TODO deadline deviations/extensions for specific students
         return true;
+    }
+    
+    /**
+     * Check if this submission was submitted after the exercise round
+     * late submission deadline (which should be later than the closing time).
+     * @return boolean
+     */
+    public function isLateFromLateDeadline() {
+        $lateSbmsDl = $this->getExercise()->getExerciseRound()->getLateSubmissionDeadline();
+        if ($lateSbmsDl == 0) { // not set
+            return false;
+        }
+        return $this->getSubmissionTime() > $lateSbmsDl;
+        //TODO deviations
     }
     
     /**

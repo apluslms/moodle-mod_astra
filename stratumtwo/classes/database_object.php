@@ -1,6 +1,10 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Abstract base class for the classes that represent database records.
+ * Database schemas are defined in the file db/install.xml.
+ */
 abstract class mod_stratumtwo_database_object {
     // child classes must define constant TABLE (name of the database table)
     protected $record; // database record, stdClass
@@ -19,14 +23,24 @@ abstract class mod_stratumtwo_database_object {
         // mod_stratumtwo_submission
     }
     
+    /**
+     * Create object from the given database record. The instance should already
+     * exist in the database and have valid id.
+     * @param stdClass $record
+     */
     public function __construct(stdClass $record) {
         $this->record = $record;
     }
     
+    public function getId() {
+        return $this->record->id;
+    }
+    
     /**
-     * Save the record to the database. It must exist in the database before
-     * calling this method.
+     * Save the updated record to the database. It must exist in the database
+     * before calling this method (has valid id).
      * @return boolean success/failure (should always be true)
+     * @throws dml_exception for any errors
      */
     public function save() {
         global $DB;
