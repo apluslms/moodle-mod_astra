@@ -35,8 +35,9 @@ Moodle core expects an addinstance capability for each module ('mod/<modname>:ad
 View capability is recommended for each module ('mod/<modname>:view' capability to control visibility).
 */
 $capabilities = array(
+    // add new stratumtwo instances to a course, and edit/delete instances
     'mod/stratumtwo:addinstance' => array(
-        'riskbitmask' => RISK_SPAM | RISK_XSS,
+        'riskbitmask' => RISK_SPAM | RISK_XSS | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
@@ -46,6 +47,7 @@ $capabilities = array(
         'clonepermissionsfrom' => 'moodle/course:manageactivities',
     ),
 
+    // view an instance of stratumtwo
     'mod/stratumtwo:view' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -56,7 +58,8 @@ $capabilities = array(
             'manager' => CAP_ALLOW,
         ),
     ),
-    /* submit a new solution */
+    
+    // submit a new solution to a Stratum2 exercise
     'mod/stratumtwo:submit' => array(
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
@@ -65,8 +68,32 @@ $capabilities = array(
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW 
+            'manager' => CAP_ALLOW,
         ), 
     ),
+    
+    // view a list of all submissions to Stratum2 exercises and
+    // inspect invividual submissions (submitted files and grading results)
+    'mod/stratumtwo:viewallsubmissions' => array(
+        'captype' => 'read',
+        'riskbitmask' => RISK_PERSONAL,
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ),
+    ),
 
+    // edit the feedback and grade of a submission manually (both assistant feedback and
+    // machine-generated feedback)
+    'mod/stratumtwo:grademanually' => array(
+        'captype' => 'write',
+        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_DATALOSS,
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ),
+    ),
 );

@@ -19,7 +19,7 @@ $string['stratum'] = 'Stratum';
 $string['pluginadministration'] = 'Stratum2 exercises administration';
 $string['pluginname'] = 'Stratum2 exercises'; // Used by Moodle core
 
-
+// mod_form.php
 $string['deadline'] = 'Deadline';
 $string['roundname'] = 'Exercise round name';
 $string['roundname_help'] = 'This is the name of the exercise round that is shown in Moodle.';
@@ -43,6 +43,22 @@ $string['latesbmsdl'] = 'Late submission deadline';
 $string['latesbmsdl_help'] = 'Submissions after the closing time and before the late submission deadline receive penalties in points.';
 $string['latesbmspenalty'] = 'Late submission penalty';
 $string['latesbmspenalty_help'] = 'Multiplier of points to reduce, as decimal. 0.1 = 10%';
+
+// templates
+$string['passed'] = 'Passed';
+$string['nosubmissions'] = 'No submissions';
+$string['requiredpoints'] = '{$a} points required to pass';
+$string['requirednotpassed'] = 'Required exercises are not passed';
+$string['opens'] = 'Opens';
+$string['latealloweduntil'] = 'Late submission are allowed until {$a}';
+$string['latepointsworth'] = 'but points are only worth {$a}%.';
+$string['pointsrequiredtopass'] = '{$a} points required to pass the module.';
+$string['undermaintenance'] = 'Unfortunately this module is currently under maintenance.';
+$string['points'] = 'Points';
+$string['required'] = 'Required';
+$string['coursestaff'] = 'Course staff';
+$string['earlyaccess'] = 'Early access';
+$string['viewsubmissions'] = 'View submissions';
 
 // Errors
 $string['negativeerror'] = 'This value can not be negative.';
@@ -157,6 +173,8 @@ $string['submiterror-conn'] = 'Connecting to the Stratum server failed.';
 */
 
 // capabilities
-$string['stratumtwo:addinstance'] = 'Add a new Stratum2 exercise (round)';
+$string['stratumtwo:addinstance'] = 'Add a new Stratum2 exercise (round), and edit/delete them';
 $string['stratumtwo:view'] = 'View a Stratum2 exercise (round)';
 $string['stratumtwo:submit'] = 'Submit a new solution to a Stratum2 exercise';
+$string['stratumtwo:viewallsubmissions'] = 'View and inspect all submissions to Stratum2 exercises';
+$string['stratumtwo:grademanually'] = 'Edit the feedback and grade of a Stratum2 submission manually';
