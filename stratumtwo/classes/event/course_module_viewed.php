@@ -3,7 +3,6 @@
 namespace mod_stratumtwo\event;
 
 defined('MOODLE_INTERNAL') || die();
-require_once(dirname(dirname(dirname(__FILE__))).'/constants.php');
 
 /**
  * The mod_stratumtwo instance viewed event class
