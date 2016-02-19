@@ -1,0 +1,32 @@
+{{!
+Derived from A+ (a-plus/exercise/templates/exercise/_points_badge.html).
+
+Points badge shows the current points earned out of possible max points.
+The badge has a color indicating the status (full points, passed, failed) and 
+it shows the required points when the mouse hovers over the badge.
+
+Context variables:
+* status string Set if a status text should be displayed in the badge instead of points
+* submitted bool Has the user submitted at all?
+* full_score bool Has the user got full points?
+* passed bool Has the user passed?
+* classes string extra CSS classes for the badge, space-separated
+* missing_points bool Is the user missing points in this item (exercise/exercise round)?
+    (i.e. user has less than required points)
+* points int The points that the user has earned
+* max int The max points available
+* points_to_pass int The points needed to pass
+}}
+
+{{# status }}
+<span class="badge">
+    {{ status }}
+</span>
+{{/ status }}
+{{^ status }}
+<span class="badge{{# submitted }} badge-{{# full_score }}success{{/ full_score }}{{^ full_score }}{{# passed }}info{{/ passed }}{{^ passed }}warning{{/ passed }}{{/ full_score }}{{/ submitted }} {{ classes }}"
+        data-toggle="tooltip" data-placement="bottom"
+        title="{{# passed }}{{# submitted }}{{#str}} passed, mod_stratumtwo {{/str}}{{/ submitted }}{{^ submitted }}{{#str}} nosubmissions, mod_stratumtwo {{/str}}{{/ submitted }}{{/ passed }}{{^ passed }}{{# missing_points }}{{#str}} requiredpoints, mod_stratumtwo, {{ points_to_pass }}{{/str}}{{/ missing_points }}{{^ missing_points }}{{#str}} requirednotpassed, mod_stratumtwo {{/str}}{{/ missing_points }}{{/ passed }}">
+    {{ points }} / {{ max }}
+</span>
+{{/ status }}

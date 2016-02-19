@@ -45,6 +45,13 @@ $event->add_record_snapshot($PAGE->cm->modname, $stratumtwo);
 $event->trigger();
 
 // Print the page header.
+//TODO require Bootstrap CSS and jQuery
+$PAGE->requires->js(new moodle_url('https://code.jquery.com/jquery-1.12.0.js'));
+$PAGE->requires->css(new moodle_url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css'));
+$PAGE->requires->js(new moodle_url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js'));
+// highlight.js for source code syntax highlighting
+//$PAGE->requires->css(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/github.min.css'));
+//$PAGE->requires->js(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js'));
 
 $PAGE->set_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/view.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($stratumtwo->name));
@@ -57,7 +64,7 @@ $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::TABLE);
 echo $output->header();
 echo $output->heading($exround->getName());
 
-$renderable = new \mod_stratumtwo\output\exercise_round_page($exround);
+$renderable = new \mod_stratumtwo\output\exercise_round_page($exround, $USER);
 echo $output->render($renderable);
 
 echo $output->footer();

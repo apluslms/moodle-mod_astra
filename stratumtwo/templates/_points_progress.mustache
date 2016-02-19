@@ -1,0 +1,22 @@
+{{!
+Derived from A+.
+
+Context variables:
+* points int
+* max int
+* required int Points that are required to pass, zero is not shown
+* full_score bool
+* passed bool
+* percentage int CSS width (usually 100)
+* required_percentage int 0-100, percentage of max points required
+}}
+
+<div class="progress" data-toggle="tooltip" data-html="true" data-placement="bottom"
+    title="{{#str}} points, mod_stratumtwo {{/str}}: &lt;span class='text-nowrap'&gt;{{ points }} / {{ max }}&lt;/span&gt;{{# required }} {{#str}} required, mod_stratumtwo {{/str}}: &lt;span class='text-nowrap'&gt;{{ required }}&lt;/span&gt;{{/ required }}">
+    <div class="progress-bar progress-bar-striped progress-bar-{{# full_score }}success{{/ full_score }}{{^ full_score }}{{# passed }}info{{/ passed }}{{^ passed }}warning{{/ passed }}{{/ full_score }}"
+        rel="progressbar" aria-valuenow="{{ points }}" aria-valuemin="0" aria-valuemax="{{ max }}"
+        style="width:{{ percentage }}%;"></div>
+    {{# required_percentage }}
+    <div class="required-points" style="left:{{ required_percentage }}%"></div>
+    {{/ required_percentage }}
+</div>
