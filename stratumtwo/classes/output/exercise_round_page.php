@@ -25,13 +25,11 @@ class exercise_round_page implements \renderable, \templatable {
      */
     public function export_for_template(renderer_base $output) {
         $data = new stdClass();
-        $data->expired = $this->exround->hasExpired();
-        $data->open = $this->exround->isOpen();
-        $data->not_started = !$this->exround->hasStarted();
         $ctx = \context_module::instance($this->exround->getCourseModule()->id);
         $data->is_course_staff = \has_capability('mod/stratumtwo:viewallsubmissions', $ctx);
         $data->course_module = $this->exround->getTemplateContext();
         $data->module_summary = $this->moduleSummary->getTemplateContext();
+        $data->module_summary->classes = 'pull-right'; // CSS classes
         $data->categories = $this->moduleSummary->getExercisesByCategoriesTemplateContext();
         
         $data->toDateStr = function($timestamp, $mustacheHelper) {
