@@ -18,8 +18,7 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     protected $grader = null;
     
     public function getStatus() {
-        //TODO number or string?
-        $this->record->status;
+        return (int) $this->record->status;
     }
     
     public function getSubmissionTime() {
