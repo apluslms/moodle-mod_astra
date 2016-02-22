@@ -2,8 +2,6 @@
 This code is based on A+ templates.
 
 context variables:
-* expired bool true if the exercise round is not open and the opening time has passed
-* open bool true if the exercise round is open
 * course_module stdClass (exercise round) with fields id, openingtime, closingtime, name, 
         late_submissions_allowed, late_submission_deadline,
         show_late_submission_point_worth (bool), late_submission_point_worth (0-100),
@@ -11,7 +9,6 @@ context variables:
         show_required_points (bool, status ready and points to pass > 0), points_to_pass
 * module_summary stdClass (summary of the student's status in the exercise round)
         fields that are required by _points_badge.mustache
-* not_started bool True if the round has not started yet (opening date)
 * toDateStr callable Function that converts a Unix timestamp to a date string
 * categories array of arrays. The outer array must have numeric indexes and the inner arrays must
         have keys id (category ID), name (category name),
@@ -21,25 +18,24 @@ context variables:
 
 * is_course_staff bool
 }}
-<div class="panel panel-primary module-panel{{# expired }} module-expired{{/ expired }}">
-  <a class="panel-heading{{^ open }} collapsed{{/ open }}"
+<div class="panel panel-primary module-panel{{# course_module.expired }} module-expired{{/ course_module.expired }}">
+  <a class="panel-heading{{^ course_module.open }} collapsed{{/ course_module.open }}"
   role="button" href="#module{{ course_module.id }}" data-toggle="collapse"
-  aria-expanded="{{# open }}true{{/ open }}{{^ open }}false{{/ open }}" aria-controls="#module{{ course_module.id }}">
+  aria-expanded="{{# course_module.open }}true{{/ course_module.open }}{{^ course_module.open }}false{{/ course_module.open }}" aria-controls="#module{{ course_module.id }}">
   <h3 class="panel-title">
-{{!    {% summary_points module_summary "pull-right" %}  _points_badge.html TODO variables }}
     {{# module_summary }}
       {{> mod_stratumtwo/_points_badge }}
     {{/ module_summary }}
-    {{# not_started }}
+    {{# course_module.not_started }}
     <span class="badge pull-right">
       {{#str}} opens, mod_stratumtwo {{/str}} {{# toDateStr }}{{ course_module.openingtime }}{{/ toDateStr }}
     </span>
-    {{/ not_started }}
+    {{/ course_module.not_started }}
     <span class="caret" aria-hidden="true"></span>
     {{ course_module.name }}
   </h3>
-</a>
-<div class="collapse{{# open }} in{{/ open }}" id="module{{ course_module.id }}">
+  </a>
+<div class="collapse{{# course_module.open }} in{{/ course_module.open }}" id="module{{ course_module.id }}">
   <div class="panel-body">
     <p>
       {{# toDateStr }}{{ course_module.openingtime }}{{/ toDateStr }} &ndash; {{# toDateStr }}{{ course_module.closingtime }}{{/ toDateStr }}
@@ -51,18 +47,14 @@ context variables:
         latealloweduntil, mod_stratumtwo, {{# toDateStr }}{{ course_module.late_submission_deadline }}{{/ toDateStr }}
         {{/str}}
         {{# course_module.show_late_submission_point_worth }}
-        {{#str}}
-        latepointsworth, mod_stratumtwo, {{ course_module.late_submission_point_worth }}
-        {{/str}}
+        {{#str}} latepointsworth, mod_stratumtwo, {{ course_module.late_submission_point_worth }} {{/str}}
         {{/ course_module.show_late_submission_point_worth }}
       </em>
       {{/ course_module.late_submissions_allowed }}
 
       {{# course_module.show_required_points }}
       <br />
-      {{#str}}
-      pointsrequiredtopass, mod_stratumtwo, {{ course_module.points_to_pass }}
-      {{/str}}
+      {{#str}} pointsrequiredtopass, mod_stratumtwo, {{ course_module.points_to_pass }} {{/str}}
       {{/ course_module.show_required_points }}
     </p>
 
@@ -70,17 +62,18 @@ context variables:
     <p>
       {{#str}} undermaintenance, mod_stratumtwo {{/str}}
     </p>
-
     {{/ course_module.status_maintenance }}
     {{^ course_module.status_maintenance }}
-    {{> mod_stratumtwo/_points_progress }} {{! TODO variables {% summary_progress module_summary %}  }}
+    {{# module_summary }}
+      {{> mod_stratumtwo/_points_progress }}
+    {{/ module_summary }}
     {{{ course_module.introduction }}}
     {{/ course_module.status_maintenance }}
   </div>
   {{# course_module.status_ready }}
   <table class="table table-striped table-condensed results-table">
     <tbody>
-      {{# categories }} {{!  {% for category, categorized_exercise_level in category_level %} TODO}}
+      {{# categories }}
       <tr class="category-row" data-category="{{ id }}">
         <td>{{ name }}</td>
         {{# is_course_staff }}
@@ -88,28 +81,28 @@ context variables:
         {{/ is_course_staff }}
         <td class="col-md-2">{{#str}} points, mod_stratumtwo {{/str}}</td>
       </tr>
-      {{# exercise_summaries }} {{! {% for exercise, exercise_summary in categorized_exercise_level %} }}
+      {{# exercise_summaries }}
       <tr data-category="{{ id }}">
         <td>
-          {{^ not_started }}
+          {{^ course_module.not_started }}
           {{! {% if exercise.status == 'unlisted' %}
-          <a href="{{ exercise.parent|url }}">{{ exercise }}</a>
+          <a href="{ exercise.parent|url }">{ exercise }</a>
           {% else %}  }}
           
           <a href="{{{ exercise.url }}}">{{ exercise.name }}</a>
-          {{/ not_started }}
-          {{# not_started }}
+          {{/ course_module.not_started }}
+          {{# course_module.not_started }}
           {{ exercise.name }}
-          {{/ not_started }}
+          {{/ course_module.not_started }}
         </td>
         {{# is_course_staff }}
         <td>
-          {{# not_started }}
+          {{# course_module.not_started }}
           <a class="btn btn-default btn-xs" href="{{{ exercise.url }}}">
             <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
             {{#str}} earlyaccess, mod_stratumtwo {{/str}}
           </a>
-          {{/ not_started }}
+          {{/ course_module.not_started }}
           <a class="btn btn-default btn-xs" href="{{{ exercise.submissionlisturl }}}">
             <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
             {{#str}} viewsubmissions, mod_stratumtwo {{/str}}
@@ -118,8 +111,7 @@ context variables:
         {{/ is_course_staff }}
         <td>
           {{# exercise_summary }}
-          {{!  {% summary_points exercise_summary %} TODO no CSS class but points for exercise, round }}
-          {{> mod/stratumtwo/_points_badge }}
+            {{> mod_stratumtwo/_points_badge }}
           {{/ exercise_summary }}
         </td>
       </tr>
@@ -130,3 +122,12 @@ context variables:
   {{/ course_module.status_ready }}
 </div>
 </div>
+
+{{#js}}
+require(['jquery'], function($) {
+  /* enable Bootstrap tooltips */
+  $(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+});
+{{/js}}
