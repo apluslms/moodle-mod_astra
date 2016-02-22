@@ -18,8 +18,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     protected $parentExercise = null;
     
     public function getStatus() {
-        //TODO number or string?
-        return $this->record->status;
+        return (int) $this->record->status;
     }
     
     public function getCategory() {

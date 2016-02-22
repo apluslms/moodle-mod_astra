@@ -33,7 +33,7 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
             default:
                 throw new coding_exception('Stratum2 exercise category has unknown status.');
         }*/
-        return $this->record->status;
+        return (int) $this->record->status;
     }
     
     public function getName() {

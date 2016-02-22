@@ -68,7 +68,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     public function getStatus() {
-        return $this->record->status;
+        return (int) $this->record->status;
     }
     
     public function getMaxPoints() {
@@ -649,6 +649,9 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $ctx->introduction = \format_module_intro(static::TABLE, $this->record, $this->cm->id);
         $ctx->show_required_points = ($ctx->status_ready && $this->getPointsToPass() > 0);
         $ctx->points_to_pass = $this->getPointsToPass();
+        $ctx->expired = $this->hasExpired();
+        $ctx->open = $this->isOpen();
+        $ctx->not_started = !$this->hasStarted();
         
         return $ctx;
     }
