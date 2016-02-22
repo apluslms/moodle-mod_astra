@@ -93,7 +93,6 @@ class user_course_summary {
             if ($best === null || $sbms->getGrade() > $best->getGrade() ||
                     ($sbms->getGrade() == $best->getGrade() &&
                      $sbms->getSubmissionTime() < $best->getSubmissionTime())) {
-                //TODO is the grade of late submissions zero or not? (and submit limit)
                 $exerciseBest['best'] = $sbms;
             }
             $exerciseBest['count'] += 1;

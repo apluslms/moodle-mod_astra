@@ -67,7 +67,6 @@ class user_module_summary {
             if ($best === null || $sbms->getGrade() > $best->getGrade() || 
                     ($sbms->getGrade() == $best->getGrade() && 
                      $sbms->getSubmissionTime() < $best->getSubmissionTime())) {
-                 //TODO is the grade of late submissions zero or not? (and submit limit)
                 $exerciseBest['best'] = $sbms;
             }
             $exerciseBest['count'] += 1;
@@ -81,7 +80,7 @@ class user_module_summary {
             
             $this->exerciseSummaries[] = new user_exercise_summary($ex, $this->user, 
                     $submissionsByExerciseId[$ex->getId()]['count'], 
-                    $this->user, $submissionsByExerciseId[$ex->getId()]['best'], 
+                    $submissionsByExerciseId[$ex->getId()]['best'], 
                     null, false);
         }
     }
@@ -145,11 +144,15 @@ class user_module_summary {
         $ctx->points = $totalPoints;
         $ctx->max = $this->getMaxPoints();
         $ctx->points_to_pass = $this->getRequiredPoints();
+        $ctx->required = $this->getRequiredPoints();
+        $ctx->percentage = round(100 * $ctx->points / $ctx->max);
+        $ctx->required_percentage = round(100 * $ctx->required / $ctx->max);
         return $ctx;
     }
     
     public function getExercisesByCategoriesTemplateContext() {
         $catContexts = array();
+        $len = 0;
         /* The exerciseSummaries are in the order they should be displayed, but they
          * must be grouped by categories here. The same category may be repeated more than
          * once as the exercises are kept in order. For example, if three exercises have 
@@ -158,15 +161,15 @@ class user_module_summary {
          */
         foreach ($this->exerciseSummaries as $exSummary) {
             $cat = $exSummary->getExerciseCategory();
-            $catCtx = end($catContexts); // last element
             // prepare category context (a category contains at least one exercise)
-            if ($catCtx === false || $cat->getId() != $catCtx['id']) {
+            if ($len === 0 || $cat->getId() != $catContexts[$len - 1]['id']) {
                 $catCtx = array(
                         'id' => $cat->getId(),
                         'name' => $cat->getName(),
                         'exercise_summaries' => array(),
                 );
                 $catContexts[] = $catCtx;
+                $len++;
             }
         
             // exercise context
@@ -175,7 +178,7 @@ class user_module_summary {
                 'exercise_summary' => $exSummary->getTemplateContext(),
             );
             // append under the category context
-            $catCtx['exercise_summaries'][] = $exSumCtx;
+            $catContexts[$len - 1]['exercise_summaries'][] = $exSumCtx;
         }
         
         return $catContexts;

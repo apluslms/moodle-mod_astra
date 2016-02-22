@@ -64,7 +64,6 @@ class user_exercise_summary {
             if ($this->bestSubmission === null || $sbms->getGrade() > $this->bestSubmission->getGrade() ||
                     ($sbms->getGrade() == $this->bestSubmission->getGrade() &&
                      $sbms->getSubmissionTime() < $this->bestSubmission->getSubmissionTime())) {
-                //TODO is the grade of late submissions zero or not? (and submit limit)
                 $this->bestSubmission = $sbms;
             }
             $this->submissionCount += 1;
@@ -86,7 +85,7 @@ class user_exercise_summary {
     }
     
     public function isMissingPoints() {
-        $this->getPoints() < $this->exercise->getPointsToPass();
+        return $this->getPoints() < $this->exercise->getPointsToPass();
     }
     
     public function isPassed() {
@@ -98,11 +97,11 @@ class user_exercise_summary {
     }
     
     public function getMaxPoints() {
-        $this->exercise->getMaxPoints();
+        return $this->exercise->getMaxPoints();
     }
     
     public function getRequiredPoints() {
-        $this->exercise->getPointsToPass();
+        return $this->exercise->getPointsToPass();
     }
     
     public function getPenalty() {
@@ -135,6 +134,9 @@ class user_exercise_summary {
         $ctx->points = $grade;
         $ctx->max = $this->getMaxPoints();
         $ctx->points_to_pass = $this->getRequiredPoints();
+        $ctx->required = $this->getRequiredPoints();
+        $ctx->percentage = round(100 * $ctx->points / $ctx->max);
+        $ctx->required_percentage = round(100 * $ctx->required / $ctx->max);
         return $ctx;
     }
 }
