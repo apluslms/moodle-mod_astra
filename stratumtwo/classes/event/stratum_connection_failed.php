@@ -2,7 +2,6 @@
 
 namespace mod_stratumtwo\event;
 defined('MOODLE_INTERNAL') || die();
-require_once(dirname(dirname(dirname(__FILE__))).'/constants.php');
 
 /* Event class that represents an error in the connection to
  * the external Stratum server. (For example, when curl cannot 
@@ -17,7 +16,7 @@ $event = \mod_stratumtwo\event\stratum_connection_failed::create(array(
     'other' => array(
         'error' => curl_error($ch),
         'url' => 'https://tried.to.connect.here.com',
-        'objtable' => 'stratumtwo', // or 'stratumtwo_exercises'
+        'objtable' => 'stratumtwo_exercises', // or 'stratumtwo_submissions', used if relevant
         'objid' => 1, // id of the module instance (DB row), zero means none
     )
 ));
@@ -28,14 +27,14 @@ class stratum_connection_failed extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'r'; // c(reate), r(ead), u(pdate), d(elete)
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        // do not set objecttable so that we can use the event for both
-        // exercise rounds and exercises
+        // do not set objecttable here so that we can use the event for many types
+        // (exercise rounds, exercises,...)
     }
 
     /* Return localised name of the event, it is the same for all instances.
      */
     public static function get_name() {
-        return get_string('eventstratumconnectionfailed', STRATUMTWO_MODNAME);
+        return get_string('eventstratumconnectionfailed', \mod_stratumtwo_exercise_round::MODNAME);
     }
 
     /* Returns non-localised description of one particular event.
@@ -54,7 +53,14 @@ class stratum_connection_failed extends \core\event\base {
                 $this->other['objid'] == 0) {
             return null;
         }
-        return new \moodle_url("/mod/{$this->other['objtable']}/view.php", //TODO must update
-            array('s' => $this->other['objid'])); // stratum instance id
+        if ($this->other['objtable'] == \mod_stratumtwo_exercise::TABLE) {
+            return new \moodle_url('/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/exercise.php',
+                    array('id' => $this->other['objid'])); // stratum2 exercise ID
+        }
+        if ($this->other['objtable'] == \mod_stratumtwo_submission::TABLE) {
+            return new \moodle_url('/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/submission.php',
+                    array('id' => $this->other['objid'])); // stratum2 submission ID
+        }
+        return null;
     }
 }

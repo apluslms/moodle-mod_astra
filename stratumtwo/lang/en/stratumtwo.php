@@ -133,9 +133,6 @@ $string['gradedasgns'] = 'Assignments graded';
 $string['gradedstudents'] = '{$a} students have been graded.';
 
 $string['fetchpoints'] = 'Fetch points from the Stratum server';
-$string['eventstratumconnectionfailed'] = 'Connection to Stratum server failed';
-$string['eventstratumserverfailed'] = 'Stratum server failed';
-$string['eventstratumsubmitted'] = 'Student submitted a new solution';
 $string['eventstratumupdategradesfailed'] = 'Stratum grades update to gradebook failed';
 $string['eventstratumgradeupdatestarted'] = 'Stratum mass grade update to gradebook started';
 */
@@ -171,6 +168,12 @@ $string['submiterror-unknown'] = 'Unknown error.';
 $string['submiterror-ok'] = 'OK';
 $string['submiterror-conn'] = 'Connecting to the Stratum server failed.';
 */
+
+// Events / logging
+$string['eventsubmitted'] = 'Student submitted a new solution';
+$string['eventstratumconnectionfailed'] = 'Connection to Stratum server failed';
+$string['eventstratumserverfailed'] = 'Stratum server failed';
+$string['eventexerciseviewed'] = 'Student viewed a Stratum2 exercise';
 
 // capabilities
 $string['stratumtwo:addinstance'] = 'Add a new Stratum2 exercise (round), and edit/delete them';

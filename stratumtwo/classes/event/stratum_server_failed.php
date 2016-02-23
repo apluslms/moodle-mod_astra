@@ -2,7 +2,6 @@
 
 namespace mod_stratumtwo\event;
 defined('MOODLE_INTERNAL') || die();
-require_once(dirname(dirname(dirname(__FILE__))).'/constants.php');
 
 /* Event class that represents an error in the external Stratum server.
  */
@@ -26,14 +25,14 @@ class stratum_server_failed extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'r'; // c(reate), r(ead), u(pdate), d(elete)
         $this->data['edulevel'] = self::LEVEL_OTHER;
-        // do not set objecttable so that we can use the event for both
-        // exercise rounds and exercises
+        // do not set objecttable so that we can use the event for 
+        // exercise rounds, exercises, or submissions
     }
 
     /* Return localised name of the event, it is the same for all instances.
      */
     public static function get_name() {
-        return get_string('eventstratumserverfailed', STRATUMTWO_MODNAME);
+        return get_string('eventstratumserverfailed', \mod_stratumtwo_exercise_round::MODNAME);
     }
 
     /* Returns non-localised description of one particular event.
@@ -52,7 +51,14 @@ class stratum_server_failed extends \core\event\base {
                 $this->other['objid'] == 0) {
             return null;
         }
-        return new \moodle_url("/mod/{$this->other['objtable']}/view.php", //TODO must update
-            array('s' => $this->other['objid'])); // stratum instance id
+        if ($this->other['objtable'] == \mod_stratumtwo_exercise::TABLE) {
+            return new \moodle_url('/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/exercise.php',
+                    array('id' => $this->other['objid'])); // stratum2 exercise ID
+        }
+        if ($this->other['objtable'] == \mod_stratumtwo_submission::TABLE) {
+            return new \moodle_url('/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/submission.php',
+                    array('id' => $this->other['objid'])); // stratum2 submission ID
+        }
+        return null;
     }
 }
