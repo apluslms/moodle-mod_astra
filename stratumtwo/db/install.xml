@@ -65,7 +65,7 @@
         <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Ready = 0. Hidden = 1. Maintenance = 2."/>
         <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
                COMMENT="Category ID"/>
-        <FIELD NAME="roundid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Exercise round ID (course module in A+)."/>
+        <FIELD NAME="roundid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Exercise round ID."/>
         <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" 
                COMMENT="If null, the exercise is listed under the round. If parent is set, the exercise is listed under the parent exercise."/>
         <FIELD NAME="ordernum" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" 
