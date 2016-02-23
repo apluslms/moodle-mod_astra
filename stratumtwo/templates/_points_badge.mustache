@@ -26,7 +26,8 @@ Context variables:
 {{^ status }}
 <span class="badge{{# submitted }} badge-{{# full_score }}success{{/ full_score }}{{^ full_score }}{{# passed }}info{{/ passed }}{{^ passed }}warning{{/ passed }}{{/ full_score }}{{/ submitted }} {{ classes }}"
         data-toggle="tooltip" data-placement="bottom"
-        title="{{# passed }}{{# submitted }}{{#str}} passed, mod_stratumtwo {{/str}}{{/ submitted }}{{^ submitted }}{{#str}} nosubmissions, mod_stratumtwo {{/str}}{{/ submitted }}{{/ passed }}{{^ passed }}{{# missing_points }}{{#str}} requiredpoints, mod_stratumtwo, {{ points_to_pass }}{{/str}}{{/ missing_points }}{{^ missing_points }}{{#str}} requirednotpassed, mod_stratumtwo {{/str}}{{/ missing_points }}{{/ passed }}">
+        title="{{# passed }}{{# submitted }}{{#str}} passed, mod_stratumtwo {{/str}}{{/ submitted }}{{^ submitted }}{{#str}} nosubmissions, mod_stratumtwo {{/str}}{{/ submitted }}{{/ passed }}{{^ passed }}{{# missing_points }}{{#str}} requiredpoints, mod_stratumtwo, {{ points_to_pass }}{{/str}}{{/ missing_points }}{{^ missing_points }}{{#str}} requirednotpassed, mod_stratumtwo {{/str}}{{/ missing_points }}{{/ passed }}"
+        data-container="body">
     {{ points }} / {{ max }}
 </span>
 {{/ status }}
