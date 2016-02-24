@@ -67,10 +67,10 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
      */
     public static function getCategoriesInCourse($courseid) {
         global $DB;
-        $records = $DB->get_records(static::TABLE, array('course' => $courseid));
+        $records = $DB->get_records(self::TABLE, array('course' => $courseid));
         $categories = array();
         foreach ($records as $id => $record) {
-            $categories[$id] = new static($record);
+            $categories[$id] = new self($record);
         }
         return $categories;
     }
@@ -83,6 +83,6 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
      */
     public static function createNew(stdClass $categoryRecord) {
         global $DB;
-        return $DB->insert_record(static::TABLE, $categoryRecord);
+        return $DB->insert_record(self::TABLE, $categoryRecord);
     }
 }

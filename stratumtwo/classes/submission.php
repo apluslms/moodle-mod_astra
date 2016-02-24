@@ -146,13 +146,13 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         $row = new stdClass();
         $row->status = $status; //TODO is this needed here? async new submissions?
         $row->submissiontime = time();
-        $row->hash = static::getRandomString();
+        $row->hash = self::getRandomString();
         $row->exerciseid = $ex->getId();
         $row->submitter = $submitterId;
         //TODO $submissionData
         $row->submissiondata = $submissionData;
         
-        $id = $DB->insert_record(static::TABLE, $row);
+        $id = $DB->insert_record(self::TABLE, $row);
         return $id; // 0 if failed
     }
     

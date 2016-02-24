@@ -332,7 +332,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         
         $this->record->timemodified = time();
         $this->record->grade += $change;
-        $result = $DB->update_record(static::TABLE, $this->record);
+        $result = $DB->update_record(self::TABLE, $this->record);
         $this->updateGradebookItem();
         
         return $result;
@@ -518,10 +518,10 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         // no exercises yet.
         $stratumtwo->grade = 0;
         
-        $stratumtwo->id = $DB->insert_record(static::TABLE, $stratumtwo);
+        $stratumtwo->id = $DB->insert_record(self::TABLE, $stratumtwo);
         
         if ($stratumtwo->id) {
-            $exround = new static($stratumtwo);
+            $exround = new self($stratumtwo);
             $exround->updateGradebookItem();
             // NOTE: the course module does not usually yet exist in the DB at this stage
             $exround->update_calendar();
@@ -541,15 +541,15 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         
         $stratumtwo->timemodified = time();
         //TODO Moodle course_module visibility based on status, maybe do it in the block plugin, gradebook item should follow course_module visibility
-        $result = $DB->update_record(static::TABLE, $stratumtwo);
+        $result = $DB->update_record(self::TABLE, $stratumtwo);
         
         if ($result) {
             // $stratumtwo does not have grade field set since it comes from the Moodle mod_form
-            $stratumtwo->grade = $DB->get_field(static::TABLE, 'grade', array(
+            $stratumtwo->grade = $DB->get_field(self::TABLE, 'grade', array(
                     'id' => $stratumtwo->id,
             ), MUST_EXIST);
             
-            $exround = new static($stratumtwo);
+            $exround = new self($stratumtwo);
             $exround->updateGradebookItem();
             $exround->update_calendar();
         }
@@ -589,10 +589,10 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     public static function getExerciseRoundsInCourse($courseid) {
         global $DB;
         $rounds = array();
-        $records = $DB->get_records(static::TABLE, array('course' => $courseid),
+        $records = $DB->get_records(self::TABLE, array('course' => $courseid),
                 'ordernum ASC, openingtime ASC, closingtime ASC, id ASC');
         foreach ($records as $record) {
-            $rounds[] = new static($record);
+            $rounds[] = new self($record);
         }
         return $rounds;
     }
@@ -652,9 +652,9 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $ctx->late_submission_deadline = $this->getLateSubmissionDeadline();
         $ctx->late_submission_point_worth = $this->getLateSubmissionPointWorth();
         $ctx->show_late_submission_point_worth = ($ctx->late_submission_point_worth < 100);
-        $ctx->status_ready = ($this->getStatus() === static::STATUS_READY);
-        $ctx->status_maintenance = ($this->getStatus() === static::STATUS_MAINTENANCE);
-        $ctx->introduction = \format_module_intro(static::TABLE, $this->record, $this->cm->id);
+        $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
+        $ctx->status_maintenance = ($this->getStatus() === self::STATUS_MAINTENANCE);
+        $ctx->introduction = \format_module_intro(self::TABLE, $this->record, $this->cm->id);
         $ctx->show_required_points = ($ctx->status_ready && $this->getPointsToPass() > 0);
         $ctx->points_to_pass = $this->getPointsToPass();
         $ctx->expired = $this->hasExpired();
