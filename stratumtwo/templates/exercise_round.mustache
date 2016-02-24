@@ -6,7 +6,8 @@ context variables:
         late_submissions_allowed, late_submission_deadline,
         show_late_submission_point_worth (bool), late_submission_point_worth (0-100),
         status_ready (bool), status_maintenance (bool), introduction (HTML string)
-        show_required_points (bool, status ready and points to pass > 0), points_to_pass
+        show_required_points (bool, status ready and points to pass > 0), points_to_pass,
+        expired (bool, has been closed), open (bool), not_started (bool, has not been opened yet)
 * module_summary stdClass (summary of the student's status in the exercise round)
         fields that are required by _points_badge.mustache
 * toDateStr callable Function that converts a Unix timestamp to a date string
@@ -64,13 +65,19 @@ context variables:
     </p>
     {{/ course_module.status_maintenance }}
     {{^ course_module.status_maintenance }}
-    {{# module_summary }}
-      {{> mod_stratumtwo/_points_progress }}
-    {{/ module_summary }}
-    {{{ course_module.introduction }}}
+      {{^ course_module.not_started }}
+        {{# module_summary }}
+          {{> mod_stratumtwo/_points_progress }}
+        {{/ module_summary }}
+        {{{ course_module.introduction }}}
+      {{/ course_module.not_started }}
+      {{# course_module.not_started }}
+        <p>{{#str}} notopenedyet, mod_stratumtwo {{/str}}</p>
+      {{/ course_module.not_started }}
     {{/ course_module.status_maintenance }}
   </div>
   {{# course_module.status_ready }}
+  {{^ course_module.not_started }}
   <table class="table table-striped table-condensed results-table">
     <tbody>
       {{# categories }}
@@ -119,15 +126,7 @@ context variables:
       {{/ categories }}
     </tbody>
   </table>
+  {{/ course_module.not_started }}
   {{/ course_module.status_ready }}
 </div>
 </div>
-
-{{#js}}
-require(['jquery'], function($) {
-  /* enable Bootstrap tooltips */
-  $(function() {
-    $('[data-toggle="tooltip"]').tooltip();
-  });
-});
-{{/js}}

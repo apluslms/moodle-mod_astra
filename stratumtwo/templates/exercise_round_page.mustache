@@ -1,5 +1,14 @@
-{{! <div class="container-fluid"> NOTE: Moodle already uses a container div for page content }}
+<div class="bs3-container-fluid">
 
 {{> mod_stratumtwo/exercise_round }}
 
-{{! </div> }}
+</div>
+
+{{#js}}
+require(['jquery'], function($) {
+  /* enable Bootstrap tooltips */
+  $(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+});
+{{/js}}
