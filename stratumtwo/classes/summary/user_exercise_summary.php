@@ -111,6 +111,14 @@ class user_exercise_summary {
             return $this->bestSubmission->getLatePenaltyApplied();
     }
     
+    public function getPenaltyPercentage() {
+        $penalty = $this->getPenalty();
+        if ($penalty === null)
+            return null;
+        else
+            return (int) round($penalty * 100);
+    }
+    
     public function isSubmitted() {
         return $this->submissionCount > 0;
     }
@@ -137,6 +145,10 @@ class user_exercise_summary {
         $ctx->required = $this->getRequiredPoints();
         $ctx->percentage = round(100 * $ctx->points / $ctx->max);
         $ctx->required_percentage = round(100 * $ctx->required / $ctx->max);
+        $ctx->penaltyapplied = $this->getPenalty();
+        $ctx->penaltyappliedpercent = $this->getPenaltyPercentage();
+        $ctx->submission_count = $this->getSubmissionCount();
+        
         return $ctx;
     }
 }

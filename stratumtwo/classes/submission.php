@@ -17,7 +17,23 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     protected $submitter = null;
     protected $grader = null;
     
-    public function getStatus() {
+    public function getStatus($asString = false) {
+        if ($asString) {
+            switch ((int) $this->record->status) {
+                case self::STATUS_INITIALIZED:
+                    return get_string('statusinitialized', mod_stratumtwo_exercise_round::MODNAME);
+                    break;
+                case self::STATUS_WAITING:
+                    return get_string('statuswaiting', mod_stratumtwo_exercise_round::MODNAME);
+                    break;
+                case self::STATUS_READY:
+                    return get_string('statusready', mod_stratumtwo_exercise_round::MODNAME);
+                    break;
+                case self::STATUS_ERROR:
+                    return get_string('statuserror', mod_stratumtwo_exercise_round::MODNAME);
+                    break;
+            }
+        }
         return (int) $this->record->status;
     }
     
@@ -110,6 +126,10 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     
     public function getGradingData() {
         return self::tryToDecodeJSON($this->record->gradingdata);
+    }
+    
+    public function isGraded() {
+        return $this->getStatus() === self::STATUS_READY;
     }
     
     /**
@@ -306,5 +326,28 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         }
         
         return $ret;
+    }
+    
+    public function getTemplateContext() {
+        $ctx = new stdClass();
+        $ctx->url = (new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE . 
+                '/submission.php', array('id' => $this->getId())))->out();
+        $ctx->submission_time = $this->getSubmissionTime();
+        //$ctx->nth = 1; // counting the ordinal number here would be too expensive,
+        // since it has to query all submissions from the database
+        
+        if ($this->isGraded()) {
+            $grade = $this->getGrade();
+            $ctx->submitted = true;
+            $ctx->full_score = ($grade >= $this->getExercise()->getMaxPoints());
+            $ctx->passed = ($grade >= $this->getExercise()->getPointsToPass());
+            $ctx->missing_points = !$ctx->passed;
+            $ctx->points = $grade;
+            $ctx->max = $this->getExercise()->getMaxPoints();
+            $ctx->points_to_pass = $this->getExercise()->getPointsToPass();
+        } else {
+            $ctx->status = $this->getStatus(true);
+        }
+        return $ctx;
     }
 }

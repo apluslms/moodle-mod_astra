@@ -3,11 +3,6 @@ namespace mod_stratumtwo\output;
 
 defined('MOODLE_INTERNAL') || die;
 
-use renderable;
-use renderer_base;
-use templatable;
-use stdClass;
-
 class exercise_round_page implements \renderable, \templatable {
     
     protected $exround;
@@ -23,8 +18,8 @@ class exercise_round_page implements \renderable, \templatable {
      *
      * @return stdClass
      */
-    public function export_for_template(renderer_base $output) {
-        $data = new stdClass();
+    public function export_for_template(\renderer_base $output) {
+        $data = new \stdClass();
         $ctx = \context_module::instance($this->exround->getCourseModule()->id);
         $data->is_course_staff = \has_capability('mod/stratumtwo:viewallsubmissions', $ctx);
         $data->course_module = $this->exround->getTemplateContext();
@@ -32,10 +27,7 @@ class exercise_round_page implements \renderable, \templatable {
         $data->module_summary->classes = 'pull-right'; // CSS classes
         $data->categories = $this->moduleSummary->getExercisesByCategoriesTemplateContext();
         
-        $data->toDateStr = function($timestamp, $mustacheHelper) {
-            // the timestamp must be rendered to get the integer, otherwise it is a string like '{{ date }}'
-            return date('r', $mustacheHelper->render($timestamp)); //TODO date format
-        };
+        $data->toDateStr = new \mod_stratumtwo\output\date_to_string();
         
         return $data;
         // It should return an stdClass with properties that are only made of simple types:

@@ -1,0 +1,67 @@
+{{!
+Derived from A+ (a-plus/exercise/templates/exercise/_exercise_info.html).
+
+Context variables:
+* summary (stdClass), summary of the user's status in the exercise, fields: 
+    points, penaltyapplied (null if no late penalty applied), penaltyappliedpercent (0-100),
+    submission_count,
+    fields required by _points_progress.mustache
+* exercise (stdClass), with fields
+    max_points, max_submissions (0 if no limit),
+    max_submissions_for_user (submission limit with personal deviation, may be the same as max_submissions),
+    points_to_pass (0 if no limit), total_submitter_count,
+    course_module (stdClass) with keys 
+        closingtime
+* toDateStr callable Function that converts a Unix timestamp to a date string
+}}
+
+<div class="well">
+    <p>{{#str}} earnedpoints, mod_stratumtwo {{/str}}</p>
+    <p><strong class="h2">
+        {{ summary.points }}
+        <small>
+            / {{ exercise.max_points }}
+            {{# summary.penaltyapplied }}
+            <span class="badge">
+                {{#str}} late, mod_stratumtwo {{/str}} -{{ summary.penaltyappliedpercent }} %
+            </span>
+            {{/ summary.penaltyapplied }}
+        </small>
+    </strong></p>
+    {{# summary }}
+      {{> mod_stratumtwo/_points_progress }}
+    {{/ summary }}
+</div>
+
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h4 class="panel-title">{{#str}} exerciseinfo, mod_stratumtwo {{/str}}</h4>
+    </div>
+    <div class="panel-body">
+        <dl>
+            <dt>{{#str}} yoursubmissions, mod_stratumtwo {{/str}}</dt>
+            <dd>
+                {{ summary.submission_count }}
+                {{# exercise.max_submissions }}
+                / {{ exercise.max_submissions_for_user }}
+                {{/ exercise.max_submissions }}
+            </dd>
+
+            {{# exercise.points_to_pass }}
+            <dt>{{#str}} pointsrequiredtopass, mod_stratumtwo {{/str}}</dt>
+            <dd>{{ exercise.points_to_pass }}</dd>
+            {{/ exercise.points_to_pass }}
+
+            <dt>{{#str}} deadline, mod_stratumtwo {{/str}}</dt>
+            <dd>{{# toDateStr }}{{ exercise.course_module.closingtime }}{{/ toDateStr }}</dd>
+
+            <dt>{{#str}} totalnumberofsubmitters, mod_stratumtwo {{/str}}</dt>
+            <dd>{{ exercise.total_submitter_count }}</dd>
+
+            {{! comment "Disabled: If average is required implement more efficient query for it."
+            <dt>{% trans "Average submissions per student" %}</dt>
+            <dd>{ exercise.todo|floatformat:2 }</dd>
+            }}
+        </dl>
+    </div>
+</div>

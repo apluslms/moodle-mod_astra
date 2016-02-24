@@ -147,6 +147,10 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         return $when >= $this->getOpeningTime();
     }
     
+    public function isHidden() {
+        return $this->getStatus() === static::STATUS_HIDDEN;
+    }
+    
     /** Create or update the course calendar event for the deadline (closing time) 
      * of this exercise round.
      */

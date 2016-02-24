@@ -1,0 +1,102 @@
+{{!
+Derived from A+ (a-plus/exercise/templates/exercise/exercise_base.html)
+
+Context variables:
+* exercise (stdClass) with fields
+    url (string), submissionlisturl, editurl
+* submissions (array of objects, the latest submission first), each object has keys 
+    url (string), submission_time (int, timestamp), nth (int, ordinal number),
+    the variables required by _points_badge.mustache (set status if the submission is not graded)
+* is_course_staff (bool)
+* is_editing_teacher (bool) can user edit exercises?
+* is_manual_grader (bool) can user grade submissions manually?
+* toDateStr callable Function that converts a Unix timestamp to a date string
+* submission (stdClass), set if viewing one specific submission, with fields
+    inspecturl (string)
+* the variables from _exercise_info.mustache, if the block exerciseinfo is not overridden
+
+Blocks that child templates should override:
+* exercisecontent (exercise-specific content, e.g., instructions and submission form)
+* exerciseinfo (includes the exercise info panel, override if more panels are needed in the right-side of the page)
+}}
+
+<div class="bs3-container-fluid">
+<div class="col-lg-9">
+
+  <ul class="nav nav-tabs">
+      <li class="menu-exercise">
+          <a href="{{{ exercise.url }}}">
+              {{#str}} exercisedescription, mod_stratumtwo {{/str}}
+          </a>
+      </li>
+      <li class="dropdown menu-submission">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button"
+              aria-haspopup="true" aria-expanded="false">
+              {{#str}} mysubmissions, mod_stratumtwo {{/str}}
+              <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+              {{# submissions }}
+              <li>
+                  <a href="{{{ url }}}">
+                      {{ nth }}.
+                      {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
+                      {{> mod_stratumtwo/_points_badge }}
+                  </a>
+              </li>
+              {{/ submissions }}
+              {{^ submissions }}
+              <li>
+                  <a href="#">{{#str}} nosubmissionsyet, mod_stratumtwo {{/str}}</a>
+              </li>
+              {{/ submissions }}
+          </ul>
+      </li>
+      {{# is_course_staff }}
+      <li>
+          <p class="navbar-text navbar-btn">
+              {{# submission }}
+              <a href="{{{ submission.inspecturl }}}" class="btn btn-default btn-xs">
+                  <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+                  {{#str}} inspectsubmission, mod_stratumtwo {{/str}}
+              </a>
+              {{/ submission }}
+              {{# is_editing_teacher }}
+              <a href="{{{ exercise.editurl }}}" class="btn btn-default btn-xs">
+                  <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                  {{#str}} editexercise, mod_stratumtwo {{/str}}
+              </a>
+              {{/ is_editing_teacher }}
+              {{# is_manual_grader }}
+              <a href="{{{ exercise.submissionlisturl }}}" class="btn btn-default btn-xs">
+                  <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+                  {{#str}} viewallsubmissions, mod_stratumtwo {{/str}}
+              </a>
+              {{/ is_manual_grader }}
+          </p>
+      </li>
+      {{/ is_course_staff }}
+  </ul>
+
+  {{$ exercisecontent }}{{/ exercisecontent }}
+</div>
+
+<div class="col-lg-3">
+
+    {{$ exerciseinfo }}
+    <div id="exercise-info" {{!data-url="{ exercise|url:'exercise-info' }"}}>
+        {{>  mod_stratumtwo/_exercise_info }}
+    </div>
+    {{/ exerciseinfo }}
+
+</div>
+</div>
+
+{{#js}}
+require(['jquery'], function($) {
+  /* enable Bootstrap tooltips */
+  $(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+});
+{{/js}}

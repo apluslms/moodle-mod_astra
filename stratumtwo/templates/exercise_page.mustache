@@ -1,0 +1,19 @@
+{{!
+Derived from A+ (a-plus/exercise/templates/exercise/exercise.html)
+
+Context variables:
+* variables required by exercise_base.mustache
+* page (stdClass) with fields
+    content (html string)
+
+}}
+
+{{< mod_stratumtwo/exercise_base }}
+
+{{$ exercisecontent }}
+<div id="exercise" data-aplus-chapter="{{{ exercise.url }}}">
+    {{{ page.content }}}
+</div>
+{{/ exercisecontent }}
+
+{{/ mod_stratumtwo/exercise_base }}

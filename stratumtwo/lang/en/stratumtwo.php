@@ -59,6 +59,22 @@ $string['required'] = 'Required';
 $string['coursestaff'] = 'Course staff';
 $string['earlyaccess'] = 'Early access';
 $string['viewsubmissions'] = 'View submissions';
+$string['notopenedyet'] = 'This module has not been opened yet.';
+$string['exercisedescription'] = 'Exercise description';
+$string['mysubmissions'] = 'My submissions';
+$string['nosubmissionsyet'] = 'No submissions yet';
+$string['inspectsubmission'] = 'Inspect submission';
+$string['viewallsubmissions'] = 'View all submissions';
+$string['editexercise'] = 'Edit exercise';
+$string['earnedpoints'] = 'Earned points';
+$string['late'] = 'Late';
+$string['exerciseinfo'] = 'Exercise info';
+$string['yoursubmissions'] = 'Your submissions';
+$string['pointsrequiredtopass'] = 'Points required to pass';
+$string['totalnumberofsubmitters'] = 'Total number of submitters';
+$string['statuserror'] = 'Error';
+$string['statuswaiting'] = 'Waiting';
+$string['statusinitialized'] = 'Initialized';
 
 // Errors
 $string['negativeerror'] = 'This value can not be negative.';

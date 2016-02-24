@@ -89,6 +89,10 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return $this->record->gradeitemnumber;
     }
     
+    public function isHidden() {
+        return $this->getStatus() === static::STATUS_HIDDEN;
+    }
+    
     /**
      * Delete this exercise instance from the database.
      * @param bool $updateRoundMaxPoints if true, the max points of the 
@@ -137,7 +141,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
      * Return the best submission of the student to this exercise.
      * @param int $userid Moodle user ID of the student
      * @return mod_stratumtwo_submission the best submission, or null if there is
-     * no valid submission (not late and not exceeded submit limit)
+     * no submission
      */
     public function getBestSubmissionForStudent($userid) {
         global $DB;
@@ -188,10 +192,11 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
      * Return the submissions of a student in this exercise.
      * @param int $userid
      * @param bool $excludeErrors if true, the submissions with status error are not returned
+     * @param string $orderBy SQL ORDER BY argument
      * @return Moodle recordset (iterator) of database records (stdClass).
      * The caller of this method must call the close() method.
      */
-    public function getSubmissionsForStudent($userid, $excludeErrors = false) {
+    public function getSubmissionsForStudent($userid, $excludeErrors = false, $orderBy = 'submissiontime ASC') {
         global $DB;
         
         if ($excludeErrors) {
@@ -201,12 +206,12 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
                             $this->getId(),
                             $userid,
                             mod_stratumtwo_submission::STATUS_ERROR,
-                    ), 'submissiontime ASC');
+                    ), $orderBy);
         } else {
             $submissions = $DB->get_recordset(mod_stratumtwo_submission::TABLE, array(
                 'exerciseid' => $this->getId(),
                 'submitter'  => $userid,
-            ), 'submissiontime ASC');
+            ), $orderBy);
         }
         return $submissions;
     }
@@ -340,14 +345,59 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return $grades;
     }
     
+    /**
+     * Return the number of users that have submitted to this exercise.
+     * @return int
+     */
+    public function getTotalSubmitterCount() {
+        global $DB;
+        return $DB->count_records_select(mod_stratumtwo_submission::TABLE,
+                'exerciseid = ?',
+                array($this->getId()),
+                'COUNT(DISTINCT submitter)');
+    }
+    
+    /**
+     * Return the template context of all submissions from a user.
+     * @param int $userid
+     * @return stdClass[]
+     */
+    public function getSubmissionsTemplateContext($userid) {
+        $ctx = array();
+        // latest submission first
+        $submissions = $this->getSubmissionsForStudent($userid, false, 'submissiontime DESC');
+        foreach ($submissions as $record) {
+            $sbms = new mod_stratumtwo_submission($record);
+            $ctx[] = $sbms->getTemplateContext();
+        }
+        $submissions->close();
+        // add ordinal numbers
+        $nth = count($ctx);
+        foreach ($ctx as $subCtx) {
+            $subCtx->nth = $nth;
+            $nth--;
+        }
+        
+        return $ctx;
+    }
+    
     public function getTemplateContext() {
-        global $CFG;
         $ctx = new stdClass();
-        $ctx->url = $CFG->wwwroot .'/mod/'. mod_stratumtwo_exercise_round::TABLE . 
-                '/exercise_view.php?id='. $this->getId(); //TODO check url
+        $ctx->url = (new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .
+                '/exercise.php', array('id' => $this->getId())))->out();
         $ctx->name = $this->getName();
-        $ctx->submissionlisturl = $CFG->wwwroot .'/mod/'. mod_stratumtwo_exercise_round::TABLE . 
-                '/submissionlist.php'; // for course staff TODO
+        $ctx->submissionlisturl = (new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE . 
+                '/submissionlist.php', array('id' => $this->getId())))->out(); // for course staff TODO
+        $ctx->editurl = (new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .
+                '/edit_exercise.php', array('id' => $this->getId())))->out(); //TODO
+        
+        $ctx->max_points = $this->getMaxPoints();
+        $ctx->max_submissions = $this->getMaxSubmissions();
+        $ctx->max_submissions_for_user = $this->getMaxSubmissions(); //TODO deviations
+        $ctx->points_to_pass = $this->getPointsToPass();
+        $ctx->total_submitter_count = $this->getTotalSubmitterCount();
+        $ctx->course_module = $this->getExerciseRound()->getTemplateContext();
+        
         return $ctx;
     }
 }
