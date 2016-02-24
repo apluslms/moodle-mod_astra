@@ -39,8 +39,6 @@ $event = \mod_stratumtwo\event\exercise_viewed::create(array(
 ));
 $event->trigger();
 
-//TODO add Moodle navbar item for exercise, round is already there
-
 // Print the page header.
 //TODO require Bootstrap CSS and jQuery
 //$PAGE->requires->js(new moodle_url('https://code.jquery.com/jquery-1.12.0.js')); // Moodle has 1.11.3 bundled
@@ -51,7 +49,14 @@ $PAGE->requires->css(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABL
 //$PAGE->requires->css(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/github.min.css'));
 //$PAGE->requires->js(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js'));
 
-$PAGE->set_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/exercise.php', array('id' => $id));
+// add Moodle navbar item for the exercise, round is already there
+$page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/exercise.php', array('id' => $id));
+
+$roundNav = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
+$exerciseNav = $roundNav->add($exercise->getName(), $page_url, navigation_node::TYPE_CUSTOM, null, $id);
+$exerciseNav->make_active();
+
+$PAGE->set_url($page_url);
 $PAGE->set_title(format_string($exerciseRecord->name));
 $PAGE->set_heading(format_string($course->fullname));
 
