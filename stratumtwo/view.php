@@ -25,15 +25,17 @@ if ($id) {
 
 require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
+
+$exround = new mod_stratumtwo_exercise_round($stratumtwo);
+
 // this should prevent guest access
 require_capability('mod/stratumtwo:view', $context);
-if (!$cm->visible && !has_capability('moodle/course:manageactivities', $context)) {
-    // show hidden activity (assignment page) only to teachers
+if ((!$cm->visible || $exround->isHidden()) &&
+        !has_capability('moodle/course:manageactivities', $context)) {
+    // show hidden activity (exercise round page) only to teachers
     throw new required_capability_exception($context,
             'moodle/course:manageactivities', 'nopermissions', '');
 }
-
-//TODO check that the round is open (openingtime, closingtime), and status ready
 
 // Event for logging (viewing the page)
 $event = \mod_stratumtwo\event\course_module_viewed::create(array(
@@ -44,11 +46,11 @@ $event->add_record_snapshot('course', $PAGE->course);
 $event->add_record_snapshot($PAGE->cm->modname, $stratumtwo);
 $event->trigger();
 
-// Print the page header.
 //TODO require Bootstrap CSS and jQuery
-$PAGE->requires->js(new moodle_url('https://code.jquery.com/jquery-1.12.0.js'));
-$PAGE->requires->css(new moodle_url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css'));
-$PAGE->requires->js(new moodle_url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js'));
+//$PAGE->requires->js(new moodle_url('https://code.jquery.com/jquery-1.12.0.js')); // Moodle has 1.11.3 bundled
+$PAGE->requires->css(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/assets/bootstrap/css/bootstrap.min.css'));
+$PAGE->requires->js(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/assets/bootstrap/js/bootstrap.min.js'));
+$PAGE->requires->css(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/assets/css/main.css'));
 // highlight.js for source code syntax highlighting
 //$PAGE->requires->css(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/github.min.css'));
 //$PAGE->requires->js(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js'));
@@ -57,12 +59,11 @@ $PAGE->set_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/view.php', array
 $PAGE->set_title(format_string($stratumtwo->name));
 $PAGE->set_heading(format_string($course->fullname));
 
-$exround = new mod_stratumtwo_exercise_round($stratumtwo);
 // render page content
 $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::TABLE);
 
+// Print the page header (Moodle navbar etc.).
 echo $output->header();
-echo $output->heading($exround->getName());
 
 $renderable = new \mod_stratumtwo\output\exercise_round_page($exround, $USER);
 echo $output->render($renderable);
