@@ -37,7 +37,7 @@ View capability is recommended for each module ('mod/<modname>:view' capability 
 $capabilities = array(
     // add new stratumtwo instances to a course, and edit/delete instances
     'mod/stratumtwo:addinstance' => array(
-        'riskbitmask' => RISK_SPAM | RISK_XSS | RISK_DATALOSS,
+        'riskbitmask' => RISK_SPAM | RISK_XSS | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
