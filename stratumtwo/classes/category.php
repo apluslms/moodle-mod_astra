@@ -44,6 +44,10 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
         return $this->record->pointstopass;
     }
     
+    public function isHidden() {
+        return $this->getStatus() === self::STATUS_HIDDEN;
+    }
+    
     /**
      * Return all exercises in this category.
      * @return mod_stratumtwo_exercise[]

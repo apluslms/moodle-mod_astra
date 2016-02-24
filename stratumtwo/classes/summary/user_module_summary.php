@@ -161,24 +161,26 @@ class user_module_summary {
          */
         foreach ($this->exerciseSummaries as $exSummary) {
             $cat = $exSummary->getExerciseCategory();
-            // prepare category context (a category contains at least one exercise)
-            if ($len === 0 || $cat->getId() != $catContexts[$len - 1]['id']) {
-                $catCtx = array(
-                        'id' => $cat->getId(),
-                        'name' => $cat->getName(),
-                        'exercise_summaries' => array(),
+            if (!$cat->isHidden()) {
+                // prepare category context (a category contains at least one exercise)
+                if ($len === 0 || $cat->getId() != $catContexts[$len - 1]['id']) {
+                    $catCtx = array(
+                            'id' => $cat->getId(),
+                            'name' => $cat->getName(),
+                            'exercise_summaries' => array(),
+                    );
+                    $catContexts[] = $catCtx;
+                    $len++;
+                }
+            
+                // exercise context
+                $exSumCtx = array(
+                    'exercise' => $exSummary->getExercise()->getTemplateContext(),
+                    'exercise_summary' => $exSummary->getTemplateContext(),
                 );
-                $catContexts[] = $catCtx;
-                $len++;
+                // append under the category context
+                $catContexts[$len - 1]['exercise_summaries'][] = $exSumCtx;
             }
-        
-            // exercise context
-            $exSumCtx = array(
-                'exercise' => $exSummary->getExercise()->getTemplateContext(),
-                'exercise_summary' => $exSummary->getTemplateContext(),
-            );
-            // append under the category context
-            $catContexts[$len - 1]['exercise_summaries'][] = $exSumCtx;
         }
         
         return $catContexts;
