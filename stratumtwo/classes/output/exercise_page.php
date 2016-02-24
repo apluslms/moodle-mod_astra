@@ -31,9 +31,14 @@ class exercise_page implements \renderable, \templatable {
         $data->is_editing_teacher = \has_capability('mod/stratumtwo:addinstance', $ctx);
         $data->is_manual_grader = \has_capability('mod/stratumtwo:grademanually', $ctx);
         
-        $exercisePage = new \stdClass();
-        $exercisePage->content = '<p>EXERCISE CONTENT</p>'; //TODO
-        $data->page = $exercisePage;
+        $data->status_maintenance = ($this->exround->isUnderMaintenance() || $this->exercise->isUnderMaintenance());
+        $data->not_started = !$this->exround->hasStarted();
+
+        if (!($data->status_maintenance || $data->not_started) || $data->is_course_staff) {
+            $exercisePage = new \stdClass();
+            $exercisePage->content = '<p>EXERCISE CONTENT</p>'; //TODO
+            $data->page = $exercisePage;
+        }
         
         $data->exercise = $this->exercise->getTemplateContext();
         $data->submissions = $this->exercise->getSubmissionsTemplateContext($this->user->id);

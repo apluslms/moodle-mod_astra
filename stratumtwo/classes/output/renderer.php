@@ -23,7 +23,11 @@ class renderer extends \plugin_renderer_base {
     
     protected function render_exercise_page(\mod_stratumtwo\output\exercise_page $page) {
         $data = $page->export_for_template($this);
-        return parent::render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/exercise_page', $data);
+        if (isset($data->page->content)) {
+            return parent::render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/exercise_page', $data);
+        } else {
+            return parent::render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/exercise_closed_page', $data);
+        }
     }
     
 }

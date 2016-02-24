@@ -28,9 +28,7 @@ if ((!$cm->visible || $exround->isHidden() || $exercise->isHidden()) &&
             // show hidden exercise only to teachers
             throw new required_capability_exception($context,
                     'moodle/course:manageactivities', 'nopermissions', '');
-        }
-
-//TODO check that the round is open (openingtime, closingtime), and status ready/maintenance IN TEMPLATE
+}
 
 // Event for logging (viewing the page)
 $event = \mod_stratumtwo\event\exercise_viewed::create(array(

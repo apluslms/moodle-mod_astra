@@ -1,0 +1,23 @@
+{{!
+Exercise page that does not show the actual exercise content: the exercise 
+is closed (exercise round is not open or the exercise is under maintenance).
+
+Context variables:
+* status_maintenance (bool) true if status is set to maintenance
+* not_started (bool) true if the exercise round has not opened yet
+}}
+
+{{< mod_stratumtwo/exercise_base }}
+
+{{$ exercisecontent }}
+<div id="exercise">
+    {{# not_started }}
+      <p>{{#str}} notopenedyet, mod_stratumtwo {{/str}}</p>
+    {{/ not_started }}
+    {{# status_maintenance }}
+      <p>{{#str}} undermaintenance, mod_stratumtwo {{/str}}</p>
+    {{/ status_maintenance }}
+</div>
+{{/ exercisecontent }}
+
+{{/ mod_stratumtwo/exercise_base }}

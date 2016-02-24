@@ -90,7 +90,11 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     }
     
     public function isHidden() {
-        return $this->getStatus() === static::STATUS_HIDDEN;
+        return $this->getStatus() === self::STATUS_HIDDEN;
+    }
+    
+    public function isUnderMaintenance() {
+        return $this->getStatus() === self::STATUS_MAINTENANCE;
     }
     
     /**
