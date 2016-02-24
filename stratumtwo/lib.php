@@ -314,8 +314,8 @@ function stratumtwo_cron () {
 function stratumtwo_get_extra_capabilities() {
     //TODO update
     return array(
-        'moodle/course:manageactivities',
-        'moodle/grade:viewall',
+        'moodle/course:manageactivities', // used in view.php
+        //'moodle/grade:viewall',
     );
 }
 
