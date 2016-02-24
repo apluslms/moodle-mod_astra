@@ -590,7 +590,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         global $DB;
         $rounds = array();
         $records = $DB->get_records(static::TABLE, array('course' => $courseid),
-                'openingtime ASC, closingtime ASC, id ASC');
+                'ordernum ASC, openingtime ASC, closingtime ASC, id ASC');
         foreach ($records as $record) {
             $rounds[] = new static($record);
         }
