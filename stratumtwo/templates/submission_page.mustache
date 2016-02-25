@@ -1,0 +1,69 @@
+{{!
+Derived from A+ (a-plus/exercise/templates/exercise/submission.html)
+
+Context variables:
+* variables required by exercise_base.mustache
+* submission requires more fields: 
+    - has_files (bool)
+    - assistant_feedback (string)
+    - files (array of stdClass objects), each object has fields 
+        that are required by _file_link.mustache
+    - feedback (string)
+    - variables required by _submission_info.mustache
+* exercise requires more fields: 
+    allow_assistant_grading (bool), max_points (int)
+* fileSizeFormatter (callable) function to convert bytes (int) to a human-readable string (e.g. "10.2 KB")
+* is_course_staff (bool)
+}}
+
+{{< mod_stratumtwo/exercise_base }}
+
+{{$ exercisecontent }}
+
+  {{# submission.has_files }}
+    <h4>{{#str}} filesinthissubmission, mod_stratumtwo {{/str}}</h4>
+    <ul class="list-unstyled">
+        {{# submission.files }}
+        <li>
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+            {{> mod_stratumtwo/_file_link }}
+        </li>
+        {{/ submission.files }}
+    </ul>
+  {{/ submission.has_files }}
+
+  {{# submission.assistant_feedback }}
+    <h4>{{#str}} assistantfeedback, mod_stratumtwo {{/str}}</h4>
+    <blockquote>{{{ submission.assistant_feedback }}}</blockquote>
+  {{/ submission.assistant_feedback }}
+  {{^ submission.assistant_feedback }}
+    {{# exercise.allow_assistant_grading }}
+      <div class="alert alert-info">
+        {{#str}} noassistantfeedback, mod_stratumtwo {{/str}}
+      </div>
+    {{/ exercise.allow_assistant_grading }}
+  {{/ submission.assistant_feedback }}
+
+  {{# submission.feedback }}
+    <div id="exercise">
+        {{{ submission.feedback }}}
+    </div>
+  {{/ submission.feedback }}
+  {{^ submission.feedback }}
+    <div class="alert alert-info">
+        {{#str}} nofeedback, mod_stratumtwo {{/str}}
+    </div>
+  {{/ submission.feedback }}
+
+{{/ exercisecontent }}
+
+{{$ exerciseinfo }}
+
+  <div id="exercise-info" {{!data-url="{ exercise|url:'exercise-info' }"}}>
+      {{>  mod_stratumtwo/_exercise_info }}
+  </div>
+  {{> mod_stratumtwo/_submission_info }}
+  
+{{/ exerciseinfo }}
+
+{{/ mod_stratumtwo/exercise_base }}

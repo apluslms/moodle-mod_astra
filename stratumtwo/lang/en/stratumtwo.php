@@ -75,6 +75,18 @@ $string['totalnumberofsubmitters'] = 'Total number of submitters';
 $string['statuserror'] = 'Error';
 $string['statuswaiting'] = 'Waiting';
 $string['statusinitialized'] = 'Initialized';
+$string['submissionnumber'] = 'Submission {$a}';
+$string['filesinthissubmission'] = 'Files in this submission';
+$string['download'] = 'Download';
+$string['assistantfeedback'] = 'Assistant feedback';
+$string['noassistantfeedback'] = 'No assistant feedback available for this submission.';
+$string['nofeedback'] = 'No grader feedback available for this submission.';
+$string['submissioninfo'] = 'Submission info';
+$string['submittedon'] = 'Submitted on';
+$string['grade'] = 'Grade';
+$string['forstafforiginal'] = 'For staff: original';
+$string['includeslatepenalty'] = 'Includes late penalty';
+$string['submitters'] = 'Submitters';
 
 // Errors
 $string['negativeerror'] = 'This value can not be negative.';

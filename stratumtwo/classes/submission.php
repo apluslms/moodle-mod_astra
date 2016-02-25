@@ -54,10 +54,21 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     
     public function getSubmitter() {
         global $DB;
-        if (is_null($this->$submitter)) {
+        if (is_null($this->submitter)) {
             $this->submitter = $DB->get_record('user', array('id' => $this->record->submitter), '*', MUST_EXIST);
         }
         return $this->submitter;
+    }
+    
+    public function getSubmitterName() {
+        $user = $this->getSubmitter();
+        $name = fullname($user);
+        if (empty($user->idnumber) || $user->idnumber === '(null)') {
+            $name .= " ({$user->username})";
+        } else {
+            $name .= " ({$user->idnumber})";
+        }
+        return $name;
     }
     
     public function getGrader() {
@@ -90,7 +101,9 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     }
     
     public function getLatePenaltyApplied() {
-        return $this->record->latepenaltyapplied;
+        if (isset($this->record->latepenaltyapplied))
+            return $this->record->latepenaltyapplied;
+        return null;
     }
     
     public function getServicePoints() {
@@ -314,7 +327,7 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         require_once($CFG->libdir.'/gradelib.php');
 
         $ret =  grade_update('mod/'. mod_stratumtwo_exercise_round::TABLE,
-                $this->getExercise()->getExerciseRound()->getCourse()->id,
+                $this->getExercise()->getExerciseRound()->getCourse()->courseid,
                 'mod',
                 mod_stratumtwo_exercise_round::TABLE,
                 $this->getExercise()->getExerciseRound()->getId(),
@@ -328,26 +341,62 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         return $ret;
     }
     
-    public function getTemplateContext() {
+    public function getTemplateContext($includeFeedbackAndFiles = false) {
         $ctx = new stdClass();
         $ctx->url = (new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE . 
                 '/submission.php', array('id' => $this->getId())))->out();
+        $ctx->inspecturl = (new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .
+                '/inspect.php', array('id' => $this->getId())))->out(); //TODO 
         $ctx->submission_time = $this->getSubmissionTime();
         //$ctx->nth = 1; // counting the ordinal number here would be too expensive,
         // since it has to query all submissions from the database
+        $ctx->state = $this->getStatus(true);
+        $grade = $this->getGrade();
+        $ctx->submitted = true;
+        $ctx->full_score = ($grade >= $this->getExercise()->getMaxPoints());
+        $ctx->passed = ($grade >= $this->getExercise()->getPointsToPass());
+        $ctx->missing_points = !$ctx->passed;
+        $ctx->points = $grade;
+        $ctx->max = $this->getExercise()->getMaxPoints();
+        $ctx->points_to_pass = $this->getExercise()->getPointsToPass();
+        $ctx->service_points = $this->getServicePoints();
+        $ctx->service_max_points = $this->getServiceMaxPoints();
+        $ctx->late_penalty_applied = $this->getLatePenaltyApplied();
+        if ($ctx->late_penalty_applied !== null) {
+            $ctx->late_penalty_applied_percent = (int) round($ctx->late_penalty_applied * 100);
+        }
+        $ctx->submitter_name = $this->getSubmitterName();
         
         if ($this->isGraded()) {
-            $grade = $this->getGrade();
-            $ctx->submitted = true;
-            $ctx->full_score = ($grade >= $this->getExercise()->getMaxPoints());
-            $ctx->passed = ($grade >= $this->getExercise()->getPointsToPass());
-            $ctx->missing_points = !$ctx->passed;
-            $ctx->points = $grade;
-            $ctx->max = $this->getExercise()->getMaxPoints();
-            $ctx->points_to_pass = $this->getExercise()->getPointsToPass();
+            $ctx->is_graded = true;
         } else {
-            $ctx->status = $this->getStatus(true);
+            $ctx->status = $this->getStatus(true); // set status only for non-graded
+            $ctx->is_graded = false;
         }
+        
+        if ($includeFeedbackAndFiles) {
+            $ctx->has_files = false; //TODO
+            $ctx->files = $this->getFilesTemplateContext();
+            $ctx->feedback = $this->getFeedback();
+            $ctx->assistant_feedback = $this->getAssistantFeedback();
+        }
+        
         return $ctx;
+    }
+    
+    public function getFilesTemplateContext() {
+        $files = array();
+        //TODO
+        /*
+        foreach ($all_submission_files as $file) {
+            $fileCtx = new stdClass();
+            $fileCtx->absolute_url = '';
+            $fileCtx->is_passed = false; // true if binary file (image, pdf)
+            $fileCtx->filename = ''; // basename, not full path
+            $fileCtx->size = 0; // int, in bytes
+            $files[] = $fileCtx;
+        }
+        */
+        return $files;
     }
 }

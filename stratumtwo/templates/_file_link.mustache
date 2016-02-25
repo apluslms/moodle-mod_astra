@@ -1,0 +1,15 @@
+{{!
+Derived from A+ (a-plus/exercise/templates/exercise/_file_link.html)
+
+Context variables:
+* file (stdClass) with fields 
+    absolute_url (string), is_passed (bool) true if the file is binary (image, pdf),
+    filename (base name, not full path), size (int, in bytes)
+* fileSizeFormatter (callable) function to convert bytes (int) to a human-readable string (e.g. "10.2 KB")
+}}
+
+<a href="{{{ file.absolute_url }}}"{{^ file.is_passed }} class="file-modal"{{/ file.is_passed }} target="_blank">{{ file.filename }}</a>
+<a href="{{{ file.absolute_url }}}?download=yes" class="btn btn-default btn-xs" title="{{#str}} download, mod_stratumtwo {{/str}}">
+    <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>
+    {{# fileSizeFormatter }}{{ file.size }}{{/ fileSizeFormatter }}
+</a>

@@ -133,7 +133,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         global $CFG;
         require_once($CFG->libdir.'/gradelib.php');
         return grade_update('mod/'. mod_stratumtwo_exercise_round::TABLE,
-                $this->getExerciseRound()->getCourse()->id,
+                $this->getExerciseRound()->getCourse()->courseid,
                 'mod',
                 mod_stratumtwo_exercise_round::TABLE,
                 $this->getExerciseRound()->getId(),
@@ -250,7 +250,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
             $item['reset'] = true;
         }
         
-        $courseid = $this->getExerciseRound()->getCourse()->id;
+        $courseid = $this->getExerciseRound()->getCourse()->courseid;
         
         // create gradebook item
         $res = grade_update('mod/'. mod_stratumtwo_exercise_round::TABLE, $courseid, 'mod',
@@ -283,7 +283,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         require_once($CFG->libdir.'/gradelib.php');
         // The Moodle API returns the exercise round and exercise grades all at once
         // since they use different item numbers with the same Moodle course module.
-        $grades = grade_get_grades($this->getExerciseRound()->getCourse()->id, 'mod',
+        $grades = grade_get_grades($this->getExerciseRound()->getCourse()->courseid, 'mod',
                 mod_stratumtwo_exercise_round::TABLE,
                 $this->getExerciseRound()->getId(),
                 $userid);
@@ -316,7 +316,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         }
         
         return grade_update('mod/'. mod_stratumtwo_exercise_round::TABLE,
-                $this->getExerciseRound()->getCourse()->id, 'mod',
+                $this->getExerciseRound()->getCourse()->courseid, 'mod',
                 mod_stratumtwo_exercise_round::TABLE,
                 $this->getExerciseRound()->getId(),
                 $this->getGradebookItemNumber(), $grades, null);
@@ -401,6 +401,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         $ctx->points_to_pass = $this->getPointsToPass();
         $ctx->total_submitter_count = $this->getTotalSubmitterCount();
         $ctx->course_module = $this->getExerciseRound()->getTemplateContext();
+        $ctx->allow_assistant_grading = $this->isAssistantGradingAllowed();
         
         return $ctx;
     }

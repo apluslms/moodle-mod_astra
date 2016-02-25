@@ -30,4 +30,9 @@ class renderer extends \plugin_renderer_base {
         }
     }
     
+    protected function render_submission_page(\mod_stratumtwo\output\submission_page $page) {
+        $data = $page->export_for_template($this);
+        return parent::render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/submission_page', $data);
+    }
+    
 }

@@ -429,7 +429,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         require_once($CFG->libdir.'/gradelib.php');
         // The Moodle API returns the exercise round and exercise grades all at once
         // since they use different item numbers with the same Moodle course module.
-        $grades = grade_get_grades($this->getCourse()->id, 'mod',
+        $grades = grade_get_grades($this->getCourse()->courseid, 'mod',
                 self::TABLE,
                 $this->getId(),
                 $userid);
