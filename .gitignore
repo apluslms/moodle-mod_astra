@@ -1,0 +1,8 @@
+# test pages for experiments
+stratumtwo/classes/output/test_page.php
+stratumtwo/templates/test_page.mustache
+stratumtwo/templates/whole_test_page.mustache
+
+# script for copying files to logic-dev
+copy.sh
+
