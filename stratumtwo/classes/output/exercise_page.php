@@ -35,9 +35,7 @@ class exercise_page implements \renderable, \templatable {
         $data->not_started = !$this->exround->hasStarted();
 
         if (!($data->status_maintenance || $data->not_started) || $data->is_course_staff) {
-            $exercisePage = new \stdClass();
-            $exercisePage->content = '<p>EXERCISE CONTENT</p>'; //TODO
-            $data->page = $exercisePage;
+            $data->page = $this->exercise->loadPage();
         }
         
         $data->exercise = $this->exercise->getTemplateContext();

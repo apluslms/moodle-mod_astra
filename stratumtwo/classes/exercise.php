@@ -405,4 +405,28 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         
         return $ctx;
     }
+    
+    /**
+     * Return the URL used for loading the exercise page from the exercise service
+     * (service URL with GET query parameters).
+     * @return string
+     */
+    public function getLoadUrl() {
+        global $CFG;
+        $modBaseUrl = $CFG->wwwroot .'/mod/'. mod_stratumtwo_exercise_round::TABLE;
+        $query_data = array(
+                'submission_url' => $modBaseUrl .'/async_submission.php', // TODO async create new submission
+                'post_url' => $modBaseUrl .'/handle_submission.php', // TODO POST submission form target in Moodle
+                'max_points' => $this->getMaxPoints(),
+        );
+        return $this->getServiceUrl() .'?'. http_build_query($query_data, 'i_', '&');
+    }
+    
+    /**
+     * Load the exercise page from the exercise service.
+     */
+    public function loadPage() {
+        $remotePage = new \mod_stratumtwo\protocol\remote_page($this->getLoadUrl());
+        return $remotePage->parsePageContent();
+    }
 }
