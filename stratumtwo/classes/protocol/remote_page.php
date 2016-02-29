@@ -8,6 +8,16 @@ class remote_page {
     protected $response; // string
     protected $DOMdoc; // \DOMDocument instance
     
+    /**
+     * 
+     * @param string $url URL of the remote page
+     * @param bool $post true to set request method to HTTP POST, otherwise GET is used
+     * @param array $data POST payload key-value pairs
+     * @param array $files array or files to upload. Keys are used as POST data keys and
+     * values should be full filepaths to the files.
+     * @throws \mod_stratumtwo\protocol\remote_page_exception if there are errors
+     * in connecting to the server
+     */
     public function __construct($url, $post = false, $data = null, $files = null) {
         $this->response = $this->request($url, $post, $data, $files);
         $this->DOMdoc = new \DOMDocument();
