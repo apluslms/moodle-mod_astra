@@ -35,7 +35,16 @@ class exercise_page implements \renderable, \templatable {
         $data->not_started = !$this->exround->hasStarted();
 
         if (!($data->status_maintenance || $data->not_started) || $data->is_course_staff) {
-            $data->page = $this->exercise->loadPage();
+            try {
+                $data->page = $this->exercise->loadPage();
+            } catch (\mod_stratumtwo\protocol\remote_page_exception $e) {
+                $errorCtx = new \stdClass();
+                $errorCtx->error = \get_string('serviceconnectionfailed', \mod_stratumtwo_exercise_round::MODNAME);
+                $page = new \stdClass();
+                $page->content = $output->render_from_template(
+                        \mod_stratumtwo_exercise_round::MODNAME .'/_error_alert', $errorCtx);
+                $data->page = $page;
+            }
         }
         
         $data->exercise = $this->exercise->getTemplateContext();
