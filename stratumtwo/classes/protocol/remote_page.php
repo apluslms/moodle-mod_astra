@@ -109,20 +109,30 @@ class remote_page {
     }
     
     /**
-     * Return HTML string of the element with the given id, or body if no id is given.
+     * Return HTML string of the element with the given id, or body if no id is given or
+     * the id does not exist in the HTML document.
      * @param string|null $id ID value of the HTML element that should be returned,
      * null for body
-     * @return NULL|string HTML string, null if the given id does not exist
+     * @return NULL|string HTML string, null if the document has no body
      */
     public function getElementOrBody($id = null) {
-        if (is_null($id)) {
-            $nodesList = $this->DOMdoc->getElementsByTagName('body');
-            $element = $nodesList->item(0); // there should always be exactly one body
-        } else {
+        $element = null;
+        if (!is_null($id)) {
             $element = $this->DOMdoc->getElementById($id);
+            if (!is_null($element)) {
+                if ($element->getAttribute('id') == 'exercise') {
+                    $element->removeAttribute('id');
+                    // remove id since this content is inserted to a new div with id=exercise
+                }
+                return $this->DOMdoc->saveHTML($element);
+            }
         }
-        if (is_null($element))
+        
+        // if (is_null($id) || is_null($element)) {
+        $nodesList = $this->DOMdoc->getElementsByTagName('body');
+        if ($nodesList->length == 0)
             return null;
+        $element = $nodesList->item(0); // there should always be exactly one body
         return $this->DOMdoc->saveHTML($element);
     }
 }
