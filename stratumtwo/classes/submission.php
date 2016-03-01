@@ -369,10 +369,8 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     
     public function getTemplateContext($includeFeedbackAndFiles = false) {
         $ctx = new stdClass();
-        $ctx->url = (new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE . 
-                '/submission.php', array('id' => $this->getId())))->out();
-        $ctx->inspecturl = (new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .
-                '/inspect.php', array('id' => $this->getId())))->out(); //TODO 
+        $ctx->url = \mod_stratumtwo\urls\urls::submission($this);
+        $ctx->inspecturl = \mod_stratumtwo\urls\urls::inspectSubmission($this);
         $ctx->submission_time = $this->getSubmissionTime();
         //$ctx->nth = 1; // counting the ordinal number here would be too expensive,
         // since it has to query all submissions from the database

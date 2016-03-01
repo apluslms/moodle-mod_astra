@@ -387,13 +387,10 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     
     public function getTemplateContext() {
         $ctx = new stdClass();
-        $ctx->url = (new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .
-                '/exercise.php', array('id' => $this->getId())))->out();
+        $ctx->url = \mod_stratumtwo\urls\urls::exercise($this);
         $ctx->name = $this->getName();
-        $ctx->submissionlisturl = (new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE . 
-                '/submissionlist.php', array('id' => $this->getId())))->out(); // for course staff TODO
-        $ctx->editurl = (new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .
-                '/edit_exercise.php', array('id' => $this->getId())))->out(); //TODO
+        $ctx->submissionlisturl = \mod_stratumtwo\urls\urls::submissionList($this);
+        $ctx->editurl = \mod_stratumtwo\urls\urls::editExercise($this);
         
         $ctx->max_points = $this->getMaxPoints();
         $ctx->max_submissions = $this->getMaxSubmissions();
