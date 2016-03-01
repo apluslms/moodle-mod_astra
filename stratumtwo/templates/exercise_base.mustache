@@ -14,6 +14,7 @@ Context variables:
 * submission (stdClass), set if viewing one specific submission, with fields
     inspecturl (string)
 * the variables from _exercise_info.mustache, if the block exerciseinfo is not overridden
+* error (string) set if an error message should be shown before the content
 
 Blocks that child templates should override:
 * exercisecontent (exercise-specific content, e.g., instructions and submission form)
@@ -77,6 +78,10 @@ Blocks that child templates should override:
       </li>
       {{/ is_course_staff }}
   </ul>
+
+  {{# error }}
+    {{> mod_stratumtwo/_error_alert }}
+  {{/ error }}
 
   {{$ exercisecontent }}{{/ exercisecontent }}
 </div>

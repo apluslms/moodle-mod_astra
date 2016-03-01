@@ -407,16 +407,16 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     }
     
     /**
-     * Return the URL used for loading the exercise page from the exercise service
+     * Return the URL used for loading the exercise page from the exercise service or
+     * for uploading a submission for grading
      * (service URL with GET query parameters).
+     * @param string $submissionUrl value for the submission_url GET query argument
      * @return string
      */
-    public function getLoadUrl() {
-        global $CFG;
-        $modBaseUrl = $CFG->wwwroot .'/mod/'. mod_stratumtwo_exercise_round::TABLE;
+    protected function buildServiceUrl($submissionUrl) {
         $query_data = array(
-                'submission_url' => $modBaseUrl .'/async_submission.php', // TODO async create new submission
-                'post_url' => $modBaseUrl .'/handle_submission.php', // TODO POST submission form target in Moodle
+                'submission_url' => $submissionUrl,
+                'post_url' => \mod_stratumtwo\urls\urls::newSubmissionHandler($this),
                 'max_points' => $this->getMaxPoints(),
         );
         return $this->getServiceUrl() .'?'. http_build_query($query_data, 'i_', '&');
@@ -424,9 +424,34 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     
     /**
      * Load the exercise page from the exercise service.
+     * @param int $userid user ID
+     * @throws mod_stratumtwo\protocol\remote_page_exception if there are errors
+     * in connecting to the server
+     * @return stdClass with field content
      */
-    public function loadPage() {
-        $remotePage = new \mod_stratumtwo\protocol\remote_page($this->getLoadUrl());
-        return $remotePage->parsePageContent();
+    public function loadPage($userid) {
+        $remotePage = new \mod_stratumtwo\protocol\remote_page(
+                $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncNewSubmission($this, $userid)));
+        return $remotePage->loadExercisePage($this);
+    }
+    
+    /**
+     * Upload the submission to the exercise service for grading and store the results
+     * if the submission is graded synchronously.
+     * @param \mod_stratumtwo_submission $submission
+     * @throws mod_stratumtwo\protocol\remote_page_exception if there are errors
+     * in connecting to the server
+     * @param bool $noPenalties
+     */
+    public function uploadSubmissionToService(\mod_stratumtwo_submission $submission, $noPenalties = false) {
+        $sbmsData = $submission->getSubmissionData();
+        if ($sbmsData !== null)
+            $sbmsData = (array) $sbmsData;
+        
+        $remotePage = new \mod_stratumtwo\protocol\remote_page(
+                $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncGradeSubmission($submission)),
+                true, $sbmsData, null); //TODO files
+        
+        $remotePage->loadFeedbackPage($this, $submission, $noPenalties);
     }
 }

@@ -30,6 +30,34 @@ if ((!$cm->visible || $exround->isHidden() || $exercise->isHidden()) &&
                     'moodle/course:manageactivities', 'nopermissions', '');
 }
 
+$errorMsg = null;
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // user submitted a new solution, create a database record
+    $sbmsId = mod_stratumtwo_submission::createNewSubmission($exercise, $USER->id, $_POST);
+    // TODO files
+    if ($sbmsId == 0) {
+        // error: the new submission was not stored in the database
+        $errorMsg = get_string('submissionfailed', mod_stratumtwo_exercise_round::MODNAME);
+    }
+    
+    $event = \mod_stratumtwo\event\solution_submitted::create(array(
+            'context' => $context,
+            'objectid' => $sbmsId,
+    ));
+    $event->trigger();
+    
+    if ($sbmsId != 0) {
+        $sbms = mod_stratumtwo_submission::createFromId($sbmsId);
+        // send the new submission to the exercise service
+        $exercise->uploadSubmissionToService($sbms);
+        
+        // Redirect the client to the submission page: 
+        // there must be no output before this (echo HTML, whitespace outside php tags)
+        header('Location: '. \mod_stratumtwo\urls\urls::submission($sbms));
+        exit(0);
+    }
+}
+
 // Event for logging (viewing the page)
 $event = \mod_stratumtwo\event\exercise_viewed::create(array(
         'objectid' => $id,
@@ -64,7 +92,7 @@ $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::TABLE);
 
 echo $output->header();
 
-$renderable = new \mod_stratumtwo\output\exercise_page($exround, $exercise, $USER);
+$renderable = new \mod_stratumtwo\output\exercise_page($exround, $exercise, $USER, $errorMsg);
 echo $output->render($renderable);
 
 echo $output->footer();

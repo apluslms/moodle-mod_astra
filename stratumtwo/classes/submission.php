@@ -117,12 +117,13 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     /**
      * Try to decode string $data as JSON.
      * @param string $data
-     * @return string|mixed decoded JSON or string if decoding fails.
+     * @return string|mixed decoded JSON, or string if decoding fails, or
+     * null if $data is empty.
      */
     public static function tryToDecodeJSON($data) {
         if (is_null($data) || $data === '') {
             // empty() considers "0" empty too, so avoid it
-            return '';
+            return null;
         }
         // try to decode JSON
         $jsonObj = json_decode($data);
@@ -145,28 +146,52 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         return $this->getStatus() === self::STATUS_READY;
     }
     
+    public function setWaiting() {
+        $this->record->status = self::STATUS_WAITING;
+    }
+    
+    public function setReady() {
+        $this->record->status = self::STATUS_READY;
+    }
+    
+    public function setError() {
+        $this->record->status = self::STATUS_ERROR;
+    }
+    
     /**
      * Create a new submission to an exercise.
      * @param mod_stratumtwo_exercise $ex
      * @param int $submitterId ID of a Moodle user
-     * @param string $submissionData
+     * @param array $submissionData associative array of submission data, e.g.,
+     * form input (not files) from the user. Keys should be strings (form input names).
+     * Null if there is no data.
      * @param int $status
      * @return int ID of the new submission record, zero on failure
      */
     public static function createNewSubmission(mod_stratumtwo_exercise $ex, $submitterId,
-            $submissionData, $status = self::STATUS_INITIALIZED) {
+            $submissionData = null, $status = self::STATUS_INITIALIZED) {
         global $DB;
         $row = new stdClass();
-        $row->status = $status; //TODO is this needed here? async new submissions?
+        $row->status = $status;
         $row->submissiontime = time();
         $row->hash = self::getRandomString();
         $row->exerciseid = $ex->getId();
         $row->submitter = $submitterId;
-        //TODO $submissionData
-        $row->submissiondata = $submissionData;
+        if ($submissionData === null) {
+            $row->submissiondata = null;
+        } else {
+            $row->submissiondata = self::submissionDataToString($submissionData);
+        }
         
         $id = $DB->insert_record(self::TABLE, $row);
         return $id; // 0 if failed
+    }
+    
+    public static function submissionDataToString(array $submissionData) {
+        $json = json_encode($submissionData);
+        if ($json === false)
+            return null; // failed to encode
+        return $json;
     }
     
     public static function getRandomString($length = 32) {
@@ -187,8 +212,9 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
      * @param int $serviceMaxPoints max points used by the exercise service
      * @param string $feedback feedback to student in HTML
      * @param string $gradingData extra data about grading (in JSON)
+     * @param bool $noPenalties if true, no deadline penalties are used
      */
-    public function grade($servicePoints, $serviceMaxPoints, $feedback, $gradingData = null) {
+    public function grade($servicePoints, $serviceMaxPoints, $feedback, $gradingData = null, $noPenalties = false) {
         $this->record->status = self::STATUS_READY;
         $this->record->feedback = $feedback;
         $this->record->gradingtime = time();

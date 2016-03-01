@@ -96,6 +96,7 @@ $string['latedlbeforeclosingerror'] = 'Late submission deadline must be later th
 $string['zerooneerror'] = 'This value must be between zero and one.';
 $string['mustbesetwithlate'] = 'This field must be set when late submissions are enabled.';
 $string['serviceconnectionfailed'] = 'Connecting to the exercise service failed!';
+$string['submissionfailed'] = 'Your new submission could not be stored in the server!';
 
 /*
 $string['stratumfieldset'] = 'Stratum assignment settings';
