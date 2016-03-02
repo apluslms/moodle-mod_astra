@@ -297,6 +297,16 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         return $res;
     }
     
+    public function delete() {
+        global $DB;
+        // delete submitted files from Moodle file API
+        delete_area_files(context_module::instance($this->getExercise()->getExerciseRound()->getCourseModule()->id),
+                mod_stratumtwo_exercise_round::MODNAME, self::SUBMITTED_FILES_FILEAREA,
+                $this->record->id);
+        
+        $DB->delete_records(self::TABLE, array('id' => $this->record->id));
+    }
+    
     /**
      * Grade this submission (with machine-generated feedback).
      * @param int $servicePoints points from the exercise service
