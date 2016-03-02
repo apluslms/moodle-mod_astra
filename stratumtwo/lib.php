@@ -422,7 +422,10 @@ function stratumtwo_update_grades(stdClass $stratumtwo, $userid = 0, $nullifnone
  * @return array of [(string)filearea] => (string)description
  */
 function stratumtwo_get_file_areas($course, $cm, $context) {
-    return array(); //TODO
+    return array(
+        \mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA =>
+            get_string('submittedfilesareadescription', mod_stratumtwo_exercise_round::MODNAME),
+    );
 }
 
 /**
@@ -443,7 +446,38 @@ function stratumtwo_get_file_areas($course, $cm, $context) {
  * @return file_info instance or null if not found
  */
 function stratumtwo_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
-    return null;
+    global $CFG, $DB, $USER;
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return null;
+    }
+    // Make sure the filearea is one of those used by the plugin.
+    if ($filearea !== \mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA) {
+        return null;
+    }
+    // Check the relevant capabilities - these may vary depending on the filearea being accessed.
+    if (!has_capability('mod/stratumtwo:view', $context)) {
+        return null;
+    }
+    // itemid is the ID of the submission which the file was submitted to
+    $submissionRecord = $DB->get_record(mod_stratumtwo_submission::TABLE, array('id' => $itemid), '*', IGNORE_MISSING);
+    if ($submissionRecord === false) {
+        return null;
+    }
+    // check that the user may view the file
+    if ($submissionRecord->submitter != $USER->id && !has_capability('mod/stratumtwo:viewallsubmissions', $context)) {
+        return null;
+    }
+    
+    // Retrieve the file from the Files API.
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, mod_stratumtwo_exercise_round::MODNAME, $filearea, $itemid, $filepath, $filename);
+    if (!$file) {
+        return null; // The file does not exist.
+    }
+    
+    $urlbase = $CFG->wwwroot.'/pluginfile.php'; // standard Moodle script for serving files
+    
+    return new file_info_stored($browser, $context, $file, $urlbase, $filearea, $itemid, true, true, false);
 }
 
 /**
@@ -461,15 +495,56 @@ function stratumtwo_get_file_info($browser, $areas, $course, $cm, $context, $fil
  * @param array $options additional options affecting the file serving
  */
 function stratumtwo_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options=array()) {
-    global $DB, $CFG; //TODO
-
+    global $DB, $USER;
+    // Check the contextlevel is as expected - if your plugin is a block, this becomes CONTEXT_BLOCK, etc.
     if ($context->contextlevel != CONTEXT_MODULE) {
-        send_file_not_found();
+        return false;
     }
-
+    
+    // Make sure the filearea is one of those used by the plugin.
+    if ($filearea !== \mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA) {
+        return false;
+    }
+    
+    // Make sure the user is logged in and has access to the module (plugins that are not course modules should leave out the 'cm' part).
     require_login($course, true, $cm);
-
-    send_file_not_found();
+    
+    // Check the relevant capabilities - these may vary depending on the filearea being accessed.
+    if (!has_capability('mod/stratumtwo:view', $context)) {
+        return false;
+    }
+    
+    // Leave this line out if you set the itemid to null in moodle_url::make_pluginfile_url (set $itemid to 0 instead).
+    $itemid = (int) array_shift($args); // The first item in the $args array.
+    
+    // Use the itemid to retrieve any relevant data records and perform any security checks to see if the
+    // user really does have access to the file in question.
+    // itemid is the ID of the submission which the file was submitted to
+    $submissionRecord = $DB->get_record(mod_stratumtwo_submission::TABLE, array('id' => $itemid), '*', IGNORE_MISSING);
+    if ($submissionRecord === false) {
+        return false;
+    }
+    if ($submissionRecord->submitter != $USER->id && !has_capability('mod/stratumtwo:viewallsubmissions', $context)) {
+        return false;
+    }
+    
+    // Extract the filename / filepath from the $args array.
+    $filename = array_pop($args); // The last item in the $args array.
+    if (!$args) {
+        $filepath = '/'; // $args is empty => the path is '/'
+    } else {
+        $filepath = '/'.implode('/', $args).'/'; // $args contains elements of the filepath
+    }
+    
+    // Retrieve the file from the Files API.
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, mod_stratumtwo_exercise_round::MODNAME, $filearea, $itemid, $filepath, $filename);
+    if (!$file) {
+        return false; // The file does not exist.
+    }
+    
+    // We can now send the file back to the browser
+    send_stored_file($file, 0, 0, $forcedownload, $options);
 }
 
 /* Navigation API */

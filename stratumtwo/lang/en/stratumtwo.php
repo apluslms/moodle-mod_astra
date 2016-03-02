@@ -88,6 +88,9 @@ $string['forstafforiginal'] = 'For staff: original';
 $string['includeslatepenalty'] = 'Includes late penalty';
 $string['submitters'] = 'Submitters';
 
+// plugin file area descriptions
+$string['submittedfilesareadescription'] = 'Submitted files in exercises with file uploads';
+
 // Errors
 $string['error'] = 'Error';
 $string['negativeerror'] = 'This value can not be negative.';
@@ -97,6 +100,7 @@ $string['zerooneerror'] = 'This value must be between zero and one.';
 $string['mustbesetwithlate'] = 'This field must be set when late submissions are enabled.';
 $string['serviceconnectionfailed'] = 'Connecting to the exercise service failed!';
 $string['submissionfailed'] = 'Your new submission could not be stored in the server!';
+$string['uploadtoservicefailed'] = 'Your submission was received but it could not be sent to the exercise service for grading!';
 
 /*
 $string['stratumfieldset'] = 'Stratum assignment settings';

@@ -436,19 +436,48 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
      * Upload the submission to the exercise service for grading and store the results
      * if the submission is graded synchronously.
      * @param \mod_stratumtwo_submission $submission
+     * @param bool $noPenalties
+     * @param array $files submitted files. Associative array of stdClass objects that have fields
+     * filename (original base name), filepath (full file path in Moodle, e.g. under /tmp)
+     * and mimetype (e.g. "text/plain"). The array keys are the keys used in HTTP POST data.
+     * If $files is null, this method reads the submission files from the database and
+     * adds them to the upload automatically.
+     * @param bool $deleteFiles if true and $files is a non-empty array, the files are
+     * deleted here from the file system
      * @throws mod_stratumtwo\protocol\remote_page_exception if there are errors
      * in connecting to the server
-     * @param bool $noPenalties
+     * @throws Exception if there are errors in handling the files
      */
-    public function uploadSubmissionToService(\mod_stratumtwo_submission $submission, $noPenalties = false) {
+    public function uploadSubmissionToService(\mod_stratumtwo_submission $submission, $noPenalties = false,
+            array $files = null, $deleteFiles = false) {
         $sbmsData = $submission->getSubmissionData();
         if ($sbmsData !== null)
             $sbmsData = (array) $sbmsData;
         
-        $remotePage = new \mod_stratumtwo\protocol\remote_page(
-                $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncGradeSubmission($submission)),
-                true, $sbmsData, null); //TODO files
+        if (is_null($files)) {
+            $deleteFiles = true;
+            $files = $submission->prepareSubmissionFilesForUpload();
+        }
+        
+        try {
+            $remotePage = new \mod_stratumtwo\protocol\remote_page(
+                    $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncGradeSubmission($submission)),
+                    true, $sbmsData, $files);
+        } catch (\Exception $e) {
+            if ($deleteFiles) {
+                foreach ($files as $f) {
+                    @unlink($f->filepath);
+                }
+            }
+            throw $e;
+        } // PHP 5.4 has no finally block
         
         $remotePage->loadFeedbackPage($this, $submission, $noPenalties);
+        
+        if ($deleteFiles) {
+            foreach ($files as $f) {
+                @unlink($f->filepath);
+            }
+        }
     }
 }

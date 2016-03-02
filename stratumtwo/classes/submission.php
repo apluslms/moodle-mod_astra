@@ -7,6 +7,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     const TABLE = 'stratumtwo_submissions'; // database table name
+    const SUBMITTED_FILES_FILEAREA = 'submittedfile'; // file area for Moodle file API
     const STATUS_INITIALIZED = 0; // not sent to the exercise service
     const STATUS_WAITING     = 1; // sent for grading
     const STATUS_READY       = 2; // graded
@@ -185,6 +186,96 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         
         $id = $DB->insert_record(self::TABLE, $row);
         return $id; // 0 if failed
+    }
+    
+    /**
+     * Add a file (defined by $filePath, for example the file could first exist in /tmp/)
+     * to this submission, i.e.,
+     * create a new file in the Moodle file storage (for permanent storage).
+     * @param string $fileName base name of the file without path (filename
+     * that the user should see).
+     * @param string $fileKey key to the file, e.g., name attribute in HTML form input.
+     * The key should be unique within the files of this submission.
+     * @param string $filePath full path to the file in the file system. This is
+     * the file that is added to the submission.
+     */
+    public function addSubmittedFile($fileName, $fileKey, $filePath) {
+        if (empty($fileName) || empty($fileKey)) {
+            return; // sanity check, Moodle API checks that the file ($filePath) exists
+        }
+        $fs = \get_file_storage();
+        // Prepare file record object
+        $fileinfo = array(
+                'contextid' => \context_module::instance($this->getExercise()->getExerciseRound()->getCourseModule()->id)->id,
+                'component' => \mod_stratumtwo_exercise_round::MODNAME,
+                'filearea'  => self::SUBMITTED_FILES_FILEAREA,
+                'itemid'    => $this->getId(),
+                'filepath'  => "/$fileKey/", // any path beginning and ending in /
+                'filename'  => $fileName, // base name without path
+        );
+        
+        // Create Moodle file from a file in the file system
+        $fs->create_file_from_pathname($fileinfo, $filePath);
+    }
+    
+    /**
+     * Return an array of the files in this submission.
+     * @return stored_file[] array of stored_files indexed by path name hash
+     */
+    public function getSubmittedFiles() {
+        $fs = \get_file_storage();
+        $files = $fs->get_area_files(\context_module::instance($this->getExercise()->getExerciseRound()->getCourseModule()->id)->id,
+                \mod_stratumtwo_exercise_round::MODNAME,
+                self::SUBMITTED_FILES_FILEAREA,
+                $this->getId(), 'filepath, filename', false);
+        return $files;
+    }
+    
+    /**
+     * Copy the submitted files of this submission to a temporary directory and
+     * return the full file paths to those files (with original file base names and
+     * mime types).
+     * @throws \Exception if there are errors in file operations
+     * @return stdClass[] array of objects, each has fields filename, filepath and
+     * mimetype
+     */
+    public function prepareSubmissionFilesForUpload() {
+        $stored_files = $this->getSubmittedFiles();
+        $files = array();
+        $error = null;
+        foreach ($stored_files as $stored_file) {
+            $obj = new stdClass();
+            $obj->filename = $stored_file->get_filename(); // original name that user sees
+            $obj->mimetype = $stored_file->get_mimetype();
+    
+            // to obtain a full path to the file in the file system, the Moodle
+            // stored file has to be first copied to a temp directory
+            $tempPath = $stored_file->copy_content_to_temp();
+            if (empty($tempPath)) {
+                $error = 'Copying Moodle stored file to a temporary path failed';
+                break;
+            }
+            $obj->filepath = $tempPath;
+    
+            $key = substr($stored_file->get_filepath(), 1, -1); // remove the slashes / from the start and end
+            if (empty($key)) {
+                // this should not happen, since the path is always defined in method addSubmittedFile
+                $error = 'No POST data key for file '. $obj->filename;
+                break;
+            }
+            
+            $files[$key] = $obj;
+        }
+        
+        if (isset($error)) {
+            // remove temp files created thus far
+            foreach ($files as $f) {
+                @unlink($f->filepath);
+            }
+            throw new \Exception($error);
+        }
+        
+        return $files;
     }
     
     public static function submissionDataToString(array $submissionData) {
@@ -399,8 +490,8 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         }
         
         if ($includeFeedbackAndFiles) {
-            $ctx->has_files = false; //TODO
             $ctx->files = $this->getFilesTemplateContext();
+            $ctx->has_files = !empty($ctx->files);
             $ctx->feedback = $this->getFeedback();
             $ctx->assistant_feedback = $this->getAssistantFeedback();
         }
@@ -410,17 +501,18 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     
     public function getFilesTemplateContext() {
         $files = array();
-        //TODO
-        /*
-        foreach ($all_submission_files as $file) {
+        $moodleFiles = $this->getSubmittedFiles();
+        foreach ($moodleFiles as $file) {
             $fileCtx = new stdClass();
-            $fileCtx->absolute_url = '';
-            $fileCtx->is_passed = false; // true if binary file (image, pdf)
-            $fileCtx->filename = ''; // basename, not full path
-            $fileCtx->size = 0; // int, in bytes
+            $url = \moodle_url::make_pluginfile_url($file->get_contextid(),
+                    \mod_stratumtwo_exercise_round::MODNAME, self::SUBMITTED_FILES_FILEAREA,
+                    $file->get_itemid(), $file->get_filepath(), $file->get_filename()); //forcedownload true/false
+            $fileCtx->absolute_url = $url->out();
+            $fileCtx->is_passed = false; // TODO true if binary file (image, pdf)
+            $fileCtx->filename = $file->get_filename(); // basename, not full path
+            $fileCtx->size = $file->get_filesize(); // int, in bytes
             $files[] = $fileCtx;
         }
-        */
         return $files;
     }
 }

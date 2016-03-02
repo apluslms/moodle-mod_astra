@@ -23,8 +23,9 @@ class remote_page {
      * @param string $url URL of the remote page
      * @param bool $post true to set request method to HTTP POST, otherwise GET is used
      * @param array $data POST payload key-value pairs
-     * @param array $files array or files to upload. Keys are used as POST data keys and
-     * values should be full filepaths to the files.
+     * @param array $files array of files to upload. Keys are used as POST data keys and
+     * values are objects with fields filename (original base name), filepath (full path)
+     * and mimetype.
      * @throws \mod_stratumtwo\protocol\remote_page_exception if there are errors
      * in connecting to the server
      */
@@ -41,7 +42,7 @@ class remote_page {
      * @param bool $post true to set request method to HTTP POST, otherwise GET is used
      * @param array $data POST payload key-value pairs
      * @param array $files array or files to upload. Keys are used as POST data keys and
-     * values should be full filepaths to the files.
+     * values are objects with fields filename, filepath and mimetype.
      * @param string $api_key API key for authorization, null if not used
      * @throws mod_stratumtwo\protocol\remote_page_exception if there are errors
      * in connecting to the server
@@ -79,13 +80,14 @@ class remote_page {
                 if (empty($data)) {
                     $postData = array();
                 }
-                foreach ($files as $name => $filepath) {
+                foreach ($files as $name => $fileobj) {
                     if (function_exists('curl_file_create')) {
-                        $postData[$name] = curl_file_create($filepath); //TODO MIME type and original filename
+                        $postData[$name] = curl_file_create($fileobj->filepath,
+                                $fileobj->mimetype, $fileobj->filename);
                     } else {
                         // older PHP than 5.5.0
                         // if any POST data value starts with @-sign, it is assumed to be a filepath
-                        $postData[$name] = '@'. $filepath;
+                        $postData[$name] = "@{$fileobj->filepath};type={$fileobj->mimetype}";
                     }
                 }
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
@@ -98,6 +100,7 @@ class remote_page {
             // curl failed
             $error = curl_error($ch);
             curl_close($ch);
+            //TODO log event
             throw new \mod_stratumtwo\protocol\remote_page_exception($error);
         } else {
             // check HTTP status code
