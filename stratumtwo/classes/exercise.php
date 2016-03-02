@@ -427,9 +427,36 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
      * @return stdClass with field content
      */
     public function loadPage($userid) {
-        $remotePage = new \mod_stratumtwo\protocol\remote_page(
-                $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncNewSubmission($this, $userid)));
-        return $remotePage->loadExercisePage($this);
+        $serviceUrl = $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncNewSubmission($this, $userid));
+        try {
+            $remotePage = new \mod_stratumtwo\protocol\remote_page($serviceUrl);
+            return $remotePage->loadExercisePage($this);
+        } catch (\mod_stratumtwo\protocol\stratum_connection_exception $e) {
+            // error logging
+            $event = \mod_stratumtwo\event\stratum_connection_failed::create(array(
+                    'context' => context_module::instance($this->getExerciseRound()->getCourseModule()->id),
+                    'other' => array(
+                            'error' => $e->getMessage(),
+                            'url' => $serviceUrl,
+                            'objtable' => self::TABLE,
+                            'objid' => $this->getId(),
+                    )
+            ));
+            $event->trigger();
+            throw $e;
+        } catch (\mod_stratumtwo\protocol\stratum_server_exception $e) {
+            $event = \mod_stratumtwo\event\stratum_server_failed::create(array(
+                    'context' => context_module::instance($this->getExerciseRound()->getCourseModule()->id),
+                    'other' => array(
+                            'error' => $e->getMessage(),
+                            'url' => $serviceUrl,
+                            'objtable' => self::TABLE,
+                            'objid' => $this->getId(),
+                    )
+            ));
+            $event->trigger();
+            throw $e;
+        }
     }
     
     /**
@@ -459,15 +486,39 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
             $files = $submission->prepareSubmissionFilesForUpload();
         }
         
+        $serviceUrl = $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncGradeSubmission($submission));
         try {
             $remotePage = new \mod_stratumtwo\protocol\remote_page(
-                    $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncGradeSubmission($submission)),
-                    true, $sbmsData, $files);
-        } catch (\Exception $e) {
+                    $serviceUrl, true, $sbmsData, $files);
+        } catch (\mod_stratumtwo\protocol\remote_page_exception $e) {
             if ($deleteFiles) {
                 foreach ($files as $f) {
                     @unlink($f->filepath);
                 }
+            }
+            // error logging
+            if ($e instanceof \mod_stratumtwo\protocol\stratum_connection_exception) {
+                $event = \mod_stratumtwo\event\stratum_connection_failed::create(array(
+                        'context' => context_module::instance($this->getExerciseRound()->getCourseModule()->id),
+                        'other' => array(
+                                'error' => $e->getMessage(),
+                                'url' => $serviceUrl,
+                                'objtable' => \mod_stratumtwo_submission::TABLE,
+                                'objid' => $submission->getId(),
+                        )
+                ));
+                $event->trigger();
+            } else if ($e instanceof \mod_stratumtwo\protocol\stratum_server_exception) {
+                $event = \mod_stratumtwo\event\stratum_server_failed::create(array(
+                        'context' => context_module::instance($this->getExerciseRound()->getCourseModule()->id),
+                        'other' => array(
+                                'error' => $e->getMessage(),
+                                'url' => $serviceUrl,
+                                'objtable' => \mod_stratumtwo_submission::TABLE,
+                                'objid' => $submission->getId(),
+                        )
+                ));
+                $event->trigger();
             }
             throw $e;
         } // PHP 5.4 has no finally block

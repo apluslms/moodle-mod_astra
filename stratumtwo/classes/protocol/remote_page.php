@@ -44,8 +44,10 @@ class remote_page {
      * @param array $files array or files to upload. Keys are used as POST data keys and
      * values are objects with fields filename, filepath and mimetype.
      * @param string $api_key API key for authorization, null if not used
-     * @throws mod_stratumtwo\protocol\remote_page_exception if there are errors
+     * @throws \mod_stratumtwo\protocol\stratum_connection_exception if there are errors
      * in connecting to the server
+     * @throws \mod_stratumtwo\protocol\stratum_server_exception if there is an error
+     * in the exercise service
      * @return string the response
      */
     protected function request($url, $post = false, $data = null, $files = null, $api_key = null) {
@@ -100,8 +102,7 @@ class remote_page {
             // curl failed
             $error = curl_error($ch);
             curl_close($ch);
-            //TODO log event
-            throw new \mod_stratumtwo\protocol\remote_page_exception($error);
+            throw new \mod_stratumtwo\protocol\stratum_connection_exception($error);
         } else {
             // check HTTP status code
             $resStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -109,7 +110,7 @@ class remote_page {
             if ($resStatus != 200) {
                 // server returned some error message
                 $error = "curl HTTP response status: $resStatus";
-                throw new \mod_stratumtwo\protocol\remote_page_exception($error);
+                throw new \mod_stratumtwo\protocol\stratum_server_exception($error);
             }
         }
         return $response; // response as string
