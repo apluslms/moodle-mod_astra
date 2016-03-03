@@ -509,6 +509,18 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         return $ctx;
     }
     
+    /**
+     * Return true if a file of the given MIME type should be passed to the user
+     * (i.e., it is a binary file, e.g., image, pdf).  
+     * @param string $mimetype
+     */
+    public static function isFilePassed($mimetype) {
+        // binary (submission) file types, which are not displayed in a dialog
+        $FILE_PASS_MIME_TYPES = array( 'image/jpeg', 'image/png', 'image/gif', 'application/pdf' );
+        // only PHP 5.6+ allows constant expressions in the definitions of class constants
+        return in_array($mimetype, $FILE_PASS_MIME_TYPES);
+    }
+    
     public function getFilesTemplateContext() {
         $files = array();
         $moodleFiles = $this->getSubmittedFiles();
@@ -516,9 +528,13 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
             $fileCtx = new stdClass();
             $url = \moodle_url::make_pluginfile_url($file->get_contextid(),
                     \mod_stratumtwo_exercise_round::MODNAME, self::SUBMITTED_FILES_FILEAREA,
-                    $file->get_itemid(), $file->get_filepath(), $file->get_filename()); //forcedownload true/false
+                    $file->get_itemid(), $file->get_filepath(), $file->get_filename(), false);
+            $url_forcedl = \moodle_url::make_pluginfile_url($file->get_contextid(),
+                    \mod_stratumtwo_exercise_round::MODNAME, self::SUBMITTED_FILES_FILEAREA,
+                    $file->get_itemid(), $file->get_filepath(), $file->get_filename(), true);
             $fileCtx->absolute_url = $url->out();
-            $fileCtx->is_passed = false; // TODO true if binary file (image, pdf)
+            $fileCtx->absolute_url_forcedl = $url_forcedl->out();
+            $fileCtx->is_passed = self::isFilePassed($file->get_mimetype());
             $fileCtx->filename = $file->get_filename(); // basename, not full path
             $fileCtx->size = $file->get_filesize(); // int, in bytes
             $files[] = $fileCtx;

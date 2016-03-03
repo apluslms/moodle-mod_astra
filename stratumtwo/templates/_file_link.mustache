@@ -5,6 +5,8 @@ Template for one (submission) file link.
 
 Context variables:
 * absolute_url (string)
+* absolute_url_forcedl (string) absolute URL that forces the client to download the file
+        (will not be displayed in browser)
 * is_passed (bool) true if the file is binary (image, pdf)
 * filename (base name, not full path)
 * size (int, in bytes)
@@ -12,7 +14,7 @@ Context variables:
 }}
 
 <a href="{{{ absolute_url }}}"{{^ is_passed }} class="file-modal"{{/ is_passed }} target="_blank">{{ filename }}</a>
-<a href="{{{ absolute_url }}}?download=yes" class="btn btn-default btn-xs" title="{{#str}} download, mod_stratumtwo {{/str}}">
+<a href="{{{ absolute_url_forcedl }}}" class="btn btn-default btn-xs" title="{{#str}} download, mod_stratumtwo {{/str}}">
     <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>
     {{# fileSizeFormatter }}{{ size }}{{/ fileSizeFormatter }}
 </a>
