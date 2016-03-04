@@ -9,6 +9,7 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(__FILE__).'/locallib.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
 $n  = optional_param('s', 0, PARAM_INT);  // ... stratum instance ID
@@ -46,14 +47,8 @@ $event->add_record_snapshot('course', $PAGE->course);
 $event->add_record_snapshot($PAGE->cm->modname, $stratumtwo);
 $event->trigger();
 
-//TODO require Bootstrap CSS and jQuery
-//$PAGE->requires->js(new moodle_url('https://code.jquery.com/jquery-1.12.0.js')); // Moodle has 1.11.3 bundled
-$PAGE->requires->css(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/assets/bootstrap/css/bootstrap.min.css'));
-$PAGE->requires->js(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/assets/bootstrap/js/bootstrap.min.js'));
-$PAGE->requires->css(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/assets/css/main.css'));
-// highlight.js for source code syntax highlighting
-//$PAGE->requires->css(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/github.min.css'));
-//$PAGE->requires->js(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js'));
+// add CSS and JS
+stratumtwo_page_require($PAGE);
 
 $PAGE->set_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/view.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($stratumtwo->name));

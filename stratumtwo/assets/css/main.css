@@ -241,3 +241,8 @@ table.results-table .category-row {
 h3.panel-title {
     line-height: 1.1; /* Moodle makes h3 too high for Bootstrap panel headings */
 }
+/* Moodle core CSS conflicts with Bootstrap modal dialogs */
+.modal {
+    width: unset;
+    margin-left: unset;
+}

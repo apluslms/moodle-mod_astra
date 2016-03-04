@@ -9,6 +9,7 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(__FILE__).'/locallib.php');
 
 $id = required_param('id', PARAM_INT); // submission ID
 
@@ -40,14 +41,8 @@ if ($USER->id != $submission->getSubmitter()->id &&
 }
 
 // Print the page header.
-//TODO require Bootstrap CSS and jQuery
-//$PAGE->requires->js(new moodle_url('https://code.jquery.com/jquery-1.12.0.js')); // Moodle has 1.11.3 bundled
-$PAGE->requires->css(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/assets/bootstrap/css/bootstrap.min.css'));
-$PAGE->requires->js(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/assets/bootstrap/js/bootstrap.min.js'));
-$PAGE->requires->css(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/assets/css/main.css'));
-// highlight.js for source code syntax highlighting
-//$PAGE->requires->css(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/github.min.css'));
-//$PAGE->requires->js(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js'));
+// add CSS and JS
+stratumtwo_page_require($PAGE);
 
 // add Moodle navbar item for the exercise and the submission, round is already there
 $exercise_page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/exercise.php',

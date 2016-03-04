@@ -1,9 +1,4 @@
 /**
- * A+ file modal as an AMD module for Moodle.
- * @module mod_stratumtwo/aplus_filemodal
- */
-define(['jquery', 'mod_stratumtwo/highlight', 'mod_stratumtwo/twbootstrap'], function(jQuery, hljs) {
-/**
  * Open submitted file in a modal.
  * Source: A+ (a-plus/assets/js/aplus.js)
  */
@@ -59,5 +54,10 @@ define(['jquery', 'mod_stratumtwo/highlight', 'mod_stratumtwo/twbootstrap'], fun
 	};
 })(jQuery, window, document);
 
-return {}; // for AMD, no names are exported to the outside
-}); // end define
+$(function() {
+  /* enable Bootstrap tooltips */
+  $('[data-toggle="tooltip"]').tooltip();
+
+  /* Enable file modal */
+  $('.file-modal').aplusFileModal();
+});

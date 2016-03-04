@@ -2,6 +2,7 @@
 stratumtwo/classes/output/test_page.php
 stratumtwo/templates/test_page.mustache
 stratumtwo/templates/whole_test_page.mustache
+stratumtwo/testpage.php
 
 # script for copying files to logic-dev
 copy.sh
