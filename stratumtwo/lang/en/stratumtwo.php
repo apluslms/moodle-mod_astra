@@ -101,6 +101,7 @@ $string['mustbesetwithlate'] = 'This field must be set when late submissions are
 $string['serviceconnectionfailed'] = 'Connecting to the exercise service failed!';
 $string['submissionfailed'] = 'Your new submission could not be stored in the server!';
 $string['uploadtoservicefailed'] = 'Your submission was received but it could not be sent to the exercise service for grading!';
+$string['youmaynotsubmit'] = 'You may not submit new solutions to this exercise any more!';
 
 /*
 $string['stratumfieldset'] = 'Stratum assignment settings';

@@ -34,56 +34,61 @@ if ((!$cm->visible || $exround->isHidden() || $exercise->isHidden()) &&
 $errorMsg = null;
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // user submitted a new solution, create a database record
-    $sbmsId = mod_stratumtwo_submission::createNewSubmission($exercise, $USER->id, $_POST);
-    if ($sbmsId == 0) {
-        // error: the new submission was not stored in the database
-        $errorMsg = get_string('submissionfailed', mod_stratumtwo_exercise_round::MODNAME);
-    }
-    
-    $event = \mod_stratumtwo\event\solution_submitted::create(array(
-            'context' => $context,
-            'objectid' => $sbmsId,
-    ));
-    $event->trigger();
-    
-    if ($sbmsId != 0) {
-        $sbms = mod_stratumtwo_submission::createFromId($sbmsId);
-        $tmpFiles = array();
-        // add files
-        try {
-            foreach ($_FILES as $formInputName => $farray) {
-                if (isset($farray['tmp_name'])) {
-                    // the user uploaded a file, i.e., the form input was not left blank
-                    // sanitize original file name
-                    $fobj = new stdClass();
-                    $fobj->filename = mod_stratumtwo_submission::safeFileName($farray['name']);
-                    $fobj->filepath = $farray['tmp_name'];
-                    $fobj->mimetype = $farray['type'];
-                    
-                    $sbms->addSubmittedFile($fobj->filename, $formInputName, $fobj->filepath);
-                    
-                    $tmpFiles[$formInputName] = $fobj;
+    // check if submission is allowed (deadline, submit limit)
+    if ($exercise->isSubmissionAllowed($USER)) {
+        $sbmsId = mod_stratumtwo_submission::createNewSubmission($exercise, $USER->id, $_POST);
+        if ($sbmsId == 0) {
+            // error: the new submission was not stored in the database
+            $errorMsg = get_string('submissionfailed', mod_stratumtwo_exercise_round::MODNAME);
+        }
+        
+        $event = \mod_stratumtwo\event\solution_submitted::create(array(
+                'context' => $context,
+                'objectid' => $sbmsId,
+        ));
+        $event->trigger();
+        
+        if ($sbmsId != 0) {
+            $sbms = mod_stratumtwo_submission::createFromId($sbmsId);
+            $tmpFiles = array();
+            // add files
+            try {
+                foreach ($_FILES as $formInputName => $farray) {
+                    if (isset($farray['tmp_name'])) {
+                        // the user uploaded a file, i.e., the form input was not left blank
+                        // sanitize original file name
+                        $fobj = new stdClass();
+                        $fobj->filename = mod_stratumtwo_submission::safeFileName($farray['name']);
+                        $fobj->filepath = $farray['tmp_name'];
+                        $fobj->mimetype = $farray['type'];
+                        
+                        $sbms->addSubmittedFile($fobj->filename, $formInputName, $fobj->filepath);
+                        
+                        $tmpFiles[$formInputName] = $fobj;
+                    }
                 }
+                
+                // send the new submission to the exercise service
+                $exercise->uploadSubmissionToService($sbms, false, $tmpFiles, false);
+                
+            } catch (Exception $e) {
+                $errorMsg = get_string('uploadtoservicefailed', mod_stratumtwo_exercise_round::MODNAME);
             }
             
-            // send the new submission to the exercise service
-            $exercise->uploadSubmissionToService($sbms, false, $tmpFiles, false);
+            // delete temp files
+            foreach ($tmpFiles as $f) {
+                unlink($f->filepath);
+            }
             
-        } catch (Exception $e) {
-            $errorMsg = get_string('uploadtoservicefailed', mod_stratumtwo_exercise_round::MODNAME);
+            if (empty($errorMsg)) {
+                // Redirect the client to the submission page: 
+                // there must be no output before this (echo HTML, whitespace outside php tags)
+                header('Location: '. \mod_stratumtwo\urls\urls::submission($sbms));
+                exit(0);
+            }
         }
-        
-        // delete temp files
-        foreach ($tmpFiles as $f) {
-            unlink($f->filepath);
-        }
-        
-        if (empty($errorMsg)) {
-            // Redirect the client to the submission page: 
-            // there must be no output before this (echo HTML, whitespace outside php tags)
-            header('Location: '. \mod_stratumtwo\urls\urls::submission($sbms));
-            exit(0);
-        }
+    } else {
+        $errorMsg = get_string('youmaynotsubmit', mod_stratumtwo_exercise_round::MODNAME);
     }
 }
 

@@ -135,6 +135,13 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         return $this->getOpeningTime() <= $when && $when <= $this->getClosingTime();
     }
     
+    public function isLateSubmissionOpen($when = null) {
+        if ($when === null)
+            $when = time();
+        return $this->isLateSubmissionAllowed() && 
+            $this->getClosingTime() <= $when && $when <= $this->getLateSubmissionDeadline();
+    }
+    
     /**
      * Return true if this exercise round has opened at or before timestamp $when.
      * @param int|null $when time to check, null for current time

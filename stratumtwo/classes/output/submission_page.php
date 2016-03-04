@@ -34,7 +34,7 @@ class submission_page implements \renderable, \templatable {
         $data->is_editing_teacher = \has_capability('mod/stratumtwo:addinstance', $ctx);
         $data->is_manual_grader = \has_capability('mod/stratumtwo:grademanually', $ctx);
         
-        $data->exercise = $this->exercise->getTemplateContext();
+        $data->exercise = $this->exercise->getTemplateContext($this->user);
         $data->submissions = $this->exercise->getSubmissionsTemplateContext($this->user->id);
         $data->submission = $this->submission->getTemplateContext(true);
         

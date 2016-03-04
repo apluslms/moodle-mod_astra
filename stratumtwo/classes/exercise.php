@@ -81,10 +81,6 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return $this->record->maxpoints;
     }
     
-    public function getMaxSubmissionFileSize() {
-        return $this->record->sbmsmaxbytes;
-    }
-    
     public function getGradebookItemNumber() {
         return $this->record->gradeitemnumber;
     }
@@ -390,7 +386,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return $ctx;
     }
     
-    public function getTemplateContext() {
+    public function getTemplateContext(stdClass $user) {
         $ctx = new stdClass();
         $ctx->url = \mod_stratumtwo\urls\urls::exercise($this);
         $ctx->name = $this->getName();
@@ -399,7 +395,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         
         $ctx->max_points = $this->getMaxPoints();
         $ctx->max_submissions = $this->getMaxSubmissions();
-        $ctx->max_submissions_for_user = $this->getMaxSubmissions(); //TODO deviations
+        $ctx->max_submissions_for_user = $this->getMaxSubmissionsForStudent($user);
         $ctx->points_to_pass = $this->getPointsToPass();
         $ctx->total_submitter_count = $this->getTotalSubmitterCount();
         $ctx->course_module = $this->getExerciseRound()->getTemplateContext();
@@ -535,5 +531,48 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
                 @unlink($f->filepath);
             }
         }
+    }
+    
+    public function getMaxSubmissionsForStudent(stdClass $user) {
+        // TODO deviations
+        return $this->getMaxSubmissions();
+    }
+    
+    public function studentHasSubmissionsLeft(stdClass $user) {
+        if ($this->getMaxSubmissions() == 0)
+            return true;
+        return $this->getSubmissionCountForStudent($user->id) < $this->getMaxSubmissionsForStudent($user);
+    }
+    
+    public function studentHasAccess(stdClass $user, $when = null) {
+        // check deadlines
+        if ($when === null)
+            $when = time();
+        $exround = $this->getExerciseRound();
+        if ($exround->isOpen($when) || $exround->isLateSubmissionOpen($when))
+            return true;
+        if ($exround->hasStarted($when)) {
+            //TODO deviations
+            /*$deviation = $this->one_has_deadline_deviation(students)
+            if deviation and when <= deviation.get_new_deadline():
+                return True*/
+        }
+        return false;
+    }
+    
+    public function isSubmissionAllowed(stdClass $user) {
+        $context = context_module::instance($this->getExerciseRound()->getCourseModule()->id);
+        if (has_capability('mod/stratumtwo:addinstance', $context, $user) ||
+                has_capability('mod/stratumtwo:viewallsubmissions', $context, $user)) {
+            // allow always for teachers
+            return true;
+        }
+        if (!$this->studentHasAccess($user)) {
+            return false;
+        }
+        if (!$this->studentHasSubmissionsLeft($user)) {
+            return false;
+        }
+        return true;
     }
 }

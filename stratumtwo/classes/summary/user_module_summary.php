@@ -175,7 +175,7 @@ class user_module_summary {
             
                 // exercise context
                 $exSumCtx = array(
-                    'exercise' => $exSummary->getExercise()->getTemplateContext(),
+                    'exercise' => $exSummary->getExercise()->getTemplateContext($this->user),
                     'exercise_summary' => $exSummary->getTemplateContext(),
                 );
                 // append under the category context

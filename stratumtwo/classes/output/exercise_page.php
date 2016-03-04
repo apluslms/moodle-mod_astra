@@ -55,7 +55,7 @@ class exercise_page implements \renderable, \templatable {
             }
         }
         
-        $data->exercise = $this->exercise->getTemplateContext();
+        $data->exercise = $this->exercise->getTemplateContext($this->user);
         $data->submissions = $this->exercise->getSubmissionsTemplateContext($this->user->id);
         $data->submission = false;
         
