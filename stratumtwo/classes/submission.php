@@ -13,6 +13,8 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     const STATUS_READY       = 2; // graded
     const STATUS_ERROR       = 3;
     
+    const SAFE_FILENAME_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._-0123456789';
+    
     // cache of references to other records, used in corresponding getter methods
     protected $exercise = null;
     protected $submitter = null;
@@ -186,6 +188,24 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         
         $id = $DB->insert_record(self::TABLE, $row);
         return $id; // 0 if failed
+    }
+    
+    public static function safeFileName($filename) {
+        $safechars = str_split(self::SAFE_FILENAME_CHARS);
+        $safename = '';
+        $len = strlen($filename);
+        if ($len > 80) $len = 80;
+        for ($i = 0; $i < $len; $i++) {
+            if (in_array($filename[$i], $safechars)) {
+                $safename .=  $filename[$i];
+            }
+        }
+        if (empty($safename))
+            return 'file';
+        if ($safename[0] == '-') { // do not allow starting -
+            return '_'. (substr($safename, 1) ?: '');
+        }
+        return $safename;
     }
     
     /**

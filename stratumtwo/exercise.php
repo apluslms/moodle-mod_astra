@@ -52,16 +52,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // add files
         try {
             foreach ($_FILES as $formInputName => $farray) {
-                // TODO max file size
                 if (isset($farray['tmp_name'])) {
                     // the user uploaded a file, i.e., the form input was not left blank
-                    //TODO sanitize original file name ?? (from user's machine, remove non-ascii chars and dots etc.)
-                    $sbms->addSubmittedFile($farray['name'], $formInputName, $farray['tmp_name']);
-                    
+                    // sanitize original file name
                     $fobj = new stdClass();
-                    $fobj->filename = $farray['name'];
+                    $fobj->filename = mod_stratumtwo_submission::safeFileName($farray['name']);
                     $fobj->filepath = $farray['tmp_name'];
                     $fobj->mimetype = $farray['type'];
+                    
+                    $sbms->addSubmittedFile($fobj->filename, $formInputName, $fobj->filepath);
+                    
                     $tmpFiles[$formInputName] = $fobj;
                 }
             }
