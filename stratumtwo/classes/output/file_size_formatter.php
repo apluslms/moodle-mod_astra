@@ -43,6 +43,10 @@ class file_size_formatter {
         if ($factor > 5) {
             $factor = 5; // $sz index out of bounds
         }
-        return \sprintf("%.{$decimals}f ", $bytes / \pow(1024, $factor)) . $sz[$factor] .'B';
+        $suffix = '';
+        if ($factor > 0) {
+            $suffix = 'B'; // B after the kilo/mega/...
+        }
+        return \sprintf("%.{$decimals}f ", $bytes / \pow(1024, $factor)) . $sz[$factor] . $suffix;
     }
 }
