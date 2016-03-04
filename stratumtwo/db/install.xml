@@ -85,8 +85,6 @@
                COMMENT="Min points to pass the exercise."/>
         <FIELD NAME="maxpoints" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="100" SEQUENCE="false" 
                COMMENT="Max points available in the exercise."/>
-        <FIELD NAME="sbmsmaxbytes" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
-               COMMENT="Max size of a submission file in bytes. Zero for no limit."/>
         <FIELD NAME="gradeitemnumber" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" 
                COMMENT="Moodle gradebook item number. 0 is reserved for the exercise round and each exercise needs a unique item number within the round."/>
       </FIELDS>
