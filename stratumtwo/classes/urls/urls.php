@@ -57,7 +57,7 @@ class urls {
         // URL for asynchronously creating a new graded submission
         $query = array(
                 'id' => $ex->getId(),
-                'hash' => 'xxx', //TODO sign with secret key
+                'hash' => $ex->getAsyncHash($userid),
                 'userid' => $userid,
         );
         return self::baseURL() .'/async/new_submission.php?'. \http_build_query($query, 'i_', '&');

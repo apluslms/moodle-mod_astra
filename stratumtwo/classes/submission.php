@@ -161,6 +161,10 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         $this->record->status = self::STATUS_ERROR;
     }
     
+    public function setFeedback($newFeedback) {
+        $this->record->feedback = $newFeedback;
+    }
+    
     /**
      * Create a new submission to an exercise.
      * @param mod_stratumtwo_exercise $ex
@@ -332,7 +336,7 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
      * @param int $servicePoints points from the exercise service
      * @param int $serviceMaxPoints max points used by the exercise service
      * @param string $feedback feedback to student in HTML
-     * @param string $gradingData extra data about grading (in JSON)
+     * @param array $gradingData associative array of extra data about grading
      * @param bool $noPenalties if true, no deadline penalties are used
      */
     public function grade($servicePoints, $serviceMaxPoints, $feedback, $gradingData = null, $noPenalties = false) {
@@ -340,7 +344,11 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         $this->record->feedback = $feedback;
         $this->record->gradingtime = time();
         $this->setPoints($servicePoints, $serviceMaxPoints);
-        $this->record->gradingdata = $gradingData;
+        if ($gradingData === null) {
+            $this->record->gradingdata = null;
+        } else {
+            $this->record->gradingdata = self::submissionDataToString($gradingData);
+        }
         
         $this->save();
     }

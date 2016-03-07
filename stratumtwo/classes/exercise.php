@@ -575,4 +575,17 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         }
         return true;
     }
+    
+    /**
+     * Generate a hash of this exercise for the user. The hash is based on
+     * a secret key.
+     * @param int $userid Moodle user ID of the user for whom the has is generated
+     * @return string
+     */
+    public function getAsyncHash($userid) {
+        require_once(dirname(dirname(__FILE__)) . '/stratum_settings.php');
+        
+        $identifier = "$userid." . $this->getId();
+        return \hash_hmac('sha256', $identifier, STRATUMTWO_SECRET_KEY);
+    }
 }
