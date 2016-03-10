@@ -21,7 +21,7 @@
         <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
                COMMENT="The maximum grade. Can be negative to indicate the use of a scale (scales not used in Stratum). It is called grade, not maxgrade or maxpoints due to Moodle compatibility."/>
         <FIELD NAME="remotekey" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" 
-               COMMENT="Unique module key in the Stratum server. (In Stratum course configuration, it is called 'key'.)"/>
+               COMMENT="Unique module key in the exercise service server. (In exercise service course configuration, it is called 'key'.)"/>
         <FIELD NAME="pointstopass" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Min points to pass the exercise round."/>
         <FIELD NAME="openingtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
                COMMENT="Submissions are not allowed before the opening time."/>
@@ -73,7 +73,7 @@
         <FIELD NAME="ordernum" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" 
                COMMENT="Order for listing the exercises under the round. Smaller comes first."/>
         <FIELD NAME="remotekey" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" 
-               COMMENT="Unique exercise key in the Stratum server. ('key' in Stratum configuration.)"/>
+               COMMENT="Unique exercise key in the exercise service server. ('key' in exercise service configuration.)"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name that is displayed to users."/>
         <FIELD NAME="serviceurl" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" 
                COMMENT="URL of the exercise service for this exercise."/>
@@ -149,6 +149,10 @@
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Moodle course ID"/>
         <FIELD NAME="apikey" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" 
                COMMENT="Secret API key needed to authorize the use of the Stratum server HTTP course API."/>
+        <FIELD NAME="configurl" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"
+               COMMENT="Configuration URL from which the course exercises configuration is downloaded for automatic setup."/>
+        <FIELD NAME="sectionnum" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"
+               COMMENT="Moodle course section number (0-N) which new activities are added to."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

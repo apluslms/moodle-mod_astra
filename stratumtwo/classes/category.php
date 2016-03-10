@@ -48,6 +48,10 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
         return $this->getStatus() === self::STATUS_HIDDEN;
     }
     
+    public function setHidden() {
+        $this->record->status = self::STATUS_HIDDEN;
+    }
+    
     /**
      * Return all exercises in this category.
      * @return mod_stratumtwo_exercise[]
@@ -62,6 +66,17 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
             $exercises[] = new mod_stratumtwo_exercise($record);
         }
         return $exercises;
+    }
+    
+    /**
+     * Return the count of exercises in this category.
+     * @return int
+     */
+    public function countExercises() {
+        global $DB;
+        return $DB->count_records(mod_stratumtwo_exercise::TABLE, array(
+                'categoryid' => $this->getId(),
+        ));
     }
     
     /**
@@ -88,5 +103,43 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
     public static function createNew(stdClass $categoryRecord) {
         global $DB;
         return $DB->insert_record(self::TABLE, $categoryRecord);
+    }
+    
+    /**
+     * Update an existing category record or create a new one if it does not
+     * yet exist (based on course and the name).
+     * @param stdClass $newRecord must have at least course and name fields as
+     * they are used to look up the record. Course and name are not modified in
+     * an existing record.
+     * @return int ID of the new/modified record
+     */
+    public static function updateOrCreate(stdClass $newRecord) {
+        global $DB;
+        
+        $catRecord = $DB->get_record(self::TABLE, array(
+                'course' => $newRecord->course,
+                'name' => $newRecord->name,
+        ), '*', IGNORE_MISSING);
+        if ($catRecord === false) {
+            // create new
+            return $DB->insert_record(self::TABLE, $newRecord);
+        } else {
+            // update
+            if (isset($newRecord->status))
+                $catRecord->status = $newRecord->status;
+            if (isset($newRecord->pointstopass))
+                $catRecord->pointstopass = $newRecord->pointstopass;
+            $DB->update_record(self::TABLE, $catRecord);
+            return $catRecord->id;
+        }
+    }
+    
+    public function delete() {
+        global $DB;
+        // delete exercises in this category
+        $DB->delete_records(mod_stratumtwo_exercise::TABLE, array(
+                'categoryid' => $this->getId(),
+        ));
+        $DB->delete_records(self::TABLE, array('id' => $this->getId()));
     }
 }

@@ -93,6 +93,10 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return $this->getStatus() === self::STATUS_MAINTENANCE;
     }
     
+    public function setStatus($status) {
+        $this->record->status = $status;
+    }
+    
     /**
      * Delete this exercise instance from the database.
      * @param bool $updateRoundMaxPoints if true, the max points of the 

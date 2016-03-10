@@ -79,6 +79,10 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         return $this->record->remotekey;
     }
     
+    public function getOrder() {
+        return $this->record->ordernum;
+    }
+    
     public function getPointsToPass() {
         return $this->record->pointstopass;
     }
@@ -160,6 +164,57 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     
     public function isUnderMaintenance() {
         return $this->getStatus() === self::STATUS_MAINTENANCE;
+    }
+    
+    public function setOrder($order) {
+        $this->record->ordernum = $order;
+    }
+    
+    public function setName($name) {
+        $this->record->name = $name;
+    }
+    
+    public function setPointsToPass($points) {
+        $this->record->pointstopass = $points;
+    }
+    
+    public function setIntro($intro) {
+        $this->record->intro = $intro;
+        $this->record->introformat = FORMAT_HTML;
+    }
+    
+    public function setStatus($status) {
+        require_once($CFG->dirroot .'/course/lib.php');
+        
+        $cm = $this->getCourseModule();
+        if ($status === self::STATUS_HIDDEN && $cm->visible) {
+            // hide the Moodle course module
+            \set_coursemodule_visible($cm->id, 0);
+        } else if ($status !== self::STATUS_HIDDEN && !$cm->visible) {
+            // show the Moodle course module
+            \set_coursemodule_visible($cm->id, 1);
+        }
+        $this->record->status = $status;
+    }
+    
+    public function setOpeningTime($open) {
+        $this->record->openingtime = $open;
+    }
+    
+    public function setClosingTime($close) {
+        $this->record->closingtime = $close;
+    }
+    
+    public function setLateSubmissionDeadline($dl) {
+        $this->record->latesbmsdl = $dl;
+    }
+    
+    public function setLateSubmissionAllowed($isAllowed) {
+        $this->record->latesbmsallowed = (int) $isAllowed;
+    }
+    
+    public function setLateSubmissionPenalty($penalty) {
+        $this->record->latesbmspenalty = (float) $penalty;
     }
     
     /** Create or update the course calendar event for the deadline (closing time) 
@@ -545,16 +600,19 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
      */
     public static function updateInstance(stdClass $stratumtwo) {
         global $DB;
+        // do not modify the Moodle course module here, since this function is called
+        // (from lib.php) as a part of standard Moodle course module creation/modification
         
         $stratumtwo->timemodified = time();
-        //TODO Moodle course_module visibility based on status, maybe do it in the block plugin, gradebook item should follow course_module visibility
         $result = $DB->update_record(self::TABLE, $stratumtwo);
         
         if ($result) {
-            // $stratumtwo does not have grade field set since it comes from the Moodle mod_form
-            $stratumtwo->grade = $DB->get_field(self::TABLE, 'grade', array(
-                    'id' => $stratumtwo->id,
-            ), MUST_EXIST);
+            if (!isset($stratumtwo->grade)) {
+                // $stratumtwo does not have grade field set since it comes from the Moodle mod_form
+                $stratumtwo->grade = $DB->get_field(self::TABLE, 'grade', array(
+                        'id' => $stratumtwo->id,
+                ), MUST_EXIST);
+            }
             
             $exround = new self($stratumtwo);
             $exround->updateGradebookItem();
@@ -562,6 +620,10 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         }
         
         return $result;
+    }
+    
+    public function save() {
+        self::updateInstance($this->record);
     }
     
     /**
@@ -670,4 +732,38 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         
         return $ctx;
     }
+    
+    /**
+     * Get an exercise round from the database matching the given course ID and remote key,
+     * or create it if it does not yet exist.
+     * @param int $courseid Moodle course ID
+     * @param string $remotekey
+     * @return mod_stratumtwo_exercise_round|NULL null if creation fails
+     */
+    public static function getOrCreate($courseid, $remotekey) {
+        global $DB;
+        $record = $DB->get_record(self::TABLE, array(
+                'course' => $courseid,
+                'remotekey' => $remotekey,
+        ), '*', IGNORE_MISSING);
+        if ($record === false) {
+            // create new
+            $new = new stdClass();
+            $new->course = $courseid;
+            $new->name = '-';
+            $new->remotekey = $remotekey;
+            $new->openingtime = time();
+            $new->closingtime = time();
+            
+            $id = self::addInstance($new);
+            if ($id)
+                return self::createFromId($id);
+            else
+                return null; // DB failure
+        } else {
+            // get
+            return new self($record);
+        }
+    }
+    
 }
