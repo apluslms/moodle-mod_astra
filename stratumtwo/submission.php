@@ -62,7 +62,7 @@ $PAGE->set_title(format_string($exerciseRecord->name));
 $PAGE->set_heading(format_string($course->fullname));
 
 // render page content
-$output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::TABLE);
+$output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
 
 echo $output->header();
 

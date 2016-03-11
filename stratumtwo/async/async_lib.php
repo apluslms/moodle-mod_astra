@@ -74,7 +74,7 @@ function stratumtwo_post_async_submission(mod_stratumtwo_exercise $exercise,
     } catch (\Exception $e) { // required field missing
         $submission->setError();
         // set feedback: exercise service malfunctioning
-        $renderer = $PAGE->get_renderer(\mod_stratumtwo_exercise_round::TABLE);
+        $renderer = $PAGE->get_renderer(\mod_stratumtwo_exercise_round::MODNAME);
         $ctx = new \stdClass();
         $ctx->error = get_string('servicemalfunction', \mod_stratumtwo_exercise_round::MODNAME);
         $submission->setFeedback($renderer->render_from_template(\mod_stratumtwo_exercise_round::MODNAME . '/_error_alert', $ctx));

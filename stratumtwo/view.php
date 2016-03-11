@@ -55,7 +55,7 @@ $PAGE->set_title(format_string($stratumtwo->name));
 $PAGE->set_heading(format_string($course->fullname));
 
 // render page content
-$output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::TABLE);
+$output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
 
 // Print the page header (Moodle navbar etc.).
 echo $output->header();
