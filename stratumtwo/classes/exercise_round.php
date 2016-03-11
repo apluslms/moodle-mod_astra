@@ -67,7 +67,19 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         return $this->record->intro;
     }
     
-    public function getStatus() {
+    public function getStatus($asString = false) {
+        if ($asString) {
+            switch ((int) $this->record->status) {
+                case self::STATUS_READY:
+                    return get_string('statusready', self::MODNAME);
+                    break;
+                case self::STATUS_MAINTENANCE:
+                    return get_string('statusmaintenance', self::MODNAME);
+                    break;
+                default:
+                    return get_string('statushidden', self::MODNAME);
+            }
+        }
         return (int) $this->record->status;
     }
     
@@ -172,6 +184,20 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     
     public function setName($name) {
         $this->record->name = $name;
+    }
+    
+    public function updateNameWithOrder($order, $numberingStyle) {
+        // remove possible old ordinal number
+        $name = preg_replace('/^(\d+\.)|([IVXCML]+)/', '', $this->record->name, 1);
+        if ($name !== null) {
+            $name = trim($name);
+            if ($numberingStyle == 'roman') { //TODO
+                $order = 'I';
+                $this->setName("$order $name");
+            } else if ($numberingStyle != 'hidden') {
+                $this->setName("$order. $name");
+            }
+        }
     }
     
     public function setPointsToPass($points) {
@@ -311,18 +337,27 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     /**
      * Return an array of the exercises in this round (as mod_stratumtwo_exercise
      * instances).
+     * @param bool $includeHidden if true, hidden exercises are included
      * @return array of mod_stratumtwo_exercise instances
      */
-    public function getExercises() {
+    public function getExercises($includeHidden = false) {
         global $DB;
         
-        $exerciseRecords = $DB->get_records(mod_stratumtwo_exercise::TABLE, array(
-            'roundid' => $this->record->id,
-        ), 'ordernum ASC, id ASC');
+        if ($includeHidden) {
+            $exerciseRecords = $DB->get_records(mod_stratumtwo_exercise::TABLE, array(
+                'roundid' => $this->record->id,
+            ), 'ordernum ASC, id ASC');
+        } else {
+            $exerciseRecords = $DB->get_records_select(mod_stratumtwo_exercise::TABLE,
+                    'roundid = ? AND status != ?',
+                    array($this->getId(), mod_stratumtwo_exercise::STATUS_HIDDEN),
+                    'ordernum ASC, id ASC');
+        }
         $exercises = array();
         foreach ($exerciseRecords as $ex) {
             $exercises[] = new mod_stratumtwo_exercise($ex);
         }
+        //TODO order the result array correctly if there are parent exercises
         return $exercises;
     }
     
@@ -622,8 +657,13 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         return $result;
     }
     
-    public function save() {
-        self::updateInstance($this->record);
+    public function save($skipGradebookAndCalendar = false) {
+        if ($skipGradebookAndCalendar) {
+            $this->record->timemodified = time();
+            return parent::save();
+        } else {
+            return self::updateInstance($this->record);
+        }
     }
     
     /**
@@ -718,7 +758,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $ctx->id = $this->getId();
         $ctx->openingtime = $this->getOpeningTime();
         $ctx->closingtime = $this->getClosingTime();
-        $ctx->name = $this->getName();
+        $ctx->name = $this->getName(); //TODO order
         $ctx->late_submissions_allowed = $this->isLateSubmissionAllowed();
         $ctx->late_submission_deadline = $this->getLateSubmissionDeadline();
         $ctx->late_submission_point_worth = $this->getLateSubmissionPointWorth();
@@ -731,7 +771,21 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $ctx->expired = $this->hasExpired();
         $ctx->open = $this->isOpen();
         $ctx->not_started = !$this->hasStarted();
+        $ctx->status_str = $this->getStatus(true);
+        $ctx->editurl = \mod_stratumtwo\urls\urls::editExerciseRound($this);
+        $ctx->removeurl = 'TODO'; //TODO
+        $ctx->url = \mod_stratumtwo\urls\urls::exerciseRound($this);
         
+        return $ctx;
+    }
+    
+    public function getTemplateContextWithExercises($includeHiddenExercises = false) {
+        $ctx = $this->getTemplateContext();
+        $ctx->all_exercises = array();
+        foreach ($this->getExercises($includeHiddenExercises) as $ex) {
+            $ctx->all_exercises[] = $ex->getTemplateContext(null, false, false);
+        }
+        $ctx->has_exercises = !empty($ctx->all_exercises);
         return $ctx;
     }
     

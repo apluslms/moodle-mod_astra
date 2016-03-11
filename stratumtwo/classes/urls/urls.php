@@ -14,6 +14,16 @@ class urls {
         return self::baseURL() .'/view.php?'. \http_build_query($query, 'i_', '&');
     }
     
+    public static function editExerciseRound(\mod_stratumtwo_exercise_round $exround) {
+        $query = array('id' => $exround->getId());
+        return self::baseURL() .'/teachers/edit_round.php?'. \http_build_query($query, 'i_', '&');
+    }
+    
+    public static function createExerciseRound() {
+        $query = array('create' => 1);
+        return self::baseURL() .'/teachers/edit_round.php?'. \http_build_query($query, 'i_', '&');
+    }
+    
     public static function newSubmissionHandler(\mod_stratumtwo_exercise $ex) {
         // form POST target for new submissions
         return self::exercise($ex); // POST to the exercise page
@@ -62,4 +72,15 @@ class urls {
         );
         return self::baseURL() .'/async/new_submission.php?'. \http_build_query($query, 'i_', '&');
     }
+    
+    public static function editCategory(\mod_stratumtwo_category $cat) {
+        $q = array('id' => $cat->getId());
+        return self::baseURL() .'/teachers/edit_category.php?'. \http_build_query($q, 'i_', '&');
+    }
+    
+    public static function createCategory() {
+        $q = array('create' => 1);
+        return self::baseURL() .'/teachers/edit_category.php?'. \http_build_query($q, 'i_', '&');
+    }
+    
 }

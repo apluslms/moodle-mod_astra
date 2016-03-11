@@ -17,7 +17,19 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     protected $exerciseRound = null;
     protected $parentExercise = null;
     
-    public function getStatus() {
+    public function getStatus($asString = false) {
+        if ($asString) {
+            switch ((int) $this->record->status) {
+                case self::STATUS_READY:
+                    return get_string('statusready', mod_stratumtwo_exercise_round::MODNAME);
+                    break;
+                case self::STATUS_MAINTENANCE:
+                    return get_string('statusmaintenance', mod_stratumtwo_exercise_round::MODNAME);
+                    break;
+                default:
+                    return get_string('statushidden', mod_stratumtwo_exercise_round::MODNAME);
+            }
+        }
         return (int) $this->record->status;
     }
     
@@ -391,20 +403,30 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return $ctx;
     }
     
-    public function getTemplateContext(stdClass $user) {
+    public function getTemplateContext(stdClass $user = null,
+            $includeTotalSubmitterCount = true, $includeCourseModule = true) {
         $ctx = new stdClass();
         $ctx->url = \mod_stratumtwo\urls\urls::exercise($this);
-        $ctx->name = $this->getName();
+        $ctx->name = $this->getName(); // TODO ordinal number
         $ctx->submissionlisturl = \mod_stratumtwo\urls\urls::submissionList($this);
         $ctx->editurl = \mod_stratumtwo\urls\urls::editExercise($this);
+        $ctx->removeurl = 'TODO'; //TODO
         
         $ctx->max_points = $this->getMaxPoints();
         $ctx->max_submissions = $this->getMaxSubmissions();
-        $ctx->max_submissions_for_user = $this->getMaxSubmissionsForStudent($user);
+        if ($user !== null) {
+            $ctx->max_submissions_for_user = $this->getMaxSubmissionsForStudent($user);
+        }
         $ctx->points_to_pass = $this->getPointsToPass();
-        $ctx->total_submitter_count = $this->getTotalSubmitterCount();
-        $ctx->course_module = $this->getExerciseRound()->getTemplateContext();
+        if ($includeTotalSubmitterCount) {
+            $ctx->total_submitter_count = $this->getTotalSubmitterCount(); // heavy DB query
+        }
+        if ($includeCourseModule) {
+            $ctx->course_module = $this->getExerciseRound()->getTemplateContext();
+        }
         $ctx->allow_assistant_grading = $this->isAssistantGradingAllowed();
+        $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
+        $ctx->status_str = $this->getStatus(true);
         
         return $ctx;
     }

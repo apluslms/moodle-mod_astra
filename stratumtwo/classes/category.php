@@ -142,4 +142,13 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
         ));
         $DB->delete_records(self::TABLE, array('id' => $this->getId()));
     }
+    
+    public function getTemplateContext() {
+        $ctx = new stdClass();
+        $ctx->name = $this->getName();
+        $ctx->editurl = \mod_stratumtwo\urls\urls::editCategory($this);
+        $ctx->has_exercises = ($this->countExercises() > 0);
+        $ctx->removeurl = 'TODO'; //TODO \mod_stratumtwo\urls\urls::deleteCategory($this);
+        return $ctx;
+    }
 }
