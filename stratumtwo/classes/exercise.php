@@ -108,7 +108,8 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         // Delete any dependent records here.
         
         // all submitted files to this exercise (in Moodle file API) (file itemid is a submission id)
-        delete_area_files_select(context_module::instance($this->getExerciseRound()->getCourseModule()->id),
+        $fs = \get_file_storage();
+        $fs->delete_area_files_select(context_module::instance($this->getExerciseRound()->getCourseModule()->id)->id,
                 mod_stratumtwo_exercise_round::MODNAME, mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA,
                 'IN (SELECT id FROM {'. mod_stratumtwo_submission::TABLE .'} WHERE exerciseid = :stratumexerciseid)',
                 array('stratumexerciseid' => $this->getId()));

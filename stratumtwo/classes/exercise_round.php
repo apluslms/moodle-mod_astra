@@ -631,6 +631,8 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
      * @return boolean true on success, false on failure
      */
     public function deleteInstance() {
+        global $DB;
+        
         // Delete all exercises of the round, since their foreign key roundid would become invalid
         $exercises = $this->getExercises();
         foreach ($exercises as $ex) {
