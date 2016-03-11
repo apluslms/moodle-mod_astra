@@ -3,6 +3,12 @@ namespace mod_stratumtwo\protocol;
 
 defined('MOODLE_INTERNAL') || die;
 
+/**
+ * Class remote_page represents an HTML document that is downloaded from
+ * a server. Either HTTP GET or POST is supported for requesting the page.
+ *
+ * Derived from A+ (a-plus/lib/remote_page.py and a-plus/exercise/protocol/aplus.py).
+ */
 class remote_page {
     
     protected $response; // string, the whole response from the server

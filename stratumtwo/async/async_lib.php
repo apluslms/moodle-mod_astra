@@ -2,6 +2,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+// Functions derived from A+ (a-plus/exercise/async_views.py)
+
 /**
  * Handle asynchronous GET or POST HTTP request from the exercise service.
  * @param mod_stratumtwo_exercise $exercise
