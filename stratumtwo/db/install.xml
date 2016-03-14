@@ -153,12 +153,16 @@
                COMMENT="Configuration URL from which the course exercises configuration is downloaded for automatic setup."/>
         <FIELD NAME="sectionnum" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"
                COMMENT="Moodle course section number (0-N) which new activities are added to."/>
+        <FIELD NAME="modulenumbering" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false"
+               COMMENT="Numbering style for exercise rounds."/>
+        <FIELD NAME="contentnumbering" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false"
+               COMMENT="Numbering style for exercises (content under rounds)."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+        <INDEX NAME="course" UNIQUE="true" FIELDS="course"/>
       </INDEXES>
     </TABLE>
     

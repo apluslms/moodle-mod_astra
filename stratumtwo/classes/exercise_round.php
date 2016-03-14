@@ -186,17 +186,37 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $this->record->name = $name;
     }
     
-    public function updateNameWithOrder($order, $numberingStyle) {
+    /**
+     * Return a new name based on the old name using the given ordinal number and
+     * numbering style.
+     * @param string $oldName old name with a possible old number
+     * @param int $order new ordinal number to use
+     * @param int $numberingStyle module numbering constant from mod_stratumtwo_course_config
+     * @return string
+     */
+    public static function updateNameWithOrder($oldName, $order, $numberingStyle) {
+        require_once(dirname(dirname(__FILE__)) .'/locallib.php');
+        
         // remove possible old ordinal number
-        $name = preg_replace('/^(\d+\.)|([IVXCML]+)/', '', $this->record->name, 1);
+        $name = preg_replace('/^(\d+\.)|([IVXCML]+)/', '', $oldName, 1);
         if ($name !== null) {
             $name = trim($name);
-            if ($numberingStyle == 'roman') { //TODO
-                $order = 'I';
-                $this->setName("$order $name");
-            } else if ($numberingStyle != 'hidden') {
-                $this->setName("$order. $name");
+            switch ($numberingStyle) {
+                case mod_stratumtwo_course_config::MODULE_NUMBERING_ARABIC:
+                    $name = "$order. $name";
+                    break;
+                case mod_stratumtwo_course_config::MODULE_NUMBERING_ROMAN:
+                    $name = stratumtwo_roman_numeral($order) .' '. $name;
+                    break;
+                //case mod_stratumtwo_course_config::MODULE_NUMBERING_HIDDEN_ARABIC:
+                //case mod_stratumtwo_course_config::MODULE_NUMBERING_NONE:
+                default:
+                    // do not add anything to the name
             }
+            return $name;
+            
+        } else {
+            return $oldName;
         }
     }
     
@@ -758,7 +778,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $ctx->id = $this->getId();
         $ctx->openingtime = $this->getOpeningTime();
         $ctx->closingtime = $this->getClosingTime();
-        $ctx->name = $this->getName(); //TODO order
+        $ctx->name = $this->getName();
         $ctx->late_submissions_allowed = $this->isLateSubmissionAllowed();
         $ctx->late_submission_deadline = $this->getLateSubmissionDeadline();
         $ctx->late_submission_point_worth = $this->getLateSubmissionPointWorth();

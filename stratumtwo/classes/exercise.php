@@ -62,14 +62,47 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     }
     
     public function getOrder() {
-        return $this->record->ordernum;
+        return (int) $this->record->ordernum;
     }
     
     public function getRemoteKey() {
         return $this->record->remotekey;
     }
     
-    public function getName() {
+    public function getNumber() {
+        $parent = $this->getParentExercise();
+        if ($parent !== null) {
+            return $parent->getNumber() . ".{$this->record->ordernum}";
+        }
+        return ".{$this->record->ordernum}";
+    }
+    
+    public function getName($includeOrder = true) {
+        require_once(dirname(dirname(__FILE__)) .'/locallib.php');
+        // number formatting based on A+ (a-plus/exercise/exercise_models.py)
+        
+        if ($includeOrder && $this->getOrder() >= 0) {
+            $conf = mod_stratumtwo_course_config::getForCourseId($this->getExerciseRound()->getCourse()->courseid);
+            if ($conf !== null) {
+                $contentNumbering = $conf->getContentNumbering();
+                $moduleNumbering = $conf->getModuleNumbering();
+            } else {
+                $contentNumbering = mod_stratumtwo_course_config::getDefaultContentNumbering();
+                $moduleNumbering = mod_stratumtwo_course_config::getDefaultModuleNumbering();
+            }
+            
+            if ($contentNumbering == mod_stratumtwo_course_config::CONTENT_NUMBERING_ARABIC) {
+                $number = $this->getNumber();
+                if ($moduleNumbering == mod_stratumtwo_course_config::MODULE_NUMBERING_ARABIC ||
+                        $moduleNumbering == mod_stratumtwo_course_config::MODULE_NUMBERING_HIDDEN_ARABIC) {
+                    return $this->getExerciseRound()->getOrder() . "$number {$this->record->name}";
+                }
+                // leave out the module number ($number starts with a dot)
+                return substr($number, 1) .' '. $this->record->name;
+            } else if ($contentNumbering == mod_stratumtwo_course_config::CONTENT_NUMBERING_ROMAN) {
+                return stratumtwo_roman_numeral($this->getOrder()) .' '. $this->record->name;
+            }
+        }
         return $this->record->name;
     }
     
@@ -107,6 +140,10 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     
     public function setStatus($status) {
         $this->record->status = $status;
+    }
+    
+    public function setOrder($newOrder) {
+        $this->record->ordernum = $newOrder;
     }
     
     /**
@@ -367,6 +404,13 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return $grades;
     }
     
+    public function save($skipGradebook = false) {
+        if (!$skipGradebook) {
+            $this->updateGradebookItem();
+        }
+        return parent::save();
+    }
+    
     /**
      * Return the number of users that have submitted to this exercise.
      * @return int
@@ -407,7 +451,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
             $includeTotalSubmitterCount = true, $includeCourseModule = true) {
         $ctx = new stdClass();
         $ctx->url = \mod_stratumtwo\urls\urls::exercise($this);
-        $ctx->name = $this->getName(); // TODO ordinal number
+        $ctx->name = $this->getName();
         $ctx->submissionlisturl = \mod_stratumtwo\urls\urls::submissionList($this);
         $ctx->editurl = \mod_stratumtwo\urls\urls::editExercise($this);
         $ctx->removeurl = 'TODO'; //TODO

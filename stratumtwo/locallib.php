@@ -25,3 +25,24 @@ function stratumtwo_page_require($page) {
     // custom JS, use the AMD module version
     //$page->requires->js(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/assets/js/stratum2.js'));
 }
+
+/**
+ * Convert a number to a roman numeral. Number should be between 0--1999.
+ * 
+ * Derived from A+ (a-plus/lib/helpers.py).
+ * @param int $number
+ * @return string
+ */
+function stratumtwo_roman_numeral($number) {
+    $numbers = array(1000,900,500,400,100,90,50,40,10,9,5,4,1);
+    $letters = array("M","CM","D","CD","C","XC","L","XL","X","IX","V","IV","I");
+    $roman = '';
+    $lenNumbers = count($numbers);
+    for ($i = 0; $i < $lenNumbers; $i++) {
+        while ($number >= $numbers[$i]) {
+            $roman .= $letters[$i];
+            $number -= $numbers[$i];
+        }
+    }
+    return $roman;
+}
