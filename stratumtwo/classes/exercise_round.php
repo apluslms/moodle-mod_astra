@@ -373,12 +373,38 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
                     array($this->getId(), mod_stratumtwo_exercise::STATUS_HIDDEN),
                     'ordernum ASC, id ASC');
         }
+        
         $exercises = array();
         foreach ($exerciseRecords as $ex) {
             $exercises[] = new mod_stratumtwo_exercise($ex);
         }
-        //TODO order the result array correctly if there are parent exercises
-        return $exercises;
+        
+        // sort again in case some exercises have parent exercises, output array should be in
+        // the order that is used to print the exercises under the round
+        // Sorting and flattening the exercise tree is derived from A+ (a-plus/course/tree.py).
+        
+        // $parentid may be null to get top-level exercises
+        $children = function($parentid) use ($exercises) {
+            $child_exs = array();
+            foreach ($exercises as $ex) {
+                if ($ex->getParentId() == $parentid)
+                    $child_exs[] = $ex;
+            }
+            // the children are ordered by ordernum since $exercises array was sorted
+            // by the database API, and we take only exercises with the same parent here
+            return $child_exs;
+        };
+        
+        $traverse = function($parentid) use (&$children, &$traverse) {
+            $container = array();
+            foreach ($children($parentid) as $child) {
+                $container[] = $child;
+                $container = array_merge($container, $traverse($child->getId()));
+            }
+            return $container;
+        };
+        
+        return $traverse(null);
     }
     
     /**

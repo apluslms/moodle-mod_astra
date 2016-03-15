@@ -61,6 +61,13 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return $this->parentExercise;
     }
     
+    public function getParentId() {
+        if (empty($this->record->parentid)) {
+            return null;
+        }
+        return (int) $this->record->parentid;
+    }
+    
     public function getOrder() {
         return (int) $this->record->ordernum;
     }
