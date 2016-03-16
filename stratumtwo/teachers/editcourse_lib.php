@@ -124,3 +124,37 @@ function stratumtwo_rename_rounds_with_numbers($courseid, $moduleNumberingStyle)
         $exround->save();
     }
 }
+
+/**
+ * Add edit course page to the navbar.
+ * @param moodle_page $page $PAGE
+ * @param int $courseid
+ * @param bool $active
+ * @return navigation_node
+ */
+function stratumtwo_edit_course_navbar(moodle_page $page, $courseid, $active = true) {
+    $courseNav = $page->navigation->find($courseid, navigation_node::TYPE_COURSE);
+    $editNav = $courseNav->add(get_string('editcourse', mod_stratumtwo_exercise_round::MODNAME),
+            \mod_stratumtwo\urls\urls::editCourse($courseid, true),
+            navigation_node::TYPE_CUSTOM, null, 'editcourse');
+    if ($active) {
+        $editNav->make_active();
+    }
+    return $editNav;
+}
+
+/**
+ * Add both edit course and another page to the navbar.
+ * @param moodle_page $page
+ * @param int $courseid
+ * @param string $title title for the new page
+ * @param moodle_url $url URL of the new page
+ * @param string $navkey navbar key for the new page
+ * @return navigation_node
+ */
+function stratumtwo_edit_course_navbar_add(moodle_page $page, $courseid, $title, moodle_url $url, $navkey) {
+    $editCourseNav = stratumtwo_edit_course_navbar($page, $courseid, false);
+    $nav = $editCourseNav->add($title, $url, navigation_node::TYPE_CUSTOM, null, $navkey);
+    $nav->make_active();
+    return $nav;
+}

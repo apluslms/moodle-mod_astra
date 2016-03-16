@@ -2,6 +2,7 @@
 /** Page for manual editing/creation of a Stratum2 exercise category.
  */
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // defines MOODLE_INTERNAL for libraries
+require_once(dirname(__FILE__) .'/editcourse_lib.php');
 
 $id       = optional_param('id', 0, PARAM_INT); // category ID, edit existing
 $courseid = optional_param('course', 0, PARAM_INT); // course ID, if creating new
@@ -35,12 +36,9 @@ $PAGE->set_title(format_string(get_string('editcategory', mod_stratumtwo_exercis
 $PAGE->set_heading(format_string($course->fullname));
 
 // navbar
-$courseNav = $PAGE->navigation->find($courseid, navigation_node::TYPE_COURSE);
-$editNav = $courseNav->add('Edit exercises', new moodle_url('/blocks/stratumtwo_setup/edit_exercises.php', array('course' => $courseid)),
-        navigation_node::TYPE_CUSTOM, null, 'editexercises'); //TODO
-$editCatNav = $editNav->add(get_string('editcategory', mod_stratumtwo_exercise_round::MODNAME),
-        $page_url, navigation_node::TYPE_CUSTOM, null, 'editcategory');
-$editCatNav->make_active();
+stratumtwo_edit_course_navbar_add($PAGE, $courseid,
+        get_string('editcategory', mod_stratumtwo_exercise_round::MODNAME),
+        $page_url, 'editcategory');
 
 // Output starts here.
 // gotcha: moodle forms should be initialized before $OUTPUT->header
@@ -75,9 +73,9 @@ if ($fromform = $form->get_data()) {
     }
     
     echo '<p>'. $message .'</p>';
-    echo '<p>'. //TODO back to exit exercises page
-            html_writer::link(new moodle_url('/course/view.php', array('id' => $courseid)),
-              get_string('backtocourse', mod_stratumtwo_exercise_round::MODNAME)) .
+    echo '<p>'.
+            html_writer::link(\mod_stratumtwo\urls\urls::editCourse($courseid, true),
+              get_string('backtocourseedit', mod_stratumtwo_exercise_round::MODNAME)) .
          '</p>';
     
 } else {

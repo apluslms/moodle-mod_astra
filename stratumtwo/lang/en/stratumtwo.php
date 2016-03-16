@@ -100,7 +100,7 @@ $string['catcreatefailure'] = 'The new category could not be stored in the datab
 $string['autosetup'] = 'Update and create Stratum2 exercises automatically';
 $string['autosetup_help'] = 'Import configuration from the exercise service URL and override course contents (Stratum2 exercise rounds, exercises and categories).';
 
-// edit exercises page
+// edit course page
 $string['exercisecategories'] = 'Exercise categories';
 $string['editcategory'] = 'Edit category';
 $string['remove'] = 'Remove';
@@ -120,6 +120,7 @@ $string['nonumbering'] = 'No numbering';
 $string['arabicnumbering'] = 'Arabic';
 $string['romannumbering'] = 'Roman';
 $string['hiddenarabicnum'] = 'Hidden arabic';
+$string['backtocourseedit'] = 'Back to the course edit page.';
 
 // auto setup form
 $string['configurl'] = 'Configuration URL';
