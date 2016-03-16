@@ -1,0 +1,172 @@
+{{!
+Derived from A+ (a-plus/edit_course/templates/edit_course/edit_content.html).
+
+Context variables:
+* autosetupurl (string) URL to the automatic setup page
+* categories (array of stdClass objects), each object has fields 
+    - name (string)
+    - editurl (string) URL to category edit page
+    - has_exercises (bool) true if there is at least one exercise/learning object in the category
+    - removeurl (string) URL for deleting the category
+    - status_ready (bool) true if ready
+    - status_str (string) human-readable status
+* create_category_url (string) URL for creating a new category
+* course_modules (array of objects), each object has fields 
+    - name (string) with ordinal number
+    - status_ready (bool) true if ready
+    - status_str (string) status as human-readable string
+    - editurl (string) URL for editing the round
+    - has_exercises (bool) true if there is at least one exercise/learning object in the round
+    - removeurl (string) URL for deleting the round
+    - url (string) URL for viewing the round
+    - all_exercises (array of objects) includes also hidden exercises, each object has fields 
+        * name (string) with ordinal number
+        * status_ready (bool) true if status is ready
+        * status_str (string) status as human-readable string
+        * editurl (string) URL for editing the exercise
+        * removeurl (string) URL for deleting the exercise
+        * url (string) URL for viewing the exercise
+        * submissionlisturl (string) URL to the all submissions list
+* create_module_url (string) URL for creating a new exercise round
+* renumber_action_url (string) URL for form action that renumbers exercises
+* module_numbering_options (callable), returns the HTML <option> elements for module numbering
+        (in <select> element of the form).
+* content_numbering_options (callable), returns the HTML <option> elements for content numbering
+        (in <select> element of the form).
+}}
+
+<div class="well">
+  <a href="{{{ autosetupurl }}}">{{#str}} autosetup, mod_stratumtwo {{/str}}</a>
+</div>
+
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h3 class="panel-title">{{#str}} exercisecategories, mod_stratumtwo {{/str}}</h3>
+    </div>
+    <table class="table table-striped table-bordered table-condensed">
+        <tbody>
+            {{# categories }}
+            <tr>
+                <td>
+                    {{ name }}
+                    {{^ status_ready }}
+                      <span class="label label-default">{{ status_str }}</span>
+                    {{/ status_ready }}
+                </td>
+                <td>
+                    <a class="btn btn-default btn-xs" href="{{{ editurl }}}">
+                        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                        {{#str}} editcategory, mod_stratumtwo {{/str}}
+                    </a>
+                    {{^ has_exercises }}
+                    <a class="btn btn-default btn-xs" href="{{{ removeurl }}}">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> {{#str}} remove, mod_stratumtwo {{/str}}
+                    </a>
+                    {{/ has_exercises }}
+                </td>
+            </tr>
+            {{/ categories }}
+            <tr>
+                <th colspan="2">
+                    <a class="btn btn-primary btn-xs" href="{{{ create_category_url }}}">
+                        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                        {{#str}} addnewcategory, mod_stratumtwo {{/str}}
+                    </a>
+                </th>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h3 class="panel-title">{{#str}} exerciserounds, mod_stratumtwo {{/str}}</h3>
+    </div>
+    <table class="table table-striped table-bordered table-condensed">
+        <tbody>
+            {{# course_modules }}
+            <tr class="success">
+                <th>
+                  <strong>{{ name }}</strong>
+                  {{^ status_ready }}
+                  <span class="label label-default">{{ status_str }}</span>
+                  {{/ status_ready }}
+                </th>
+                <td>
+                    <a class="btn btn-default btn-xs" href="{{{ editurl }}}">
+                        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> {{#str}} editmodule, mod_stratumtwo {{/str}}
+                    </a>
+                    {{^ has_exercises }}
+                    <a class="btn btn-default btn-xs" href="{{{ removeurl }}}">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> {{#str}} remove, mod_stratumtwo {{/str}}
+                    </a>
+                    {{/ has_exercises }}
+                    <a class="btn btn-link btn-xs" href="{{{ url }}}">
+                        {{#str}} openround, mod_stratumtwo {{/str}}
+                    </a>
+                </td>
+            </tr>
+            {{# all_exercises }}
+            <tr>
+                <td>
+                    {{ name }}
+                    {{^ status_ready }}
+                    <span class="label label-default">{{ status_str }}</span>
+                    {{/ status_ready }}
+                </td>
+                <td>
+                    <a class="btn btn-default btn-xs" href="{{{ editurl }}}">
+                        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> {{#str}} editexercise, mod_stratumtwo {{/str}}
+                    </a>
+                    <a class="btn btn-default btn-xs" href="{{{ removeurl }}}">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> {{#str}} remove, mod_stratumtwo {{/str}}
+                    </a>
+                    <a class="btn btn-link btn-xs" href="{{{ url }}}">
+                        {{#str}} openexercise, mod_stratumtwo {{/str}}
+                    </a>
+                    <a class="btn btn-link btn-xs" href="{{{ submissionlisturl }}}">
+                        {{#str}} viewsubmissions, mod_stratumtwo {{/str}}
+                    </a>
+                </td>
+            </tr>
+            {{/ all_exercises }}
+            <tr>
+                <td colspan="2">
+                    <a class="btn btn-success btn-xs">
+                        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                        {{#str}} addnewlearningobject, mod_stratumtwo {{/str}}
+                    </a>
+                </td>
+            </tr>
+            {{/ course_modules }}
+            <tr>
+                <th colspan="2">
+                    <a class="btn btn-primary btn-xs" href="{{{ create_module_url }}}">
+                        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                        {{#str}} addnewmodule, mod_stratumtwo {{/str}}
+                    </a>
+                </th>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<form method="post" action="{{{ renumber_action_url }}}" class="well">
+    <div class="form-group">
+      <label for="id_module_numbering">{{#str}} modulenumbering, mod_stratumtwo {{/str}}</label>
+      <select class="form-control" id="id_module_numbering" name="module_numbering">
+        {{# module_numbering_options }}{{/ module_numbering_options }}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="id_content_numbering">{{#str}} contentnumbering, mod_stratumtwo {{/str}}</label>
+      <select class="form-control" id="id_content_numbering" name="content_numbering">
+        {{# content_numbering_options }}{{/ content_numbering_options }}
+      </select>
+    </div>
+    
+    <button class="btn btn-primary" type="submit" name="save">{{#str}} save, mod_stratumtwo {{/str}}</button>
+    <button class="btn btn-success" type="submit" name="renumbermodule">{{#str}} renumerateformodules, mod_stratumtwo {{/str}}</button>
+    <button class="btn btn-success" type="submit" name="renumbercourse">{{#str}} renumerateignoremodules, mod_stratumtwo {{/str}}</button>
+</form>

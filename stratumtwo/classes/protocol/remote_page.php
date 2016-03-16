@@ -36,7 +36,7 @@ class remote_page {
      * in connecting to the server
      */
     public function __construct($url, $post = false, $data = null, $files = null) {
-        $this->response = $this->request($url, $post, $data, $files);
+        $this->response = self::request($url, $post, $data, $files);
         $this->DOMdoc = new \DOMDocument();
         if ($this->DOMdoc->loadHTML($this->response) === false)
             throw new \mod_stratumtwo\protocol\remote_page_exception('DOMDocument::loadHTML could not load the response');
@@ -56,7 +56,7 @@ class remote_page {
      * in the exercise service
      * @return string the response
      */
-    protected function request($url, $post = false, $data = null, $files = null, $api_key = null) {
+    public static function request($url, $post = false, $data = null, $files = null, $api_key = null) {
         $ch = curl_init();
         curl_setopt_array($ch, array(
                 CURLOPT_URL => $url,

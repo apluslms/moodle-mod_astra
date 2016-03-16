@@ -83,4 +83,18 @@ class urls {
         return self::baseURL() .'/teachers/edit_category.php?'. \http_build_query($q, 'i_', '&');
     }
     
+    public static function editCourse($courseid, $asMdlUrl = false) {
+        $q = array('course' => $courseid);
+        $url = self::baseURL() .'/teachers/edit_course.php';
+        if ($asMdlUrl) {
+            return new \moodle_url($url, $q);
+        } else {
+            return $url .'?'. \http_build_query($q, 'i_', '&');
+        }
+    }
+    
+    public static function autoSetup($courseid) {
+        $q = array('course' => $courseid);
+        return self::baseURL() .'/teachers/auto_setup.php?'. \http_build_query($q, 'i_', '&');
+    }
 }

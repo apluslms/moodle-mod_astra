@@ -89,14 +89,67 @@ $string['includeslatepenalty'] = 'Includes late penalty';
 $string['submitters'] = 'Submitters';
 
 // teachers edit pages
-$string['editcategory'] = 'Edit category';
+$string['editcourse'] = 'Edit course';
 $string['categoryname'] = 'Category name';
 $string['categoryname_help'] = 'Enter a descriptive, short name for the category. It is visible to users.';
 $string['createcategory'] = 'Create new category';
-$string['backtocourse'] = 'Back to the course';
 $string['cateditsuccess'] = 'The category was updated successfully.';
 $string['catcreatesuccess'] = 'The category was created successfully.';
 $string['catcreatefailure'] = 'The new category could not be stored in the database.';
+
+$string['autosetup'] = 'Update and create Stratum2 exercises automatically';
+$string['autosetup_help'] = 'Import configuration from the exercise service URL and override course contents (Stratum2 exercise rounds, exercises and categories).';
+
+// edit exercises page
+$string['exercisecategories'] = 'Exercise categories';
+$string['editcategory'] = 'Edit category';
+$string['remove'] = 'Remove';
+$string['addnewcategory'] = 'Add new category';
+$string['exerciserounds'] = 'Exercise rounds';
+$string['editmodule'] = 'Edit exercise round';
+$string['openround'] = 'Open exercise round';
+$string['openexercise'] = 'Open exercise';
+$string['addnewlearningobject'] = 'Add new learning object';
+$string['addnewmodule'] = 'Add new exercise round';
+$string['save'] = 'Save';
+$string['renumerateformodules'] = 'Renumerate learning objects for each module';
+$string['renumerateignoremodules'] = 'Renumerate learning objects ignoring modules';
+$string['modulenumbering'] = 'Module numbering';
+$string['contentnumbering'] = 'Content numbering';
+$string['nonumbering'] = 'No numbering';
+$string['arabicnumbering'] = 'Arabic';
+$string['romannumbering'] = 'Roman';
+$string['hiddenarabicnum'] = 'Hidden arabic';
+
+// auto setup form
+$string['configurl'] = 'Configuration URL';
+$string['configurl_help'] = 'Configuration data for course exercises is downloaded from this URL.';
+$string['apikey'] = 'API key';
+$string['apikey_help'] = 'API key to authorize access to the exercise service.';
+$string['sectionnum'] = 'Moodle course section number';
+$string['sectionnum_help'] = 'Number (0-N) of the Moodle course section, to which new exercise round activities should be added. Section zero is the course home page, the next section is number 1 and so on (see the navigation in the course page).';
+$string['apply'] = 'Apply';
+$string['createreminder'] = 'Reminder: in MyCourses, you must have the &quot;Advanced teacher&quot; role to create Stratum2 exercises.';
+$string['backtocourse'] = 'Back to the course';
+$string['autosetupsuccess'] = 'Configuration was downloaded and applied successfully.';
+$string['autosetuperror'] = 'There were errors in the automatic setup.';
+
+// auto setup errors
+$string['configjsonparseerror'] = 'The response from the server could not be parsed as JSON.';
+$string['configcategoriesmissing'] = 'Categories are required as JSON object.';
+$string['configmodulesmissing'] = 'Modules (exercise rounds) are required as JSON array.';
+$string['configcatnamemissing'] = 'Category requires a name.';
+$string['configbadstatus'] = 'Status has an invalid value: {$a}.';
+$string['configbadint'] = 'Expected integer, but received: {$a}.';
+$string['configmodkeymissing'] = 'Module (exercise round) requires a key.';
+$string['configbadfloat'] = 'Expected floating-point number, but received: {$a}.';
+$string['configbaddate'] = 'Unable to parse date: {$a}.';
+$string['configbadduration'] = 'Unable to parse duration: {$a}.';
+$string['configexercisekeymissing'] = 'Exercise requires a key.';
+$string['configexercisecatmissing'] = 'Exercise requires a category.';
+$string['configexerciseunknowncat'] = 'Exercise has an unknown category: {$a}.';
+$string['configchapternotsupported'] = 'Moodle plugin supports only exercises, not other learning objects (chapters).';
+
 
 // plugin file area descriptions
 $string['submittedfilesareadescription'] = 'Submitted files in exercises with file uploads';
@@ -116,39 +169,9 @@ $string['servicemalfunction'] = 'The exercise assessment service is malfunctioni
 $string['duplicatecatname'] = 'Category with this name already exists.';
 
 /*
-$string['stratumfieldset'] = 'Stratum assignment settings';
 $string['stratumsbmsmaxbytes'] = 'Submission file max size in bytes';
 $string['stratumsbmsmaxbytes_help'] = 'Maximum allowed file size for the submission. For example, 1048576 means 1 MB. Use zero or leave empty for no limit.';
 
-$string['stratummaxpoints'] = 'Max points';
-$string['stratummaxpoints_help'] = 'Maximum points in the Stratum (sub)assignment.';
-$string['stratumsubmitlimit'] = 'Submit limit';
-$string['stratumsubmitlimit_help'] = 'Number of allowed submissions in the Stratum subassignment. Use zero or leave empty for no limit.';
-$string['stratumsbmstypes'] = 'Allowed submission file types';
-$string['stratumsbmstypes_help'] = 'Give the filetypes with their filename extensions. Separate several types with colons, for example .pdf:.txt (empty value describes only extensionless type, colon at the end of the list includes extensionless type)';
-$string['deadline_help'] = 'Deadline for submissions. Leave empty for no deadline.';
-$string['stratumasgn'] = 'Stratum assignment';
-$string['stratumsubasgn'] = 'Stratum subassignment';
-
-$string['stratumshowintro'] = 'Show the manually typed assignment introduction';
-$string['stratumshowintro_help'] = 'Tick this checkbox to show the manually typed assignment description/introduction in the assignment page instead of the description that is fetched from the remote Stratum server.';
-$string['stratumapikey'] = 'Stratum API key';
-$string['stratumapikey_help'] = 'Secret key to the Stratum course API in the external server. The key must be kept secret, as it authorizes full access to the course (student) data.';
-
-$string['results'] = 'Results';
-$string['subasgn'] = 'Subassignment';
-$string['submission'] = 'Submission';
-$string['submissionfile'] = 'Choose file to submit';
-$string['submit'] = 'Submit';
-$string['min'] = 'Min';
-$string['max'] = 'Max';
-$string['bonuslimit'] = 'Bonus limit';
-$string['points'] = 'Points';
-$string['output'] = 'Output';
-$string['submittedfile'] = 'Submitted file';
-$string['sbmstime'] = 'Submission time';
-$string['bonusdl'] = 'Bonus deadline';
-$string['deadline'] = 'Deadline';
 $string['submissionsleft'] = 'You have {$a->left} submission(s) left (out of {$a->total}).';
 $string['requiredpoints'] = 'You need {$a->minpass} points out of {$a->max} to pass.';
 $string['requiredbonuslimit'] = '{$a->bonuslimit} points needed to gain bonus.';
@@ -181,8 +204,6 @@ $string['gradedasgns'] = 'Assignments graded';
 $string['gradedstudents'] = '{$a} students have been graded.';
 
 $string['fetchpoints'] = 'Fetch points from the Stratum server';
-$string['eventstratumupdategradesfailed'] = 'Stratum grades update to gradebook failed';
-$string['eventstratumgradeupdatestarted'] = 'Stratum mass grade update to gradebook started';
 */
 // errors
 /*
