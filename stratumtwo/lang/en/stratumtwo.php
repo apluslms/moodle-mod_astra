@@ -96,7 +96,7 @@ $string['createcategory'] = 'Create new category';
 $string['cateditsuccess'] = 'The category was updated successfully.';
 $string['catcreatesuccess'] = 'The category was created successfully.';
 $string['catcreatefailure'] = 'The new category could not be stored in the database.';
-
+$string['automaticsetup'] = 'Automatic setup';
 $string['autosetup'] = 'Update and create Stratum2 exercises automatically';
 $string['autosetup_help'] = 'Import configuration from the exercise service URL and override course contents (Stratum2 exercise rounds, exercises and categories).';
 

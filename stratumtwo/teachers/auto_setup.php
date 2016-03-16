@@ -2,6 +2,7 @@
 /** Page for automatic setup of Stratum2 exercises.
  */
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // defines MOODLE_INTERNAL for libraries
+require_once(dirname(__FILE__) .'/editcourse_lib.php');
 
 $cid = required_param('course', PARAM_INT); // Course ID
 $course = get_course($cid);
@@ -10,13 +11,19 @@ require_login($course, false);
 $context = context_course::instance($cid);
 require_capability('mod/stratumtwo:addinstance', $context);
 
+$page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/auto_setup.php',
+        array('course' => $cid));
+
 // Print the page header.
 $PAGE->set_pagelayout('incourse');
-$PAGE->set_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/auto_setup.php', array('course' => $cid));
+$PAGE->set_url($page_url);
 $PAGE->set_title(format_string(get_string('autosetup', mod_stratumtwo_exercise_round::MODNAME)));
 $PAGE->set_heading(format_string($course->fullname));
 
-//TODO navbar
+// navbar
+stratumtwo_edit_course_navbar_add($PAGE, $cid,
+        get_string('automaticsetup', mod_stratumtwo_exercise_round::MODNAME),
+        $page_url, 'autosetup');
 
 $default_values = $DB->get_record(\mod_stratumtwo_course_config::TABLE, array('course' => $cid));
 if ($default_values === false) {
@@ -52,8 +59,8 @@ if ($fromform = $form->get_data()) {
     }
     
     echo '<p>'.
-            html_writer::link(new moodle_url('/course/view.php', array('id' => $cid)),
-                    get_string('backtocourse', mod_stratumtwo_exercise_round::MODNAME)) .
+            html_writer::link(\mod_stratumtwo\urls\urls::editCourse($cid, true),
+              get_string('backtocourseedit', mod_stratumtwo_exercise_round::MODNAME)) .
          '</p>';
 } else {
     // this branch is executed if the form is submitted but the data doesn't validate

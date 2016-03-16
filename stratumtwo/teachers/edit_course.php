@@ -47,7 +47,8 @@ $PAGE->set_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/edit_co
 $PAGE->set_title(format_string(get_string('editcourse', mod_stratumtwo_exercise_round::MODNAME)));
 $PAGE->set_heading(format_string($course->fullname));
 
-//TODO navbar
+// navbar
+stratumtwo_edit_course_navbar($PAGE, $cid, true);
 
 // Output starts here.
 $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
