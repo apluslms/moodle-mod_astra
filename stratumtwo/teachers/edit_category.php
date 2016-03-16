@@ -45,7 +45,7 @@ stratumtwo_edit_course_navbar_add($PAGE, $courseid,
 $form = new \mod_stratumtwo\form\edit_category_form($courseid, $id, $form_action);
 if ($form->is_cancelled()) {
     // Handle form cancel operation, if cancel button is present on form
-    redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
+    redirect(\mod_stratumtwo\urls\urls::editCourse($courseid, true));
     exit(0);
 }
 
