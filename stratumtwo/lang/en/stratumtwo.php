@@ -88,6 +88,16 @@ $string['forstafforiginal'] = 'For staff: original';
 $string['includeslatepenalty'] = 'Includes late penalty';
 $string['submitters'] = 'Submitters';
 
+// teachers edit pages
+$string['editcategory'] = 'Edit category';
+$string['categoryname'] = 'Category name';
+$string['categoryname_help'] = 'Enter a descriptive, short name for the category. It is visible to users.';
+$string['createcategory'] = 'Create new category';
+$string['backtocourse'] = 'Back to the course';
+$string['cateditsuccess'] = 'The category was updated successfully.';
+$string['catcreatesuccess'] = 'The category was created successfully.';
+$string['catcreatefailure'] = 'The new category could not be stored in the database.';
+
 // plugin file area descriptions
 $string['submittedfilesareadescription'] = 'Submitted files in exercises with file uploads';
 
@@ -103,6 +113,7 @@ $string['submissionfailed'] = 'Your new submission could not be stored in the se
 $string['uploadtoservicefailed'] = 'Your submission was received but it could not be sent to the exercise service for grading!';
 $string['youmaynotsubmit'] = 'You may not submit new solutions to this exercise any more!';
 $string['servicemalfunction'] = 'The exercise assessment service is malfunctioning. This submission is now marked as erroneous.';
+$string['duplicatecatname'] = 'Category with this name already exists.';
 
 /*
 $string['stratumfieldset'] = 'Stratum assignment settings';

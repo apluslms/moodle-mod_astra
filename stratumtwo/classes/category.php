@@ -21,18 +21,17 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
         return get_fast_modinfo($this->record->course);
     }
     
-    public function getStatus() {
-        //TODO return number or string?
-        /*switch ($this->record->status) {
-            case self::STATUS_READY:
-                return 'ready';
-                break;
-            case self::STATUS_HIDDEN:
-                return 'hidden';
-                break;
-            default:
-                throw new coding_exception('Stratum2 exercise category has unknown status.');
-        }*/
+    public function getStatus($asString = false) {
+        if ($asString) {
+            switch ((int) $this->record->status) {
+                case self::STATUS_READY:
+                    return get_string('statusready', mod_stratumtwo_exercise_round::MODNAME);
+                    break;
+                //case self::STATUS_HIDDEN:
+                default:
+                    return get_string('statushidden', mod_stratumtwo_exercise_round::MODNAME);
+            }
+        }
         return (int) $this->record->status;
     }
     
@@ -149,6 +148,8 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
         $ctx->editurl = \mod_stratumtwo\urls\urls::editCategory($this);
         $ctx->has_exercises = ($this->countExercises() > 0);
         $ctx->removeurl = 'TODO'; //TODO \mod_stratumtwo\urls\urls::deleteCategory($this);
+        $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
+        $ctx->status_str = $this->getStatus(true);
         return $ctx;
     }
 }

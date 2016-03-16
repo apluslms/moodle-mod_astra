@@ -36,7 +36,7 @@ class urls {
     
     public static function editExercise(\mod_stratumtwo_exercise $ex) {
         $query = array('id' => $ex->getId());
-        return self::baseURL() .'/edit_exercise.php?'. \http_build_query($query, 'i_', '&');
+        return self::baseURL() .'/teachers/edit_exercise.php?'. \http_build_query($query, 'i_', '&');
     }
     
     public static function submission(\mod_stratumtwo_submission $sbms) {
@@ -78,8 +78,8 @@ class urls {
         return self::baseURL() .'/teachers/edit_category.php?'. \http_build_query($q, 'i_', '&');
     }
     
-    public static function createCategory() {
-        $q = array('create' => 1);
+    public static function createCategory($courseid) {
+        $q = array('course' => $courseid);
         return self::baseURL() .'/teachers/edit_category.php?'. \http_build_query($q, 'i_', '&');
     }
     
