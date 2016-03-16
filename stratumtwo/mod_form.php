@@ -29,6 +29,8 @@ class mod_stratumtwo_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
+        global $CFG;
+        
         $mform = $this->_form;
         $mod = mod_stratumtwo_exercise_round::MODNAME; // for get_string()
         // All the addRule validation rules must match the limits in the DB schema !!!
