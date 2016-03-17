@@ -30,6 +30,11 @@ class edit_round_form extends \moodleform {
         parent::__construct($action); // calls definition()
     }
     
+    /**
+     * Add fields for editing an exercise round that should be listed before the introeditor.
+     * This method can be used by mod_form and this class to reuse the same code.
+     * @param $mform form instance
+     */
     public static function add_fields_before_intro($mform) {
         global $CFG;
         
@@ -48,6 +53,11 @@ class edit_round_form extends \moodleform {
         $mform->addHelpButton('name', 'roundname', $mod);
     }
     
+    /**
+     * Add fields for editing an exercise round that should be listed after the introeditor.
+     * This method can be used by mod_form and this class to reuse the same code.
+     * @param $mform form instance
+     */
     public static function add_fields_after_intro($mform) {
         $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
         
@@ -179,6 +189,15 @@ class edit_round_form extends \moodleform {
         $this->add_action_buttons();
     }
     
+    /**
+     * Validate form fields that are added in the other reusable static methods.
+     * This method can be used by mod_form and this class to reuse the same code.
+     * @param array $data user input in the form
+     * @param $files files in the form
+     * @param int $courseid Moodle course ID of the exercise round
+     * @param int $editRoundId ID of the exercise round, or zero if creating a new round
+     * @return errors array indexed by form field names
+     */
     public static function common_validation($data, $files, $courseid, $editRoundId = 0) {
         $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
         $errors = array();
