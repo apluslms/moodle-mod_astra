@@ -35,6 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else if (isset($_POST['renumbercourse'])) {
             stratumtwo_renumber_rounds_and_exercises($cid, $module_numbering, true);
         }
+        // sort Stratum2 activities (Moodle course modules) in the course page
+        foreach (stratumtwo_find_course_sections_with_stratum_ex($cid) as $sectionNumber) {
+            stratumtwo_sort_activities_in_section($cid, $sectionNumber);
+        }
         // clear cache so that course main page shows the updated exercise round names (Moodle course modules)
         rebuild_course_cache($cid);
     }

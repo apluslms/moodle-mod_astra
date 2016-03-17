@@ -126,6 +126,25 @@ function stratumtwo_rename_rounds_with_numbers($courseid, $moduleNumberingStyle)
 }
 
 /**
+ * Return an array of course section numbers (0-N) that contain Stratum2 exercise rounds.
+ * @param int $courseid Moodle course ID
+ * @return array of section numbers
+ */
+function stratumtwo_find_course_sections_with_stratum_ex($courseid) {
+    global $DB;
+    
+    $sql = "SELECT DISTINCT section FROM {course_sections} WHERE id IN (" .
+            "SELECT DISTINCT section FROM {course_modules} WHERE course = ? AND module = " .
+           "(SELECT id FROM {modules} WHERE name = '". \mod_stratumtwo_exercise_round::TABLE ."'))";
+    $section_records = $DB->get_records_sql($sql, array($courseid));
+    $sections = array();
+    foreach ($section_records as $sec) {
+        $sections[] = $sec->section;
+    }
+    return $sections;
+}
+
+/**
  * Add edit course page to the navbar.
  * @param moodle_page $page $PAGE
  * @param int $courseid
