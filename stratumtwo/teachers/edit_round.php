@@ -41,14 +41,6 @@ stratumtwo_edit_course_navbar_add($PAGE, $courseid,
         get_string('editmodule', mod_stratumtwo_exercise_round::MODNAME),
         $page_url, 'editround');
 
-// Output starts here.
-// gotcha: moodle forms should be initialized before $OUTPUT->header
-$form = new \mod_stratumtwo\form\edit_round_form($courseid, $id, $form_action);
-if ($form->is_cancelled()) {
-    // Handle form cancel operation, if cancel button is present on form
-    redirect(\mod_stratumtwo\urls\urls::editCourse($courseid, true));
-    exit(0);
-}
 
 // intro editor requires preparation
 $data = new stdClass();
@@ -61,7 +53,17 @@ if ($id) {
     file_prepare_draft_area($draftid_editor, null, null, null, null, array('subdirs' => false));
     $data->introeditor = array('text' => '', 'format' => FORMAT_HTML, 'itemid' => $draftid_editor);
 }
-$form->set_data($data);
+
+// Output starts here.
+// gotcha: moodle forms should be initialized before $OUTPUT->header
+$form = new \mod_stratumtwo\form\edit_round_form($courseid, $draftid_editor, $id, $form_action);
+if ($form->is_cancelled()) {
+    // Handle form cancel operation, if cancel button is present on form
+    redirect(\mod_stratumtwo\urls\urls::editCourse($courseid, true));
+    exit(0);
+}
+
+$form->set_data($data); // for introeditor
 
 
 $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
@@ -84,7 +86,7 @@ if ($fromform = $form->get_data()) {
         $numberingStyle = mod_stratumtwo_course_config::getDefaultModuleNumbering();
     }
     $fromform->name = mod_stratumtwo_exercise_round::updateNameWithOrder($fromform->name, $fromform->ordernum, $numberingStyle);
-    
+
     if ($id) { // edit
         $fromform->id = $id;
         $exround = new \mod_stratumtwo_exercise_round($roundRecord);

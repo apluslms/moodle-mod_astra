@@ -14,16 +14,19 @@ class edit_round_form extends \moodleform {
 
     protected $courseid;
     protected $editRoundId;
+    protected $introItemId;
     
     /**
      * Constructor.
      * @param int $courseid Moodle course ID of the category
+     * @param int $introItemId itemid for the intro HTML editor
      * @param int $editRoundId ID of the exercise round if editing, zero if creating new
      * @param string $action form action URL
      */
-    public function __construct($courseid, $editRoundId = 0, $action = null) {
+    public function __construct($courseid, $introItemId, $editRoundId = 0, $action = null) {
         $this->courseid = $courseid;
         $this->editRoundId = $editRoundId;
+        $this->introItemId = $introItemId;
         parent::__construct($action); // calls definition()
     }
     
@@ -142,17 +145,26 @@ class edit_round_form extends \moodleform {
         self::add_fields_before_intro($mform);
         
         // Adding the "intro" and "introformat" fields (HTML editor)
+        if ($this->editRoundId) {
+            list($course, $cm) = \get_course_and_cm_from_instance($this->editRoundId, \mod_stratumtwo_exercise_round::TABLE);
+            $context = \context_module::instance($cm->id);
+        } else {
+            $context = \context_course::instance($this->courseid);
+        }
         $mform->addElement('editor', 'introeditor', \get_string('moduleintro'),
                 array('rows' => 10),
                 array(
                     'maxfiles' => 0,
                     'maxbytes' => 0,
                     'noclean' => true,
-                    'context' => null,
+                    'context' => $context,
                     'subdirs' => false,
                     'enable_filemanagement' => false,
+                    'changeformat' => 0,
+                    'trusttext' => 1,
                 ));
         $mform->setType('introeditor', \PARAM_RAW);
+        $mform->addElement('hidden', 'introeditor[itemid]', $this->introItemId);
         
         self::add_fields_after_intro($mform);
         
