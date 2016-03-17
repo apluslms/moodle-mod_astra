@@ -35,7 +35,7 @@ if ($default_values === false) {
 $form = new \mod_stratumtwo\form\autosetup_form($default_values, 'auto_setup.php?course='. $cid);
 if ($form->is_cancelled()) {
     // Handle form cancel operation, if cancel button is present on form
-    redirect(\mod_stratumtwo\urls\urls::editCourse($courseid, true));
+    redirect(\mod_stratumtwo\urls\urls::editCourse($cid, true));
     exit(0);
 }
 $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
