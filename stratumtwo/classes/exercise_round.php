@@ -198,7 +198,8 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         require_once(dirname(dirname(__FILE__)) .'/locallib.php');
         
         // remove possible old ordinal number
-        $name = preg_replace('/^(\d+\.)|([IVXCML]+)/', '', $oldName, 1);
+        $name = preg_replace('/^(\d+\.)|([IVXCML]+ )/', '', $oldName, 1);
+        // require space after the roman numeral, or it catches words like "Very"
         if ($name !== null) {
             $name = trim($name);
             switch ($numberingStyle) {
