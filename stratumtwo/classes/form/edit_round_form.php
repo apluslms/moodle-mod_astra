@@ -27,13 +27,10 @@ class edit_round_form extends \moodleform {
         parent::__construct($action); // calls definition()
     }
     
-    public function definition() {
+    public static function add_fields_before_intro($mform) {
         global $CFG;
         
-        $mform = $this->_form;
         $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
-        // All the addRule validation rules must match the limits in the DB schema !!!
-        // (table stratumtwo in the file stratumtwo/db/install.xml)
         
         // Adding the standard "name" field.
         $mform->addElement('text', 'name', get_string('roundname', $mod),
@@ -46,19 +43,10 @@ class edit_round_form extends \moodleform {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->addHelpButton('name', 'roundname', $mod);
-        
-        // Adding the "intro" and "introformat" fields (HTML editor)
-        $mform->addElement('editor', 'introeditor', \get_string('moduleintro'),
-                array('rows' => 10),
-                array(
-                    'maxfiles' => 0,
-                    'maxbytes' => 0,
-                    'noclean' => true,
-                    'context' => null,
-                    'subdirs' => false,
-                    'enable_filemanagement' => false,
-                ));
-        $mform->setType('introeditor', \PARAM_RAW);
+    }
+    
+    public static function add_fields_after_intro($mform) {
+        $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
         
         // exercise round status
         $mform->addElement('select', 'status', get_string('status', $mod), array(
@@ -141,7 +129,33 @@ class edit_round_form extends \moodleform {
         //$mform->addRule('latesbmspenalty', null, 'required', null, 'client');
         $mform->addRule('latesbmspenalty', null, 'numeric', null, 'client');
         $mform->addRule('latesbmspenalty', null, 'maxlength', 5, 'client');
-
+    }
+    
+    public function definition() {
+        global $CFG;
+        
+        $mform = $this->_form;
+        $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
+        // All the addRule validation rules must match the limits in the DB schema !!!
+        // (table stratumtwo in the file stratumtwo/db/install.xml)
+        
+        self::add_fields_before_intro($mform);
+        
+        // Adding the "intro" and "introformat" fields (HTML editor)
+        $mform->addElement('editor', 'introeditor', \get_string('moduleintro'),
+                array('rows' => 10),
+                array(
+                    'maxfiles' => 0,
+                    'maxbytes' => 0,
+                    'noclean' => true,
+                    'context' => null,
+                    'subdirs' => false,
+                    'enable_filemanagement' => false,
+                ));
+        $mform->setType('introeditor', \PARAM_RAW);
+        
+        self::add_fields_after_intro($mform);
+        
         // course section number, required if creating a new round, ignored if editing
         $mform->addElement('text', 'sectionnumber', get_string('sectionnum', $mod));
         $mform->setType('sectionnumber', \PARAM_INT);
@@ -153,29 +167,29 @@ class edit_round_form extends \moodleform {
         $this->add_action_buttons();
     }
     
-    function validation($data, $files) {
+    public static function common_validation($data, $files, $courseid, $editRoundId = 0) {
         $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
-        $errors = parent::validation($data, $files);
-    
+        $errors = array();
+        
         // if point values are given, they cannot be negative
         if ($data['pointstopass'] !== '' && $data['pointstopass'] < 0) {
             $errors['pointstopass'] = get_string('negativeerror', $mod);
         }
-    
+        
         // closing time must be later than opening time
         if ($data['closingtime'] !== '' && $data['openingtime'] !== '' &&
                 $data['closingtime'] < $data['openingtime']) {
             $errors['closingtime'] = get_string('closingbeforeopeningerror', $mod);
         }
-    
-        if ($data['latesbmsallowed'] == 1 ) {
+        
+        if ($data['latesbmsallowed'] == 1) {
             if (empty($data['latesbmsdl'])) {
                 $errors['latesbmsdl'] = get_string('mustbesetwithlate', $mod);
             } else {
                 // late submission deadline must be later than the closing time
                 if ($data['closingtime'] !== '' &&
                         $data['latesbmsdl'] <= $data['closingtime']) {
-                            $errors['latesbmsdl'] = get_string('latedlbeforeclosingerror', $mod);
+                    $errors['latesbmsdl'] = get_string('latedlbeforeclosingerror', $mod);
                 }
             }
 
@@ -188,13 +202,22 @@ class edit_round_form extends \moodleform {
                 }
             }
         }
-        
+
         // check that remote keys of exercise rounds are unique within a course
-        foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->courseid) as $exround) {
-            if ($this->editRoundId != $exround->getId() && $data['remotekey'] == $exround->getRemoteKey()) {
+        foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
+            if ($editRoundId != $exround->getId() && $data['remotekey'] == $exround->getRemoteKey()) {
                 $errors['remotekey'] = get_string('duplicateroundremotekey', $mod);
             }
         }
+        
+        return $errors;
+    }
+    
+    public function validation($data, $files) {
+        $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
+        $errors = parent::validation($data, $files);
+    
+        $errors = \array_merge($errors, self::common_validation($data, $files, $this->courseid, $this->editRoundId));
         
         // require section number if creating a new round
         // Unfortunately, if the user leaves the field empty, Moodle replaces that value with zero
