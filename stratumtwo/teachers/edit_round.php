@@ -1,0 +1,116 @@
+<?php
+/** Page for manual editing/creation of a Stratum2 exercise round.
+ */
+require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // defines MOODLE_INTERNAL for libraries
+require_once(dirname(__FILE__) .'/editcourse_lib.php');
+
+$id       = optional_param('id', 0, PARAM_INT); // category ID, edit existing
+$courseid = optional_param('course', 0, PARAM_INT); // course ID, if creating new
+
+if ($id) {
+    $roundRecord = $DB->get_record(mod_stratumtwo_exercise_round::TABLE, array('id' => $id), '*', MUST_EXIST);
+    $courseid = $roundRecord->course;
+    $page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/edit_round.php', array('id' => $id));
+    $form_action = 'edit_round.php?id='. $id;
+    $heading = get_string('editmodule', mod_stratumtwo_exercise_round::MODNAME);
+} else if ($courseid) {
+    $page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/edit_round.php', array('course' => $courseid));
+    $form_action = 'edit_round.php?course='. $courseid;
+    $heading = get_string('createmodule', mod_stratumtwo_exercise_round::MODNAME);
+} else {
+    // missing parameter: cannot create new or modify existing
+    print_error('missingparam', '', '', 'id');
+}
+
+$course = get_course($courseid);
+
+require_login($course, false);
+$context = context_course::instance($courseid);
+require_capability('mod/stratumtwo:addinstance', $context);
+
+// Print the page header.
+$PAGE->set_pagelayout('incourse');
+$PAGE->set_url($page_url);
+$PAGE->set_title(format_string(get_string('editmodule', mod_stratumtwo_exercise_round::MODNAME)));
+$PAGE->set_heading(format_string($course->fullname));
+
+// navbar
+stratumtwo_edit_course_navbar_add($PAGE, $courseid,
+        get_string('editmodule', mod_stratumtwo_exercise_round::MODNAME),
+        $page_url, 'editround');
+
+// Output starts here.
+// gotcha: moodle forms should be initialized before $OUTPUT->header
+$form = new \mod_stratumtwo\form\edit_round_form($courseid, $id, $form_action);
+if ($form->is_cancelled()) {
+    // Handle form cancel operation, if cancel button is present on form
+    redirect(\mod_stratumtwo\urls\urls::editCourse($courseid, true));
+    exit(0);
+}
+
+$output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
+
+echo $output->header();
+echo $output->heading($heading);
+
+if ($fromform = $form->get_data()) {
+    // form submitted and input is valid
+    $fromform->course = $courseid;
+    // add settings for the Moodle course module
+    $fromform->visible = ($fromform->status != \mod_stratumtwo_exercise_round::STATUS_HIDDEN) ? 1 : 0;
+    $sectionNumber = $fromform->sectionnumber; // course section for a new round
+    unset($fromform->sectionnumber);
+    // update name with new ordernum
+    $courseconf = mod_stratumtwo_course_config::getForCourseId($courseid);
+    if ($courseconf !== null) {
+        $numberingStyle = $courseconf->getModuleNumbering();
+    } else {
+        $numberingStyle = mod_stratumtwo_course_config::getDefaultModuleNumbering();
+    }
+    $fromform->name = mod_stratumtwo_exercise_round::updateNameWithOrder($fromform->name, $fromform->ordernum, $numberingStyle);
+    // Moodle core expects an itemid for HTML editor
+    $fromform->introeditor['itemid'] = 0;
+    
+    if ($id) { // edit
+        $fromform->id = $id;
+        $exround = new \mod_stratumtwo_exercise_round($roundRecord);
+        $cm = $exround->getCourseModule();
+        $fromform->coursemodule = $cm->id; // Moodle course module ID
+        $fromform->cmidnumber = $cm->idnumber; // keep the old Moodle course module idnumber
+        try {
+            \update_module($fromform); // throws moodle_exception
+            $message = get_string('modeditsuccess', mod_stratumtwo_exercise_round::MODNAME);
+        } catch (\Exception $e) {
+            $message = get_string('modeditfailure', mod_stratumtwo_exercise_round::MODNAME);
+            $message .= ' '. $e->getMessage();
+        }
+        
+    } else { // create new
+        $fromform->modulename = \mod_stratumtwo_exercise_round::TABLE;
+        $fromform->section = $sectionNumber;
+        $fromform->cmidnumber = ''; // Moodle course module idnumber, unused
+        
+        try {
+            \create_module($fromform); // throws moodle_exception
+            $message = get_string('modcreatesuccess', mod_stratumtwo_exercise_round::MODNAME);
+        } catch (\Exception $e) {
+            $message = get_string('modcreatefailure', mod_stratumtwo_exercise_round::MODNAME);
+        }
+    }
+    
+    echo '<p>'. $message .'</p>';
+    echo '<p>'.
+            html_writer::link(\mod_stratumtwo\urls\urls::editCourse($courseid, true),
+              get_string('backtocourseedit', mod_stratumtwo_exercise_round::MODNAME)) .
+         '</p>';
+    
+} else {
+    if ($id && !$form->is_submitted()) { // if editing, fill the form with old values
+        //TODO intro description not coming
+        $form->set_data($roundRecord);
+    }
+    $form->display();
+}
+
+// Finish the page.
+echo $output->footer();

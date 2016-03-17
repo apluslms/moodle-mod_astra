@@ -19,8 +19,8 @@ class urls {
         return self::baseURL() .'/teachers/edit_round.php?'. \http_build_query($query, 'i_', '&');
     }
     
-    public static function createExerciseRound() {
-        $query = array('create' => 1);
+    public static function createExerciseRound($courseid) {
+        $query = array('course' => $courseid);
         return self::baseURL() .'/teachers/edit_round.php?'. \http_build_query($query, 'i_', '&');
     }
     

@@ -38,7 +38,7 @@ class edit_course_page implements \renderable, \templatable {
         foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->courseid) as $exround) {
             $ctx->course_modules[] = $exround->getTemplateContextWithExercises(true);
         }
-        $ctx->create_module_url = \mod_stratumtwo\urls\urls::createExerciseRound();
+        $ctx->create_module_url = \mod_stratumtwo\urls\urls::createExerciseRound($this->courseid);
         $ctx->renumber_action_url = \mod_stratumtwo\urls\urls::editCourse($this->courseid);
         
         $ctx->module_numbering_options = function($mustacheHelper) {

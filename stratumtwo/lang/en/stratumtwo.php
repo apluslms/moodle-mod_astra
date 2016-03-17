@@ -43,6 +43,8 @@ $string['latesbmsdl'] = 'Late submission deadline';
 $string['latesbmsdl_help'] = 'Submissions after the closing time and before the late submission deadline receive penalties in points.';
 $string['latesbmspenalty'] = 'Late submission penalty';
 $string['latesbmspenalty_help'] = 'Multiplier of points to reduce, as decimal. 0.1 = 10%';
+$string['ordernum'] = 'Order';
+$string['ordernum_help'] = 'Set the order in which the exercise rounds are listed in the course page. Smaller ordinal number comes first.';
 
 // templates
 $string['passed'] = 'Passed';
@@ -99,6 +101,11 @@ $string['catcreatefailure'] = 'The new category could not be stored in the datab
 $string['automaticsetup'] = 'Automatic setup';
 $string['autosetup'] = 'Update and create Stratum2 exercises automatically';
 $string['autosetup_help'] = 'Import configuration from the exercise service URL and override course contents (Stratum2 exercise rounds, exercises and categories).';
+$string['createmodule'] = 'Create exercise round';
+$string['modeditsuccess'] = 'The exercise round was updated successfully.';
+$string['modcreatesuccess'] = 'The exercise round was created successfully.';
+$string['modcreatefailure'] = 'The new exercise round could not be stored in the database.';
+$string['modeditfailure'] = 'Updating the exercise round failed.';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';
@@ -168,6 +175,8 @@ $string['uploadtoservicefailed'] = 'Your submission was received but it could no
 $string['youmaynotsubmit'] = 'You may not submit new solutions to this exercise any more!';
 $string['servicemalfunction'] = 'The exercise assessment service is malfunctioning. This submission is now marked as erroneous.';
 $string['duplicatecatname'] = 'Category with this name already exists.';
+$string['duplicateroundremotekey'] = 'Exercise round with this remote key already exists.';
+$string['sectionnumrequired'] = 'Section number is required when creating a new exercise round.';
 
 /*
 $string['stratumsbmsmaxbytes'] = 'Submission file max size in bytes';
