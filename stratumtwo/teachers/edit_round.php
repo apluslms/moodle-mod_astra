@@ -2,6 +2,8 @@
 /** Page for manual editing/creation of a Stratum2 exercise round.
  */
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // defines MOODLE_INTERNAL for libraries
+require_once($CFG->libdir.'/filelib.php');
+require_once($CFG->dirroot .'/course/lib.php');
 require_once(dirname(__FILE__) .'/editcourse_lib.php');
 
 $id       = optional_param('id', 0, PARAM_INT); // category ID, edit existing
@@ -48,6 +50,20 @@ if ($form->is_cancelled()) {
     exit(0);
 }
 
+// intro editor requires preparation
+$data = new stdClass();
+$draftid_editor = file_get_submitted_draft_itemid('introeditor');
+if ($id) {
+    $currentintro = file_prepare_draft_area($draftid_editor, $context->id, mod_stratumtwo_exercise_round::MODNAME,
+            'intro', 0, array('subdirs' => false), $roundRecord->intro);
+    $data->introeditor = array('text' => $currentintro, 'format' => $roundRecord->introformat, 'itemid' => $draftid_editor);
+} else {
+    file_prepare_draft_area($draftid_editor, null, null, null, null, array('subdirs' => false));
+    $data->introeditor = array('text' => '', 'format' => FORMAT_HTML, 'itemid' => $draftid_editor);
+}
+$form->set_data($data);
+
+
 $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
 
 echo $output->header();
@@ -68,8 +84,6 @@ if ($fromform = $form->get_data()) {
         $numberingStyle = mod_stratumtwo_course_config::getDefaultModuleNumbering();
     }
     $fromform->name = mod_stratumtwo_exercise_round::updateNameWithOrder($fromform->name, $fromform->ordernum, $numberingStyle);
-    // Moodle core expects an itemid for HTML editor
-    $fromform->introeditor['itemid'] = 0;
     
     if ($id) { // edit
         $fromform->id = $id;
@@ -106,7 +120,6 @@ if ($fromform = $form->get_data()) {
     
 } else {
     if ($id && !$form->is_submitted()) { // if editing, fill the form with old values
-        //TODO intro description not coming
         $form->set_data($roundRecord);
     }
     $form->display();
