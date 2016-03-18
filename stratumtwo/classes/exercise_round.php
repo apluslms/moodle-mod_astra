@@ -231,6 +231,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     public function setStatus($status) {
+        global $CFG;
         require_once($CFG->dirroot .'/course/lib.php');
         
         $cm = $this->getCourseModule();
