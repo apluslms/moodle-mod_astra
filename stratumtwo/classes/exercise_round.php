@@ -760,7 +760,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
      * Create a new exercise to this exercise round.
      * @param stdClass $exercise settings for the nex exercise: object with fields
      * status, parentid, ordernum, remotekey, name, serviceurl, allowastgrading,
-     * maxsubmissions, pointstopass, maxpoints, sbmsmaxbytes
+     * maxsubmissions, pointstopass, maxpoints
      * @param mod_stratumtwo_category $category category of the exercise
      * @return mod_stratumtwo_exercise the new exercise, or null if failed
      */
