@@ -81,7 +81,9 @@ class remote_page {
             // make the request HTTP POST instead of GET and add post data key-value pairs
             curl_setopt($ch, CURLOPT_POST, true);
             if (empty($files)) {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data, 'i_', '&'));
+                //curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data, 'i_', '&'));
+                // avoid array syntax in the POST data since Django does not parse it the way we want
+                curl_setopt($ch, CURLOPT_POSTFIELDS, self::build_query($data));
                 // request Content-Type: application/x-www-form-urlencoded
             } else {
                 $postData = $data;
@@ -120,6 +122,40 @@ class remote_page {
             }
         }
         return $response; // response as string
+    }
+    
+    /**
+     * Build URL-encoded query string from $data. This is a replacement for
+     * http_build_query. This method does not use array syntax in the result like
+     * http_build_query does (when there are multiple values for the same name,
+     * for example because an HTML form has multiple checkboxes that can be all selected).
+     * @param array $data associative array, null allowed too
+     * @return string
+     */
+    public static function build_query($data) {
+        if (empty($data)) {
+            return '';
+        }
+        $q = self::build_query_helper($data);
+        if (!empty($q)) { // drop the trailing &
+            $q = \substr($q, 0, -1);
+        }
+        return $q;
+    }
+    
+    private static function build_query_helper($data, $outerKey = null) {
+        $q = '';
+        foreach ($data as $key => $val) {
+            if (\is_array($val)) {
+                $q .= self::build_query_helper($val, $key);
+            } else {
+                if (\is_numeric($key) && $outerKey !== null) {
+                    $key = $outerKey;
+                }
+                $q .= \urlencode($key) .'='. \urlencode($val) .'&';
+            }
+        }
+        return $q;
     }
     
     /**

@@ -139,6 +139,26 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     
     public function getSubmissionData() {
         return self::tryToDecodeJSON($this->record->submissiondata);
+        
+        /* If submissiondata is flattened before storing in the DB
+        $data = self::tryToDecodeJSON($this->record->submissiondata);
+        if (is_array($data)) {
+            // flattened key-value pairs, convert back to nested arrays
+            $nestedData = array();
+            foreach ($data as $pair) {
+                $key = $pair[0];
+                $val = $pair[1];
+                
+                if (array_key_exists($key, $nestedData)) {
+                    $nestedData[$key][] = $val;
+                } else {
+                    $nestedData[$key] = array($val);
+                }
+            }
+            return $nestedData;
+        }
+        return $data;
+        */
     }
     
     public function getGradingData() {
@@ -302,7 +322,33 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         return $files;
     }
     
+    /**
+     * Flatten an array. Returns a numerically indexed array of key-value pairs,
+     * for example [[key1, val1], [key2, val2], [key1, val3]]. If the input data
+     * uses the same key more than once (nested in inner arrays), the output
+     * contains several pairs with the same key.
+     * @param array $data
+     * @return array
+     */
+    private static function flattenData(array $data, $outerKey = null) {
+        $flat = array();
+        foreach ($data as $key => $val) {
+            if (is_array($val)) {
+                $flat = array_merge($flat, self::flattenData($val, $key));
+            } else {
+                if (is_numeric($key) && is_string($outerKey)) {
+                    $key = $outerKey;
+                }
+                $flat[] = array($key, $val);
+            }
+        }
+        return $flat;
+    }
+    
     public static function submissionDataToString(array $submissionData) {
+        //$flatData = self::flattenData($submissionData);
+        // flattening is not a good idea due to the differences on how PHP and Django (mooc-grader)
+        // handle arrays in POST data
         $json = json_encode($submissionData);
         if ($json === false)
             return null; // failed to encode
