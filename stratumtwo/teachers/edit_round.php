@@ -76,8 +76,7 @@ if ($fromform = $form->get_data()) {
     $fromform->course = $courseid;
     // add settings for the Moodle course module
     $fromform->visible = ($fromform->status != \mod_stratumtwo_exercise_round::STATUS_HIDDEN) ? 1 : 0;
-    $sectionNumber = $fromform->sectionnumber; // course section for a new round
-    unset($fromform->sectionnumber);
+    
     // update name with new ordernum
     $courseconf = mod_stratumtwo_course_config::getForCourseId($courseid);
     if ($courseconf !== null) {
@@ -103,7 +102,8 @@ if ($fromform = $form->get_data()) {
         
     } else { // create new
         $fromform->modulename = \mod_stratumtwo_exercise_round::TABLE;
-        $fromform->section = $sectionNumber;
+        $fromform->section = $fromform->sectionnumber; // course section for a new round
+        unset($fromform->sectionnumber);
         $fromform->cmidnumber = ''; // Moodle course module idnumber, unused
         
         try {

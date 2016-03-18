@@ -176,7 +176,6 @@ $string['youmaynotsubmit'] = 'You may not submit new solutions to this exercise 
 $string['servicemalfunction'] = 'The exercise assessment service is malfunctioning. This submission is now marked as erroneous.';
 $string['duplicatecatname'] = 'Category with this name already exists.';
 $string['duplicateroundremotekey'] = 'Exercise round with this remote key already exists.';
-$string['sectionnumrequired'] = 'Section number is required when creating a new exercise round.';
 
 /*
 $string['stratumsbmsmaxbytes'] = 'Submission file max size in bytes';

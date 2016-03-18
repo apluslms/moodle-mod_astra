@@ -179,12 +179,15 @@ class edit_round_form extends \moodleform {
         self::add_fields_after_intro($mform);
         
         // course section number, required if creating a new round, ignored if editing
-        $mform->addElement('text', 'sectionnumber', get_string('sectionnum', $mod));
-        $mform->setType('sectionnumber', \PARAM_INT);
-        $mform->addHelpButton('sectionnumber', 'sectionnum', $mod);
-        $mform->addRule('sectionnumber', null, 'numeric', null, 'client');
-        $mform->addRule('sectionnumber', null, 'maxlength', 2, 'client');
-
+        if ($this->editRoundId == 0) {
+            $mform->addElement('text', 'sectionnumber', get_string('sectionnum', $mod));
+            $mform->setType('sectionnumber', \PARAM_INT);
+            $mform->addHelpButton('sectionnumber', 'sectionnum', $mod);
+            $mform->addRule('sectionnumber', null, 'numeric', null, 'client');
+            $mform->addRule('sectionnumber', null, 'maxlength', 2, 'client');
+            $mform->addRule('sectionnumber', null, 'required', null, 'client');
+        }
+        
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
     }
@@ -250,11 +253,9 @@ class edit_round_form extends \moodleform {
     
         $errors = \array_merge($errors, self::common_validation($data, $files, $this->courseid, $this->editRoundId));
         
-        // require section number if creating a new round
-        // Unfortunately, if the user leaves the field empty, Moodle replaces that value with zero
-        // and we cannot know here if the user left it empty or entered zero.
+        // require section number if creating a new round, must be non-negative
         if ($this->editRoundId == 0 && ($data['sectionnumber'] === '' || $data['sectionnumber'] < 0)) {
-            $errors['sectionnumber'] = get_string('sectionnumrequired', $mod);
+            $errors['sectionnumber'] = get_string('negativeerror', $mod);
         }
         return $errors;
     }
