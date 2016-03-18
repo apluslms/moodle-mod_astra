@@ -61,7 +61,7 @@ class user_module_summary {
         // find best submission for each exercise
         foreach ($submissions as $record) {
             $sbms = new \mod_stratumtwo_submission($record);
-            $exerciseBest = $submissionsByExerciseId[$record->exerciseid];
+            $exerciseBest = &$submissionsByExerciseId[$record->exerciseid];
             $count = $exerciseBest['count'];
             $best = $exerciseBest['best'];
             if ($best === null || $sbms->getGrade() > $best->getGrade() || 
