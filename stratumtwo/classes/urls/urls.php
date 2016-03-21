@@ -39,6 +39,11 @@ class urls {
         return self::baseURL() .'/teachers/edit_exercise.php?'. \http_build_query($query, 'i_', '&');
     }
     
+    public static function createExercise(\mod_stratumtwo_exercise_round $exround) {
+        $query = array('round' => $exround->getId());
+        return self::baseURL() .'/teachers/edit_exercise.php?'. \http_build_query($query, 'i_', '&');
+    }
+    
     public static function submission(\mod_stratumtwo_submission $sbms) {
         $query = array('id' => $sbms->getId());
         return self::baseURL() .'/submission.php?'. \http_build_query($query, 'i_', '&');

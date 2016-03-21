@@ -29,8 +29,8 @@ $string['status'] = 'Status';
 $string['statusready'] = 'Ready';
 $string['statushidden'] = 'Hidden';
 $string['statusmaintenance'] = 'Maintenance';
-$string['remotekey'] = 'Stratum2 remote key';
-$string['remotekey_help'] = 'Unique exercise round key in the Stratum2 server.';
+$string['remotekey'] = 'Exercise service remote key';
+$string['remotekey_help'] = 'Unique key in the exercise service.';
 $string['pointstopass'] = 'Points to pass';
 $string['pointstopass_help'] = 'The points the student must earn in order to pass.';
 $string['openingtime'] = 'Opening time';
@@ -44,7 +44,7 @@ $string['latesbmsdl_help'] = 'Submissions after the closing time and before the 
 $string['latesbmspenalty'] = 'Late submission penalty';
 $string['latesbmspenalty_help'] = 'Multiplier of points to reduce, as decimal. 0.1 = 10%';
 $string['ordernum'] = 'Order';
-$string['ordernum_help'] = 'Set the order in which the exercise rounds are listed in the course page. Smaller ordinal number comes first.';
+$string['ordernum_help'] = 'Set the order in which objects are listed in the course page. Smaller ordinal number comes first.';
 
 // templates
 $string['passed'] = 'Passed';
@@ -106,6 +106,24 @@ $string['modeditsuccess'] = 'The exercise round was updated successfully.';
 $string['modcreatesuccess'] = 'The exercise round was created successfully.';
 $string['modcreatefailure'] = 'The new exercise round could not be stored in the database.';
 $string['modeditfailure'] = 'Updating the exercise round failed.';
+$string['createexercise'] = 'Create new exercise';
+$string['exerciseeditsuccess'] = 'The exercise was updated successfully.';
+$string['excreatesuccess'] = 'The exercise was created successfully.';
+$string['excreatefailure'] = 'The new exercise could not be stored in the database.';
+$string['exercisename'] = 'Exercise name';
+$string['exercisename_help'] = 'Name of the exercise that is shown to users.';
+$string['category'] = 'Category';
+$string['exerciseround'] = 'Exercise round';
+$string['parentexercise'] = 'Parent exercise';
+$string['parentexercise_help'] = 'If set, this exercise is listed under the parent. The parent must be in the same exercise round.';
+$string['serviceurl'] = 'Service URL';
+$string['serviceurl_help'] = 'Absolute URL of this exercise in the exercise service.';
+$string['maxpoints'] = 'Max points';
+$string['maxpoints_help'] = 'Max points that a student may earn in this exercise.';
+$string['maxsubmissions'] = 'Max submissions';
+$string['maxsubmissions_help'] = 'Maximum number of submissions a student is allowed to submit in the exercise. Set to zero for no limit.';
+$string['allowastgrading'] = 'Allow assistant grading';
+$string['allowastgrading_help'] = 'If checked, assistants may write feedback and change points for any submission in the exercise.';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';
@@ -176,6 +194,8 @@ $string['youmaynotsubmit'] = 'You may not submit new solutions to this exercise 
 $string['servicemalfunction'] = 'The exercise assessment service is malfunctioning. This submission is now marked as erroneous.';
 $string['duplicatecatname'] = 'Category with this name already exists.';
 $string['duplicateroundremotekey'] = 'Exercise round with this remote key already exists.';
+$string['parentexinwronground'] = 'Parent exercise must be in the same exercise round. Unset parent if you are changing the round of this exercise.';
+$string['duplicateexerciseremotekey'] = 'Exercise with this remote key already exists in the course.';
 
 /*
 $string['stratumsbmsmaxbytes'] = 'Submission file max size in bytes';

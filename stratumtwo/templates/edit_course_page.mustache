@@ -19,6 +19,7 @@ Context variables:
     - has_exercises (bool) true if there is at least one exercise/learning object in the round
     - removeurl (string) URL for deleting the round
     - url (string) URL for viewing the round
+    - addnewobjecturl (string) URL for adding a new learning object to the round
     - all_exercises (array of objects) includes also hidden exercises, each object has fields 
         * name (string) with ordinal number
         * status_ready (bool) true if status is ready
@@ -133,7 +134,7 @@ Context variables:
             {{/ all_exercises }}
             <tr>
                 <td colspan="2">
-                    <a class="btn btn-success btn-xs">
+                    <a class="btn btn-success btn-xs" href="{{{ addnewobjecturl }}}">
                         <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
                         {{#str}} addnewlearningobject, mod_stratumtwo {{/str}}
                     </a>

@@ -789,7 +789,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     /**
      * Find an unused gradebook item number from the exercises of this round.
      */
-    protected function getNewGradebookItemNumber() {
+    public function getNewGradebookItemNumber() {
         $exs = $this->getExercises();
         $max = 0;
         foreach ($exs as $ex) {
@@ -823,6 +823,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $ctx->editurl = \mod_stratumtwo\urls\urls::editExerciseRound($this);
         $ctx->removeurl = 'TODO'; //TODO
         $ctx->url = \mod_stratumtwo\urls\urls::exerciseRound($this);
+        $ctx->addnewobjecturl = \mod_stratumtwo\urls\urls::createExercise($this);
         
         return $ctx;
     }
