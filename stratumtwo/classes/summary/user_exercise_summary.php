@@ -143,8 +143,13 @@ class user_exercise_summary {
         $ctx->max = $this->getMaxPoints();
         $ctx->points_to_pass = $this->getRequiredPoints();
         $ctx->required = $this->getRequiredPoints();
-        $ctx->percentage = round(100 * $ctx->points / $ctx->max);
-        $ctx->required_percentage = round(100 * $ctx->required / $ctx->max);
+        if ($ctx->max > 0) {
+            $ctx->percentage = round(100 * $ctx->points / $ctx->max);
+            $ctx->required_percentage = round(100 * $ctx->required / $ctx->max);
+        } else {
+            $ctx->percentage = 100;
+            $ctx->required_percentage = 0;
+        }
         $ctx->penaltyapplied = $this->getPenalty();
         $ctx->penaltyappliedpercent = $this->getPenaltyPercentage();
         $ctx->submission_count = $this->getSubmissionCount();
