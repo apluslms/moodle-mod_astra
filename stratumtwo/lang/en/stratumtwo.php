@@ -124,6 +124,12 @@ $string['maxsubmissions'] = 'Max submissions';
 $string['maxsubmissions_help'] = 'Maximum number of submissions a student is allowed to submit in the exercise. Set to zero for no limit.';
 $string['allowastgrading'] = 'Allow assistant grading';
 $string['allowastgrading_help'] = 'If checked, assistants may write feedback and change points for any submission in the exercise.';
+$string['deleteexercise'] = 'Delete exercise';
+$string['confirmobjectremoval'] = 'Confirm {$a} removal';
+$string['cancel'] = 'Cancel';
+$string['learningobjectlow'] = 'learning object';
+$string['learningobjectremoval'] = 'You are removing learning object {$a}. Are you sure?';
+$string['exerciseremovalnote'] = '<p>If you remove this exercise, <b>all submissions to the exercise will also be removed</b>.</p>';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';

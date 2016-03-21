@@ -40,4 +40,9 @@ class renderer extends \plugin_renderer_base {
         return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/edit_course_page', $data);
     }
     
+    protected function render_delete_page(\mod_stratumtwo\output\delete_page $page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/delete_page', $data);
+    }
+    
 }

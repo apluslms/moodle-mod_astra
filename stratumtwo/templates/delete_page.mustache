@@ -1,0 +1,26 @@
+{{!
+Page for deleting an exercise round/a learning object/category.
+Derived from A+ (a-plus/edit_course/templates/edit_course/remove_model.html).
+
+Context variables:
+* objecttype (string) type of the object being removed, e.g., exercise
+* cancelurl (string) URL destination for cancelling
+* message (string) confirmation message to the user about the removal
+}}
+
+<form method="post" class="well form">
+    <legend>
+        {{#str}} confirmobjectremoval, mod_stratumtwo, {{ objecttype }} {{/str}}
+    </legend>
+
+    <div class="alert alert-danger">
+        {{{ message }}}
+    </div>
+
+    <div class="form-group">
+        <input class="btn btn-danger" type="submit" name="delete" value="{{#str}} remove, mod_stratumtwo {{/str}}"/>
+        <a class="btn btn-default" href="{{{ cancelurl }}}">
+            {{#str}} cancel, mod_stratumtwo {{/str}}
+        </a>
+    </div>
+</form>

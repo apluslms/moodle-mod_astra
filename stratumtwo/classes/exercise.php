@@ -461,7 +461,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         $ctx->name = $this->getName();
         $ctx->submissionlisturl = \mod_stratumtwo\urls\urls::submissionList($this);
         $ctx->editurl = \mod_stratumtwo\urls\urls::editExercise($this);
-        $ctx->removeurl = 'TODO'; //TODO
+        $ctx->removeurl = \mod_stratumtwo\urls\urls::deleteExercise($this);
         
         $ctx->max_points = $this->getMaxPoints();
         $ctx->max_submissions = $this->getMaxSubmissions();
