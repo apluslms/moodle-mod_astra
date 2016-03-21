@@ -381,6 +381,9 @@ class auto_setup {
                 // create new later
                 $exerciseRecord = new \stdClass();
                 $exerciseRecord->remotekey = $o->key;
+                $oldRoundId = null;
+            } else {
+                $oldRoundId = $exerciseRecord->roundid;
             }
 
             $exerciseRecord->roundid = $exround->getId();
@@ -444,9 +447,23 @@ class auto_setup {
             if (isset($exerciseRecord->id)) {
                 // update existing
                 $exercise = new \mod_stratumtwo_exercise($exerciseRecord);
-                $exercise->save(); // updates gradebook for exercise 
-                // update gradebook for exercise round (changed max points)
-                $exround->updateMaxPoints($exerciseRecord->maxpoints - $oldMaxPoints);
+                if ($oldRoundId == $exerciseRecord->roundid) { // round not changed
+                    $exercise->save(); // updates gradebook for exercise 
+                    // update gradebook for exercise round (changed max points)
+                    $exround->updateMaxPoints($exerciseRecord->maxpoints - $oldMaxPoints);
+                } else {
+                    // round changed
+                    $exercise->deleteGradebookItem();
+                    // reduce max points of previous round
+                    $oldRound = \mod_stratumtwo_exercise_round::createFromId($oldRoundId);
+                    $oldRound->updateMaxPoints(-$oldMaxPoints);
+                    // gradeitemnumber must be unique in the new round
+                    $newRound = $exercise->getExerciseRound();
+                    $exerciseRecord->gradeitemnumber = $newRound->getNewGradebookItemNumber();
+                    $exercise->save(); // updates gradebook item (creates new item)
+                    // update max points in the new round
+                    $newRound->updateMaxPoints($exercise->getMaxPoints());
+                }
             } else {
                 // create new exercise
                 $exercise = $exround->createNewExercise($exerciseRecord, $categories[$o->category]);

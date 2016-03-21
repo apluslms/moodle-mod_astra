@@ -77,7 +77,7 @@ if ($fromform = $form->get_data()) {
         } else {
             // round changed, delete old gradebook item, modify max points of both rounds
             $exercise->deleteGradebookItem();
-            // reduce max points of previous round
+            // reduce max points of previous round (using the old max points of the exercise)
             $exercise->getExerciseRound()->updateMaxPoints(- $exercise->getMaxPoints());
             // gradeitemnumber must be unique in the new round
             $newRound = mod_stratumtwo_exercise_round::createFromId($fromform->roundid);
