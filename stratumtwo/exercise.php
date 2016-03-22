@@ -33,6 +33,8 @@ if ((!$cm->visible || $exround->isHidden() || $exercise->isHidden()) &&
 
 $errorMsg = null;
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    require_capability('mod/stratumtwo:submit', $context);
+    
     // user submitted a new solution, create a database record
     // check if submission is allowed (deadline, submit limit)
     if ($exercise->isSubmissionAllowed($USER)) {
