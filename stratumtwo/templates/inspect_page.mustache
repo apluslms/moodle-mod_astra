@@ -1,0 +1,65 @@
+{{!
+Inspect one submission.
+Derived from A+ (a-plus/exercise/templates/exercise/staff/inspect_submission.html).
+
+Context variables:
+* variables required by inspect_info.mustache
+* assistant_feedback (HTML string), null if no feedback
+* feedback (HTML string), null if no feedback
+* allow_manual_grading (bool) true if manual grading allowed
+* manual_grading_url (string) URL to the manual grading page
+* resubmit_grading_url (string) form action URL for regrading the submission in the exercise service
+}}
+
+<div class="bs3-container-fluid">
+
+<div class="col-md-5">
+    {{> mod_stratumtwo/inspect_info }}
+</div>
+<div class="col-md-7">
+    <h3>{{#str}} assistantfeedback, mod_stratumtwo {{/str}}</h3>
+    <div class="well">
+
+        {{# assistant_feedback }}
+          {{{ assistant_feedback }}}
+        {{/ assistant_feedback }}
+        {{^ assistant_feedback }}
+        <div class="alert alert-info">
+            {{#str}} noassistantfeedback, mod_stratumtwo {{/str}}
+        </div>
+        {{/ assistant_feedback }}
+
+        {{# allow_manual_grading }}
+        <hr/>
+        <p>
+            <a class="btn btn-primary" href="{{{ manual_grading_url }}}">
+                {{#str}} assessmanually, mod_stratumtwo {{/str}}
+            </a>
+        </p>
+        {{/ allow_manual_grading }}
+    </div>
+
+    <h3>{{#str}} graderfeedback, mod_stratumtwo {{/str}}</h3>
+    <div class="well">
+        {{# feedback }}
+          {{{ feedback }}}
+        {{/ feedback }}
+        {{^ feedback }}
+        <div class="alert alert-info">
+            {{#str}} nofeedback, mod_stratumtwo {{/str}}
+        </div>
+        {{/ feedback }}
+
+        <hr/>
+        <p>
+            <form method="post" action="{{{ resubmit_grading_url }}}">
+                <input class="btn btn-primary" type="submit" value="{{#str}} resubmittoservice, mod_stratumtwo {{/str}}"/>
+            </form>
+        </p>
+        <p>
+            {{#str}} resubmitwarning, mod_stratumtwo {{/str}}
+        </p>
+
+    </div>
+</div>
+</div>

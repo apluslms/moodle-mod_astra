@@ -1,0 +1,70 @@
+{{!
+Submission info box.
+Derived from A+ (a-plus/exercise/templates/exercise/staff/_assess_info.html).
+
+Context variables:
+* submitted_name (string) in the format "fullname (student id)"
+* status (string) human-readable status of the submission
+* submission_time (int) Unix timestamp
+* points (int) points of the submission
+* late_penalty_applied (float) late penalty 0-1, null if none
+* late_penalty_applied_percent (int) late penalty percentage 0-100
+* files (array of objects) each object has fields that are required by _file_link.mustache
+* submission_data (string) pretty-printed JSON
+* grading_data (string) pretty-printed JSON
+* exercise (object with fields)
+    - max_points (int)
+* toDateStr callable Function that converts a Unix timestamp to a date string
+* fileSizeFormatter (callable) function to convert bytes (int) to a human-readable string (e.g. "10.2 KB")
+}}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">{{#str}} submitteddata, mod_stratumtwo {{/str}}</h3>
+    </div>
+    <div class="panel-body">
+        <dl>
+            <dt>{{#str}} submitters, mod_stratumtwo {{/str}}</dt>
+            <dd>{{ submitter_name }}</dd>
+            <dt>{{#str}} status, mod_stratumtwo {{/str}}</dt>
+            <dd>{{ status }}</dd>
+            <dt>{{#str}} submissiontime, mod_stratumtwo {{/str}}</dt>
+            <dd>{{# toDateStr }}{{ submission_time }}{{/ toDateStr }}</dd>
+            <dt>{{#str}} grade, mod_stratumtwo {{/str}}</dt>
+            <dd>{{ points }} / {{ exercise.max_points }}</dd>
+            {{# late_penalty_applied }}
+            <dt>{{#str}} includeslatepenalty, mod_stratumtwo {{/str}}</dt>
+            <dd>-{{ late_penalty_applied_percent }}%</dd>
+            {{/ late_penalty_applied }}
+        </dl>
+
+        <h4>{{#str}} submittedfiles, mod_stratumtwo {{/str}}</h4>
+
+        <ul class="list-unstyled">
+            {{# files }}
+            <li>
+                <span class="glyphicon glyphicon-file"></span>
+                {{> mod_stratumtwo/_file_link }}
+            </li>
+            {{/ files }}
+            {{^ files }}
+            <li>
+                {{#str}} nofiles, mod_stratumtwo {{/str}}
+            </li>
+            {{/ files }}
+        </ul>
+
+        <h4>{{#str}} submittedvalues, mod_stratumtwo {{/str}}</h4>
+
+<pre>
+{{{ submission_data }}}
+</pre>
+
+        <h4>{{#str}} gradingdata, mod_stratumtwo {{/str}}</h4>
+
+<pre>
+{{{ grading_data }}}
+</pre>
+        
+    </div>
+</div>

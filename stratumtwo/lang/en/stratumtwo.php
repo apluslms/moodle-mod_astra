@@ -89,6 +89,17 @@ $string['grade'] = 'Grade';
 $string['forstafforiginal'] = 'For staff: original';
 $string['includeslatepenalty'] = 'Includes late penalty';
 $string['submitters'] = 'Submitters';
+$string['allsubmissions'] = 'All submissions';
+$string['submitteddata'] = 'Submitted data';
+$string['submissiontime'] = 'Submission time';
+$string['submittedfiles'] = 'Submitted files';
+$string['nofiles'] = 'No files';
+$string['submittedvalues'] = 'Submitted values';
+$string['gradingdata'] = 'Grading data';
+$string['assessmanually'] = 'Assess this submission manually';
+$string['graderfeedback'] = 'Grader feedback';
+$string['resubmittoservice'] = 'Re-submit to exercise service';
+$string['resubmitwarning'] = 'Click this button to re-submit this submission to the assessment service. This is meant to be used only in situations where the assessment service has behaved incorrectly so that the grading data is incorrect or the status of the submission never became ready. Caution! Re-submitting overwrites the current grading data.';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';

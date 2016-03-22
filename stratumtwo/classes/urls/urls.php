@@ -61,12 +61,22 @@ class urls {
     
     public static function inspectSubmission(\mod_stratumtwo_submission $sbms) {
         $query = array('id' => $sbms->getId());
-        return self::baseURL() .'/inspect.php?'. \http_build_query($query, 'i_', '&');
+        return self::baseURL() .'/teachers/inspect.php?'. \http_build_query($query, 'i_', '&');
     }
     
     public static function submissionList(\mod_stratumtwo_exercise $ex) {
         $query = array('id' => $ex->getId());
-        return self::baseURL() .'/submission_list.php?'. \http_build_query($query, 'i_', '&');
+        return self::baseURL() .'/teachers/submission_list.php?'. \http_build_query($query, 'i_', '&');
+    }
+    
+    public static function assessSubmissionManually(\mod_stratumtwo_submission $sbms) {
+        $query = array('id' => $sbms->getId());
+        return self::baseURL() .'/teachers/assess_submission.php?'. \http_build_query($query, 'i_', '&');
+    }
+    
+    public static function resubmitToService(\mod_stratumtwo_submission $sbms) {
+        $query = array('id' => $sbms->getId());
+        return self::baseURL() .'/teachers/resubmit_submission.php?'. \http_build_query($query, 'i_', '&');
     }
     
     public static function asyncGradeSubmission(\mod_stratumtwo_submission $sbms) {

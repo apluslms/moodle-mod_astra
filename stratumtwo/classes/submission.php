@@ -542,7 +542,7 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         return $ret;
     }
     
-    public function getTemplateContext($includeFeedbackAndFiles = false) {
+    public function getTemplateContext($includeFeedbackAndFiles = false, $includeSbmsAndGradingData = false) {
         $ctx = new stdClass();
         $ctx->url = \mod_stratumtwo\urls\urls::submission($this);
         $ctx->inspecturl = \mod_stratumtwo\urls\urls::inspectSubmission($this);
@@ -578,6 +578,20 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
             $ctx->has_files = !empty($ctx->files);
             $ctx->feedback = $this->getFeedback();
             $ctx->assistant_feedback = $this->getAssistantFeedback();
+        }
+        
+        if ($includeSbmsAndGradingData) {
+            // decode JSON and encode again to obtain pretty-printed string
+            $sbmsData = $this->getSubmissionData();
+            if ($sbmsData !== null) {
+                $sbmsData = json_encode($sbmsData, JSON_PRETTY_PRINT);
+            }
+            $gradingData = $this->getGradingData();
+            if ($gradingData !== null) {
+                $gradingData = json_encode($gradingData, JSON_PRETTY_PRINT);
+            }
+            $ctx->submission_data = $sbmsData;
+            $ctx->grading_data = $gradingData;
         }
         
         return $ctx;
