@@ -147,7 +147,7 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
         $ctx->name = $this->getName();
         $ctx->editurl = \mod_stratumtwo\urls\urls::editCategory($this);
         $ctx->has_exercises = ($this->countExercises() > 0);
-        $ctx->removeurl = 'TODO'; //TODO \mod_stratumtwo\urls\urls::deleteCategory($this);
+        $ctx->removeurl = \mod_stratumtwo\urls\urls::deleteCategory($this);
         $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
         $ctx->status_str = $this->getStatus(true);
         return $ctx;

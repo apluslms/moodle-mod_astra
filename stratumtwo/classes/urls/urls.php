@@ -24,6 +24,11 @@ class urls {
         return self::baseURL() .'/teachers/edit_round.php?'. \http_build_query($query, 'i_', '&');
     }
     
+    public static function deleteExerciseRound(\mod_stratumtwo_exercise_round $exround) {
+        $query = array('id' => $exround->getId(), 'type' => 'round');
+        return self::baseURL() .'/teachers/delete.php?'. \http_build_query($query, 'i_', '&');
+    }
+    
     public static function newSubmissionHandler(\mod_stratumtwo_exercise $ex) {
         // form POST target for new submissions
         return self::exercise($ex); // POST to the exercise page
@@ -45,8 +50,8 @@ class urls {
     }
     
     public static function deleteExercise(\mod_stratumtwo_exercise $ex) {
-        $query = array('id' => $ex->getId());
-        return self::baseURL() .'/teachers/delete_exercise.php?'. \http_build_query($query, 'i_', '&');
+        $query = array('id' => $ex->getId(), 'type' => 'exercise');
+        return self::baseURL() .'/teachers/delete.php?'. \http_build_query($query, 'i_', '&');
     }
     
     public static function submission(\mod_stratumtwo_submission $sbms) {
@@ -91,6 +96,11 @@ class urls {
     public static function createCategory($courseid) {
         $q = array('course' => $courseid);
         return self::baseURL() .'/teachers/edit_category.php?'. \http_build_query($q, 'i_', '&');
+    }
+    
+    public static function deleteCategory(\mod_stratumtwo_category $cat) {
+        $query = array('id' => $cat->getId(), 'type' => 'category');
+        return self::baseURL() .'/teachers/delete.php?'. \http_build_query($query, 'i_', '&');
     }
     
     public static function editCourse($courseid, $asMdlUrl = false) {

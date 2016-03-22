@@ -128,8 +128,13 @@ $string['deleteexercise'] = 'Delete exercise';
 $string['confirmobjectremoval'] = 'Confirm {$a} removal';
 $string['cancel'] = 'Cancel';
 $string['learningobjectlow'] = 'learning object';
-$string['learningobjectremoval'] = 'You are removing learning object {$a}. Are you sure?';
+$string['learningobjectremoval'] = 'You are removing {$a->type} {$a->name}. Are you sure?';
 $string['exerciseremovalnote'] = '<p>If you remove this exercise, <b>all submissions to the exercise will also be removed</b>.</p>';
+$string['categoryremovalnote'] = '<p>If you remove this category, <b>all exercises in the category will also be removed</b>.</p>';
+$string['roundremovalnote'] = '<p>If you remove this exercise round, <b>all exercises in the round will also be removed</b>.</p>';
+$string['deleteobject'] = 'Delete object';
+$string['categorylow'] = 'category';
+$string['roundlow'] = 'exercise round';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';
@@ -202,6 +207,7 @@ $string['duplicatecatname'] = 'Category with this name already exists.';
 $string['duplicateroundremotekey'] = 'Exercise round with this remote key already exists.';
 $string['parentexinwronground'] = 'Parent exercise must be in the same exercise round. Unset parent if you are changing the round of this exercise.';
 $string['duplicateexerciseremotekey'] = 'Exercise with this remote key already exists in the course.';
+$string['invalidobjecttype'] = 'Invalid object type: {$a}.';
 
 /*
 $string['stratumsbmsmaxbytes'] = 'Submission file max size in bytes';

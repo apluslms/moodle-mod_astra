@@ -6,9 +6,10 @@ Context variables:
 * objecttype (string) type of the object being removed, e.g., exercise
 * cancelurl (string) URL destination for cancelling
 * message (string) confirmation message to the user about the removal
+* actionurl (string) form action URL
 }}
 
-<form method="post" class="well form">
+<form method="post" class="well form" action="{{{ actionurl }}}">
     <legend>
         {{#str}} confirmobjectremoval, mod_stratumtwo, {{ objecttype }} {{/str}}
     </legend>
