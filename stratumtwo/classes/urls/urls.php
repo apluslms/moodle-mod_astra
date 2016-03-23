@@ -9,122 +9,126 @@ class urls {
         return $CFG->wwwroot .'/mod/'. \mod_stratumtwo_exercise_round::TABLE;
     }
     
-    public static function exerciseRound(\mod_stratumtwo_exercise_round $exround) {
+    private static function buildUrl($path, array $query, $asMoodleUrl = false) {
+        $url = new \moodle_url(self::baseURL() . $path, $query);
+        if ($asMoodleUrl) {
+            return $url;
+        } else {
+            return $url->out(); // string
+        }
+    }
+    
+    public static function exerciseRound(\mod_stratumtwo_exercise_round $exround, $asMdlUrl = false) {
         $query = array('id' => $exround->getCourseModule()->id);
-        return self::baseURL() .'/view.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/view.php', $query, $asMdlUrl);
     }
     
-    public static function editExerciseRound(\mod_stratumtwo_exercise_round $exround) {
+    public static function editExerciseRound(\mod_stratumtwo_exercise_round $exround, $asMdlUrl = false) {
         $query = array('id' => $exround->getId());
-        return self::baseURL() .'/teachers/edit_round.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/teachers/edit_round.php', $query, $asMdlUrl);
     }
     
-    public static function createExerciseRound($courseid) {
+    public static function createExerciseRound($courseid, $asMdlUrl = false) {
         $query = array('course' => $courseid);
-        return self::baseURL() .'/teachers/edit_round.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/teachers/edit_round.php', $query, $asMdlUrl);
     }
     
-    public static function deleteExerciseRound(\mod_stratumtwo_exercise_round $exround) {
+    public static function deleteExerciseRound(\mod_stratumtwo_exercise_round $exround, $asMdlUrl = false) {
         $query = array('id' => $exround->getId(), 'type' => 'round');
-        return self::baseURL() .'/teachers/delete.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/teachers/delete.php', $query, $asMdlUrl);
     }
     
-    public static function newSubmissionHandler(\mod_stratumtwo_exercise $ex) {
+    public static function newSubmissionHandler(\mod_stratumtwo_exercise $ex, $asMdlUrl = false) {
         // form POST target for new submissions
-        return self::exercise($ex); // POST to the exercise page
+        return self::exercise($ex, $asMdlUrl); // POST to the exercise page
     }
     
-    public static function exercise(\mod_stratumtwo_exercise $ex) {
+    public static function exercise(\mod_stratumtwo_exercise $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId());
-        return self::baseURL() .'/exercise.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/exercise.php', $query, $asMdlUrl);
     }
     
-    public static function editExercise(\mod_stratumtwo_exercise $ex) {
+    public static function editExercise(\mod_stratumtwo_exercise $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId());
-        return self::baseURL() .'/teachers/edit_exercise.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/teachers/edit_exercise.php', $query, $asMdlUrl);
     }
     
-    public static function createExercise(\mod_stratumtwo_exercise_round $exround) {
+    public static function createExercise(\mod_stratumtwo_exercise_round $exround, $asMdlUrl = false) {
         $query = array('round' => $exround->getId());
-        return self::baseURL() .'/teachers/edit_exercise.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/teachers/edit_exercise.php', $query, $asMdlUrl);
     }
     
-    public static function deleteExercise(\mod_stratumtwo_exercise $ex) {
+    public static function deleteExercise(\mod_stratumtwo_exercise $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId(), 'type' => 'exercise');
-        return self::baseURL() .'/teachers/delete.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/teachers/delete.php', $query, $asMdlUrl);
     }
     
-    public static function submission(\mod_stratumtwo_submission $sbms) {
+    public static function submission(\mod_stratumtwo_submission $sbms, $asMdlUrl = false) {
         $query = array('id' => $sbms->getId());
-        return self::baseURL() .'/submission.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/submission.php', $query, $asMdlUrl);
     }
     
-    public static function inspectSubmission(\mod_stratumtwo_submission $sbms) {
+    public static function inspectSubmission(\mod_stratumtwo_submission $sbms, $asMdlUrl = false) {
         $query = array('id' => $sbms->getId());
-        return self::baseURL() .'/teachers/inspect.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/teachers/inspect.php', $query, $asMdlUrl);
     }
     
-    public static function submissionList(\mod_stratumtwo_exercise $ex) {
+    public static function submissionList(\mod_stratumtwo_exercise $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId());
-        return self::baseURL() .'/teachers/submission_list.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/teachers/submission_list.php', $query, $asMdlUrl);
     }
     
-    public static function assessSubmissionManually(\mod_stratumtwo_submission $sbms) {
+    public static function assessSubmissionManually(\mod_stratumtwo_submission $sbms, $asMdlUrl = false) {
         $query = array('id' => $sbms->getId());
-        return self::baseURL() .'/teachers/assess_submission.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/teachers/assess_submission.php', $query, $asMdlUrl);
     }
     
-    public static function resubmitToService(\mod_stratumtwo_submission $sbms) {
+    public static function resubmitToService(\mod_stratumtwo_submission $sbms, $asMdlUrl = false) {
         $query = array('id' => $sbms->getId());
-        return self::baseURL() .'/teachers/resubmit_submission.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/teachers/resubmit_submission.php', $query, $asMdlUrl);
     }
     
-    public static function asyncGradeSubmission(\mod_stratumtwo_submission $sbms) {
+    public static function asyncGradeSubmission(\mod_stratumtwo_submission $sbms, $asMdlUrl = false) {
         // exercise service HTTP POSTs grading results asynchronously to this URL
         $query = array(
                 'id' => $sbms->getId(),
                 'hash' => $sbms->getHash(),
         );
-        return self::baseURL() .'/async/grade_submission.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/async/grade_submission.php', $query, $asMdlUrl);
     }
     
-    public static function asyncNewSubmission(\mod_stratumtwo_exercise $ex, $userid) {
+    public static function asyncNewSubmission(\mod_stratumtwo_exercise $ex, $userid, $asMdlUrl = false) {
         // URL for asynchronously creating a new graded submission
         $query = array(
                 'id' => $ex->getId(),
                 'hash' => $ex->getAsyncHash($userid),
                 'userid' => $userid,
         );
-        return self::baseURL() .'/async/new_submission.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/async/new_submission.php', $query, $asMdlUrl);
     }
     
-    public static function editCategory(\mod_stratumtwo_category $cat) {
-        $q = array('id' => $cat->getId());
-        return self::baseURL() .'/teachers/edit_category.php?'. \http_build_query($q, 'i_', '&');
+    public static function editCategory(\mod_stratumtwo_category $cat, $asMdlUrl = false) {
+        $query = array('id' => $cat->getId());
+        return self::buildUrl('/teachers/edit_category.php', $query, $asMdlUrl);
     }
     
-    public static function createCategory($courseid) {
-        $q = array('course' => $courseid);
-        return self::baseURL() .'/teachers/edit_category.php?'. \http_build_query($q, 'i_', '&');
+    public static function createCategory($courseid, $asMdlUrl = false) {
+        $query = array('course' => $courseid);
+        return self::buildUrl('/teachers/edit_category.php', $query, $asMdlUrl);
     }
     
-    public static function deleteCategory(\mod_stratumtwo_category $cat) {
+    public static function deleteCategory(\mod_stratumtwo_category $cat, $asMdlUrl = false) {
         $query = array('id' => $cat->getId(), 'type' => 'category');
-        return self::baseURL() .'/teachers/delete.php?'. \http_build_query($query, 'i_', '&');
+        return self::buildUrl('/teachers/delete.php', $query, $asMdlUrl);
     }
     
     public static function editCourse($courseid, $asMdlUrl = false) {
-        $q = array('course' => $courseid);
-        $url = self::baseURL() .'/teachers/edit_course.php';
-        if ($asMdlUrl) {
-            return new \moodle_url($url, $q);
-        } else {
-            return $url .'?'. \http_build_query($q, 'i_', '&');
-        }
+        $query = array('course' => $courseid);
+        return self::buildUrl('/teachers/edit_course.php', $query, $asMdlUrl);
     }
     
-    public static function autoSetup($courseid) {
-        $q = array('course' => $courseid);
-        return self::baseURL() .'/teachers/auto_setup.php?'. \http_build_query($q, 'i_', '&');
+    public static function autoSetup($courseid, $asMdlUrl = false) {
+        $query = array('course' => $courseid);
+        return self::buildUrl('/teachers/auto_setup.php', $query, $asMdlUrl);
     }
 }
