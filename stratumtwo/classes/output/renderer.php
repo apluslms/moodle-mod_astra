@@ -50,4 +50,9 @@ class renderer extends \plugin_renderer_base {
         return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/inspect_page', $data);
     }
     
+    protected function render_assess_page(\mod_stratumtwo\output\assess_page $page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/assess_page', $data);
+    }
+    
 }

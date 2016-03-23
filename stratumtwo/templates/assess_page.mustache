@@ -1,0 +1,22 @@
+{{!
+Assess a submission manually.
+Derived from A+ (a-plus/exercise/templates/exercise/staff/assess_submission.html).
+
+Context variables:
+* variables required by inspect_info.mustache
+* form (HTML string) manual assessment form
+}}
+
+<div class="bs3-container-fluid">
+
+<div class="col-md-5">
+    {{> mod_stratumtwo/inspect_info }}
+</div>
+<div class="col-md-7">
+    <h3>{{#str}} assessment, mod_stratumtwo {{/str}}</h3>
+    <div class="well">
+        {{{ form }}}
+    </div>
+</div>
+
+</div>

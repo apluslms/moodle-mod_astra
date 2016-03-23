@@ -86,12 +86,10 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     }
     
     public function getFeedback() {
-        // TODO is cleaning needed with format_text() ?
         return $this->record->feedback;
     }
     
     public function getAssistantFeedback() {
-        // TODO is cleaning needed with format_text() ?
         return $this->record->assistfeedback;
     }
     
@@ -183,6 +181,23 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     
     public function setFeedback($newFeedback) {
         $this->record->feedback = $newFeedback;
+    }
+    
+    public function setAssistantFeedback($newFeedback) {
+        $this->record->assistfeedback = $newFeedback;
+    }
+    
+    public function setGrader(\stdClass $user) {
+        $this->record->grader = $user->id;
+    }
+    
+    /**
+     * Set points without setting any service points, scaling the value or
+     * checking deadline and submission limit.
+     * @param int $grade new grade for the submission
+     */
+    public function setRawGrade($grade) {
+        $this->record->grade = $grade;
     }
     
     /**
