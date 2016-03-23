@@ -11,12 +11,13 @@ $courseid = optional_param('course', 0, PARAM_INT); // course ID, if creating ne
 
 if ($id) {
     $roundRecord = $DB->get_record(mod_stratumtwo_exercise_round::TABLE, array('id' => $id), '*', MUST_EXIST);
+    $exround = new mod_stratumtwo_exercise_round($roundRecord);
     $courseid = $roundRecord->course;
-    $page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/edit_round.php', array('id' => $id));
+    $page_url = \mod_stratumtwo\urls\urls::editExerciseRound($exround, true);
     $form_action = 'edit_round.php?id='. $id;
     $heading = get_string('editmodule', mod_stratumtwo_exercise_round::MODNAME);
 } else if ($courseid) {
-    $page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/edit_round.php', array('course' => $courseid));
+    $page_url = \mod_stratumtwo\urls\urls::createExerciseRound($courseid, true);
     $form_action = 'edit_round.php?course='. $courseid;
     $heading = get_string('createmodule', mod_stratumtwo_exercise_round::MODNAME);
 } else {
@@ -88,7 +89,6 @@ if ($fromform = $form->get_data()) {
 
     if ($id) { // edit
         $fromform->id = $id;
-        $exround = new \mod_stratumtwo_exercise_round($roundRecord);
         $cm = $exround->getCourseModule();
         $fromform->coursemodule = $cm->id; // Moodle course module ID
         $fromform->cmidnumber = $cm->idnumber; // keep the old Moodle course module idnumber

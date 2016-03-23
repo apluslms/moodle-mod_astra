@@ -46,3 +46,36 @@ function stratumtwo_roman_numeral($number) {
     }
     return $roman;
 }
+
+function stratumtwo_navbar_add_exercise(moodle_page $page, $cmid, mod_stratumtwo_exercise $exercise) {
+    $roundNav = $page->navigation->find($cmid, navigation_node::TYPE_ACTIVITY);
+    $exerciseNav = $roundNav->add($exercise->getName(),
+            \mod_stratumtwo\urls\urls::exercise($exercise, true),
+            navigation_node::TYPE_CUSTOM,
+            null, 'ex'.$exercise->getId());
+    return $exerciseNav;
+}
+
+function stratumtwo_navbar_add_submission(navigation_node $prevNode, mod_stratumtwo_submission $submission) {
+    $submissionNav = $prevNode->add(get_string('submissionnumber', mod_stratumtwo_exercise_round::MODNAME, $submission->getId()),
+            \mod_stratumtwo\urls\urls::submission($submission, true),
+            navigation_node::TYPE_CUSTOM, null, 'sub'.$submission->getId());
+    return $submissionNav;
+}
+
+function stratumtwo_navbar_add_inspect_submission(navigation_node $prevNode, mod_stratumtwo_exercise $exercise,
+        mod_stratumtwo_submission $submission) {
+    $allSbmsNav = $prevNode->add(get_string('allsubmissions', mod_stratumtwo_exercise_round::MODNAME),
+            \mod_stratumtwo\urls\urls::submissionList($exercise, true),
+            navigation_node::TYPE_CUSTOM,
+            null, 'allsubmissions');
+    $submissionNav = $allSbmsNav->add(get_string('submissionnumber', mod_stratumtwo_exercise_round::MODNAME, $submission->getId()),
+            \mod_stratumtwo\urls\urls::submission($submission, true),
+            navigation_node::TYPE_CUSTOM,
+            null, 'sub'.$submission->getId());
+    $inspectNav = $submissionNav->add(get_string('inspectsubmission', mod_stratumtwo_exercise_round::MODNAME),
+            \mod_stratumtwo\urls\urls::inspectSubmission($submission, true),
+            navigation_node::TYPE_CUSTOM,
+            null, 'inspect');
+    return $inspectNav;
+}

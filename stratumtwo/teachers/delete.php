@@ -13,6 +13,7 @@ if ($type == 'exercise') {
     $exercise = mod_stratumtwo_exercise::createFromId($id);
     $exround = $exercise->getExerciseRound();
     $courseid = $exround->getCourse()->courseid;
+    $page_url = \mod_stratumtwo\urls\urls::deleteExercise($exercise, true);
     
     $typeInTitle = get_string('learningobjectlow', mod_stratumtwo_exercise_round::MODNAME);
     $msg = new stdClass();
@@ -23,6 +24,7 @@ if ($type == 'exercise') {
 } else if ($type == 'category') {
     $category = mod_stratumtwo_category::createFromId($id);
     $courseid = $category->getCourse()->courseid;
+    $page_url = \mod_stratumtwo\urls\urls::deleteCategory($category, true);
     
     $typeInTitle = get_string('categorylow', mod_stratumtwo_exercise_round::MODNAME);
     $msg = new stdClass();
@@ -33,6 +35,7 @@ if ($type == 'exercise') {
 } else if ($type == 'round') {
     $exround = mod_stratumtwo_exercise_round::createFromId($id);
     $courseid = $exround->getCourse()->courseid;
+    $page_url = \mod_stratumtwo\urls\urls::deleteExerciseRound($exround, true);
     
     $typeInTitle = get_string('roundlow', mod_stratumtwo_exercise_round::MODNAME);
     $msg = new stdClass();
@@ -43,8 +46,6 @@ if ($type == 'exercise') {
 } else {
     print_error('invalidobjecttype', mod_stratumtwo_exercise_round::MODNAME, '', $type);
 }
-
-$page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/delete.php', array('id' => $id, 'type' => $type));
 
 $course = get_course($courseid);
 require_login($course, false);

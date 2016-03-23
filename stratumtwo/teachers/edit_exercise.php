@@ -11,12 +11,12 @@ if ($id) {
     $exerciseRecord = $DB->get_record(mod_stratumtwo_exercise::TABLE, array('id' => $id), '*', MUST_EXIST);
     $exercise = new mod_stratumtwo_exercise($exerciseRecord);
     $exround = $exercise->getExerciseRound();
-    $page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/edit_exercise.php', array('id' => $id));
+    $page_url = \mod_stratumtwo\urls\urls::editExercise($exercise, true);
     $form_action = 'edit_exercise.php?id='. $id;
     $heading = get_string('editexercise', mod_stratumtwo_exercise_round::MODNAME);
 } else if ($roundid) {
     $exround = mod_stratumtwo_exercise_round::createFromId($roundid);
-    $page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/edit_exercise.php', array('round' => $roundid));
+    $page_url = \mod_stratumtwo\urls\urls::createExercise($exround, true);
     $form_action = 'edit_exercise.php?round='. $roundid;
     $heading = get_string('createexercise', mod_stratumtwo_exercise_round::MODNAME);
 } else {

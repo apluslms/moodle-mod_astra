@@ -9,13 +9,13 @@ $courseid = optional_param('course', 0, PARAM_INT); // course ID, if creating ne
 
 if ($id) {
     $catRecord = $DB->get_record(mod_stratumtwo_category::TABLE, array('id' => $id), '*', MUST_EXIST);
-    //$category = new mod_stratumtwo_category($catRecord);
+    $category = new mod_stratumtwo_category($catRecord);
     $courseid = $catRecord->course;
-    $page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/edit_category.php', array('id' => $id));
+    $page_url = \mod_stratumtwo\urls\urls::editCategory($category, true);
     $form_action = 'edit_category.php?id='. $id;
     $heading = get_string('editcategory', mod_stratumtwo_exercise_round::MODNAME);
 } else if ($courseid) {
-    $page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/edit_category.php', array('course' => $courseid));
+    $page_url = \mod_stratumtwo\urls\urls::createCategory($courseid, true);
     $form_action = 'edit_category.php?course='. $courseid;
     $heading = get_string('createcategory', mod_stratumtwo_exercise_round::MODNAME);
 } else {

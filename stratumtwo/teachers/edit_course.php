@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 stratumtwo_page_require($PAGE); // Bootstrap CSS etc.
 // Print the page header.
 $PAGE->set_pagelayout('incourse');
-$PAGE->set_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/edit_course.php', array('course' => $cid));
+$PAGE->set_url(\mod_stratumtwo\urls\urls::editCourse($cid, true));
 $PAGE->set_title(format_string(get_string('editcourse', mod_stratumtwo_exercise_round::MODNAME)));
 $PAGE->set_heading(format_string($course->fullname));
 

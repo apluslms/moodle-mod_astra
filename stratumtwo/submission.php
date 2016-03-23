@@ -45,19 +45,11 @@ if ($USER->id != $submission->getSubmitter()->id &&
 stratumtwo_page_require($PAGE);
 
 // add Moodle navbar item for the exercise and the submission, round is already there
-$exercise_page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/exercise.php',
-        array('id' => $exercise->getId()));
-$page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/submission.php',
-        array('id' => $id));
-
-$roundNav = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
-$exerciseNav = $roundNav->add($exercise->getName(), $exercise_page_url, navigation_node::TYPE_CUSTOM,
-        null, 'ex'.$exercise->getId());
-$submissionNav = $exerciseNav->add(get_string('submissionnumber', mod_stratumtwo_exercise_round::MODNAME, $id),
-        $page_url, navigation_node::TYPE_CUSTOM, null, 'sub'.$id);
+$exerciseNav = stratumtwo_navbar_add_exercise($PAGE, $cm->id, $exercise);
+$submissionNav = stratumtwo_navbar_add_submission($exerciseNav, $submission);
 $submissionNav->make_active();
 
-$PAGE->set_url($page_url);
+$PAGE->set_url(\mod_stratumtwo\urls\urls::submission($submission, true));
 $PAGE->set_title(format_string($exerciseRecord->name));
 $PAGE->set_heading(format_string($course->fullname));
 

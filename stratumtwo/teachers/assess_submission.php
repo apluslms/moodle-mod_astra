@@ -21,30 +21,15 @@ require_capability('mod/stratumtwo:grademanually', $context);
 // add CSS and JS
 stratumtwo_page_require($PAGE);
 
-$page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/teachers/assess_submission.php', array('id' => $id));
+$page_url = \mod_stratumtwo\urls\urls::assessSubmissionManually($submission, true);
 
 $PAGE->set_url($page_url);
 $PAGE->set_title(get_string('assesssubmission', mod_stratumtwo_exercise_round::MODNAME));
 $PAGE->set_heading(format_string($course->fullname));
 
 // navbar
-$roundNav = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
-$exerciseNav = $roundNav->add($exercise->getName(),
-        new moodle_url(\mod_stratumtwo\urls\urls::exercise($exercise)),
-        navigation_node::TYPE_CUSTOM,
-        null, 'ex'.$exercise->getId());
-$allSbmsNav = $exerciseNav->add(get_string('allsubmissions', mod_stratumtwo_exercise_round::MODNAME),
-        new moodle_url(\mod_stratumtwo\urls\urls::submissionList($exercise)),
-        navigation_node::TYPE_CUSTOM,
-        null, 'allsubmissions');
-$submissionNav = $allSbmsNav->add(get_string('submissionnumber', mod_stratumtwo_exercise_round::MODNAME, $id),
-        new moodle_url(\mod_stratumtwo\urls\urls::submission($submission)),
-        navigation_node::TYPE_CUSTOM,
-        null, 'sub'.$id);
-$inspectNav = $submissionNav->add(get_string('inspectsubmission', mod_stratumtwo_exercise_round::MODNAME),
-        new moodle_url(\mod_stratumtwo\urls\urls::inspectSubmission($submission)),
-        navigation_node::TYPE_CUSTOM,
-        null, 'inspect');
+$exerciseNav = stratumtwo_navbar_add_exercise($PAGE, $cm->id, $exercise);
+$inspectNav = stratumtwo_navbar_add_inspect_submission($exerciseNav, $exercise, $submission);
 $assessNav = $inspectNav->add(get_string('assesssubmission', mod_stratumtwo_exercise_round::MODNAME),
         $page_url,
         navigation_node::TYPE_CUSTOM,

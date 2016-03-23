@@ -106,14 +106,10 @@ $event->trigger();
 stratumtwo_page_require($PAGE);
 
 // add Moodle navbar item for the exercise, round is already there
-$page_url = new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/exercise.php', array('id' => $id));
-
-$roundNav = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
-$exerciseNav = $roundNav->add($exercise->getName(), $page_url, navigation_node::TYPE_CUSTOM,
-        null, 'ex'.$id);
+$exerciseNav = stratumtwo_navbar_add_exercise($PAGE, $cm->id, $exercise);
 $exerciseNav->make_active();
 
-$PAGE->set_url($page_url);
+$PAGE->set_url(\mod_stratumtwo\urls\urls::exercise($exercise, true));
 $PAGE->set_title(format_string($exerciseRecord->name));
 $PAGE->set_heading(format_string($course->fullname));
 
