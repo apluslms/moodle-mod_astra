@@ -467,16 +467,22 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     /**
-     * Update the max points of this exercise round.
+     * Update the max points of this exercise round (based on the max points of exercises).
      * (Updates the database and gradebook item.)
-     * @param int $change change to the current max points (positive or negative integer)
      * @return boolean success/failure
      */
-    public function updateMaxPoints($change) {
+    public function updateMaxPoints() {
         global $DB;
         
         $this->record->timemodified = time();
-        $this->record->grade += $change;
+        $max = 0;
+        foreach ($this->getExercises(false) as $ex) {
+            // only non-hidden exercises, but must check categories too
+            if (!$ex->getCategory()->isHidden()) {
+                $max += $ex->getMaxPoints();
+            }
+        }
+        $this->record->grade = $max;
         $result = $DB->update_record(self::TABLE, $this->record);
         $this->updateGradebookItem();
         
@@ -667,9 +673,11 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         
         if ($stratumtwo->id) {
             $exround = new self($stratumtwo);
-            $exround->updateGradebookItem();
-            // NOTE: the course module does not usually yet exist in the DB at this stage
-            $exround->update_calendar();
+            if (!$exround->isHidden()) {
+                $exround->updateGradebookItem();
+                // NOTE: the course module does not usually yet exist in the DB at this stage
+                $exround->update_calendar();
+            }
         }
         
         return $stratumtwo->id;
@@ -698,7 +706,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
             }
             
             $exround = new self($stratumtwo);
-            $exround->updateGradebookItem();
+            $exround->updateGradebookItem(); // uses visibility of the Moodle course module
             $exround->update_calendar();
         }
         
@@ -743,13 +751,21 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
      * Return an array of the exercise rounds (as mod_stratumtwo_exercise_round objects)
      * in a course.
      * @param int $courseid
+     * @param bool $includeHidden if true, hidden rounds are included
      * @return array of mod_stratumtwo_exercise_round objects
      */
-    public static function getExerciseRoundsInCourse($courseid) {
+    public static function getExerciseRoundsInCourse($courseid, $includeHidden = false) {
         global $DB;
+        $sort = 'ordernum ASC, openingtime ASC, closingtime ASC, id ASC';
+        if ($includeHidden) {
+            $records = $DB->get_records(self::TABLE, array('course' => $courseid),
+                $sort);
+        } else {
+            $records = $DB->get_records_select(self::TABLE, 'course = ? AND status != ?',
+                array($courseid, self::STATUS_HIDDEN), $sort);
+        }
+        
         $rounds = array();
-        $records = $DB->get_records(self::TABLE, array('course' => $courseid),
-                'ordernum ASC, openingtime ASC, closingtime ASC, id ASC');
         foreach ($records as $record) {
             $rounds[] = new self($record);
         }
@@ -776,11 +792,13 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         if ($exercise->id) {
             $ex = new mod_stratumtwo_exercise($DB->get_record(
                     mod_stratumtwo_exercise::TABLE, array('id' => $exercise->id), '*', MUST_EXIST));
-            // create gradebook item
-            $ex->updateGradebookItem();
-            
-            // update the max points of the round
-            $this->updateMaxPoints($ex->getMaxPoints());
+            if (!$ex->isHidden() && !$this->isHidden() && !$category->isHidden()) {
+                // create gradebook item
+                $ex->updateGradebookItem();
+                
+                // update the max points of the round
+                $this->updateMaxPoints();
+            }
         }
         
         return $ex;

@@ -51,16 +51,20 @@ class user_course_summary {
                 'roundid ASC, ordernum ASC, id ASC');
         $this->exerciseCount = \count($exerciseRecords);
         $exercisesByRoundId = array();
+        $categories = \mod_stratumtwo_category::getCategoriesInCourse($this->course->id); // only visible categories
         foreach ($roundIds as $roundId) {
             // initialize before the next foreach, needed if some rounds have no exercises
             $exercisesByRoundId[$roundId] = array();
         }
         foreach ($exerciseRecords as $exrecord) {
             // append exercises
-            $exercisesByRoundId[$exrecord->roundid][] = new \mod_stratumtwo_exercise($exrecord);
+            // filter out hidden exercises or exercises in hidden categories
+            if ($exrecord->status != \mod_stratumtwo_exercise::STATUS_HIDDEN &&
+                    isset($categories[$exrecord->categoryid])) {
+                $exercisesByRoundId[$exrecord->roundid][] = new \mod_stratumtwo_exercise($exrecord);
+            }
         }
         
-        $categories = \mod_stratumtwo_category::getCategoriesInCourse($this->course->id);
         $exerciseSummariesByCategoryId = array();
         foreach ($categories as $cat) {
             $exerciseSummariesByCategoryId[$cat->getId()] = array();

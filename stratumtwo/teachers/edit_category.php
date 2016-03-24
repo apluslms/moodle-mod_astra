@@ -61,6 +61,18 @@ if ($fromform = $form->get_data()) {
         $fromform->id = $id;
         $cat = new mod_stratumtwo_category($fromform);
         $cat->save();
+        
+        if ($cat->getStatus() != $category->getStatus()) {
+            // changing to/from hidden status affects the visible max points of exercise rounds
+            $roundRecords = $DB->get_records_select(mod_stratumtwo_exercise_round::TABLE,
+                    'id IN (SELECT DISTINCT roundid FROM {'. mod_stratumtwo_exercise::TABLE .'} WHERE categoryid = ?)',
+                    array($id));
+            foreach ($roundRecords as $roundrec) {
+                $round = new mod_stratumtwo_exercise_round($roundrec);
+                $round->updateMaxPoints();
+            }
+        }
+        
         $message = get_string('cateditsuccess', mod_stratumtwo_exercise_round::MODNAME);
         
     } else { // create new

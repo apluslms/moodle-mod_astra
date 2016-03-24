@@ -106,7 +106,7 @@ class auto_setup {
         }
         
         // hide rounds and exercises that exist in Moodle but were not seen in the config
-        foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
+        foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid, true) as $exround) {
             if (! \in_array($exround->getId(), $seen_modules)) {
                 $exround->setStatus(\mod_stratumtwo_exercise_round::STATUS_HIDDEN);
                 $exround->save();
@@ -126,7 +126,7 @@ class auto_setup {
         }
         
         // clean up obsolete categories
-        foreach (\mod_stratumtwo_category::getCategoriesInCourse($courseid) as $cat) {
+        foreach (\mod_stratumtwo_category::getCategoriesInCourse($courseid, true) as $cat) {
             if ($cat->getStatus() == \mod_stratumtwo_category::STATUS_HIDDEN &&
                     $cat->countExercises() == 0) {
                 $cat->delete();
@@ -293,6 +293,9 @@ class auto_setup {
                     $seen_exercises, $errors, null, $exercise_order);
         }
         
+        // update round max points after configuring the exercises of the round
+        $exround->updateMaxPoints();
+        
         return array($module_order, $exercise_order);
     }
     
@@ -399,9 +402,6 @@ class auto_setup {
             if ($maxsbms !== null)
                 $exerciseRecord->maxsubmissions = $maxsbms;
             
-            $oldMaxPoints = 0;
-            if (isset($exerciseRecord->maxpoints))
-                $oldMaxPoints = $exerciseRecord->maxpoints;
             if (isset($o->max_points)) {
                 $maxpoints = $this->parseInt($o->max_points, $errors);
                 if ($maxpoints !== null)
@@ -448,21 +448,17 @@ class auto_setup {
                 // update existing
                 $exercise = new \mod_stratumtwo_exercise($exerciseRecord);
                 if ($oldRoundId == $exerciseRecord->roundid) { // round not changed
-                    $exercise->save(); // updates gradebook for exercise 
-                    // update gradebook for exercise round (changed max points)
-                    $exround->updateMaxPoints($exerciseRecord->maxpoints - $oldMaxPoints);
+                    $exercise->save($exercise->isHidden() ||
+                            $exercise->getExerciseRound()->isHidden() || $exercise->getCategory()->isHidden());
+                    // updates gradebook for exercise 
                 } else {
                     // round changed
                     $exercise->deleteGradebookItem();
-                    // reduce max points of previous round
-                    $oldRound = \mod_stratumtwo_exercise_round::createFromId($oldRoundId);
-                    $oldRound->updateMaxPoints(-$oldMaxPoints);
                     // gradeitemnumber must be unique in the new round
                     $newRound = $exercise->getExerciseRound();
                     $exerciseRecord->gradeitemnumber = $newRound->getNewGradebookItemNumber();
-                    $exercise->save(); // updates gradebook item (creates new item)
-                    // update max points in the new round
-                    $newRound->updateMaxPoints($exercise->getMaxPoints());
+                    $exercise->save($exercise->isHidden() || $newRound->isHidden() || $exercise->getCategory()->isHidden());
+                    // updates gradebook item (creates new item)
                 }
             } else {
                 // create new exercise

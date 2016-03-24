@@ -60,6 +60,7 @@ if ($fromform = $form->get_data()) {
     $submission->setGrader($USER);
     // do not modify gradingtime, it is used for automatic grading
     $submission->save();
+    //TODO update gradebook, if best points change
     
     redirect(\mod_stratumtwo\urls\urls::inspectSubmission($submission));
     exit(0);

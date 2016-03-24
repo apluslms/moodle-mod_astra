@@ -181,7 +181,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         
         // update round max points (subtract this exercise)
         if ($updateRoundMaxPoints) {
-            $this->getExerciseRound()->updateMaxPoints(-$this->record->maxpoints);
+            $this->getExerciseRound()->updateMaxPoints();
         }
         
         return true; // success

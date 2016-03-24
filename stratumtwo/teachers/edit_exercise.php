@@ -70,21 +70,26 @@ if ($fromform = $form->get_data()) {
         if ($fromform->roundid == $exerciseRecord->roundid) { // round not changed 
             $fromform->gradeitemnumber = $exerciseRecord->gradeitemnumber; // keep the old value
             $updatedExercise = new mod_stratumtwo_exercise($fromform);
-            $updatedExercise->save();
+            $updatedExercise->save($updatedExercise->isHidden() ||
+                    $updatedExercise->getExerciseRound()->isHidden() || $updatedExercise->getCategory()->isHidden());
             
             // update round max points
-            $updatedExercise->getExerciseRound()->updateMaxPoints($updatedExercise->getMaxPoints() - $exerciseRecord->maxpoints);
+            $updatedExercise->getExerciseRound()->updateMaxPoints();
         } else {
             // round changed, delete old gradebook item, modify max points of both rounds
             $exercise->deleteGradebookItem();
-            // reduce max points of previous round (using the old max points of the exercise)
-            $exercise->getExerciseRound()->updateMaxPoints(- $exercise->getMaxPoints());
+            
             // gradeitemnumber must be unique in the new round
             $newRound = mod_stratumtwo_exercise_round::createFromId($fromform->roundid);
             $fromform->gradeitemnumber = $newRound->getNewGradebookItemNumber();
             $newExercise = new mod_stratumtwo_exercise($fromform);
-            $newExercise->save(); // updates gradebook item (creates new item)
-            $newRound->updateMaxPoints($newExercise->getMaxPoints());
+            $newExercise->save($newExercise->isHidden() ||
+                    $newExercise->getExerciseRound()->isHidden() || $newExercise->getCategory()->isHidden());
+            // save() updates gradebook item (creates new item), unless hidden
+            
+            $newRound->updateMaxPoints(); // max points of the new round change
+            // reduce max points of previous round
+            $exercise->getExerciseRound()->updateMaxPoints();
         }
         
         $message = get_string('exerciseeditsuccess', mod_stratumtwo_exercise_round::MODNAME);

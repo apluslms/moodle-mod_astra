@@ -53,13 +53,22 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
     
     /**
      * Return all exercises in this category.
+     * @param bool $includeHidden if true, hidden exercises are included
      * @return mod_stratumtwo_exercise[]
      */
-    public function getExercises() {
+    public function getExercises($includeHidden = false) {
         global $DB;
-        $exerciseRecords = $DB->get_records(mod_stratumtwo_exercise::TABLE, array(
-                'categoryid' => $this->getId(),
-        ), 'roundid ASC, ordernum ASC, id ASC');
+        $sort = 'roundid ASC, ordernum ASC, id ASC';
+        if ($includeHidden) {
+            $exerciseRecords = $DB->get_records(mod_stratumtwo_exercise::TABLE, array(
+                    'categoryid' => $this->getId(),
+            ), $sort);
+        } else {
+            $exerciseRecords = $DB->get_records_select(mod_stratumtwo_exercise::TABLE,
+                    'categoryid = ? AND status != ?', array($this->getId(), mod_stratumtwo_exercise::STATUS_HIDDEN),
+                    $sort);
+        }
+        
         $exercises = array();
         foreach ($exerciseRecords as $record) {
             $exercises[] = new mod_stratumtwo_exercise($record);
@@ -81,11 +90,20 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
     /**
      * Return all categories in a course.
      * @param int $courseid
+     * @param bool $includeHidden if true, hidden categories are included
      * @return array of mod_stratumtwo_category objects, indexed by category IDs
      */
-    public static function getCategoriesInCourse($courseid) {
+    public static function getCategoriesInCourse($courseid, $includeHidden = false) {
         global $DB;
-        $records = $DB->get_records(self::TABLE, array('course' => $courseid));
+        if ($includeHidden) {
+            $records = $DB->get_records(self::TABLE, array('course' => $courseid));
+        } else {
+            $records = $DB->get_records(self::TABLE, array(
+                    'course' => $courseid,
+                    'status' => self::STATUS_READY,
+            ));
+        }
+        
         $categories = array();
         foreach ($records as $id => $record) {
             $categories[$id] = new self($record);

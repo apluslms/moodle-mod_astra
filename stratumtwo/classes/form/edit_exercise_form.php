@@ -48,7 +48,7 @@ class edit_exercise_form extends \moodleform {
         $mform->addRule('status', null, 'required', null, 'client');
         
         // category
-        $cats = \mod_stratumtwo_category::getCategoriesInCourse($this->courseid);
+        $cats = \mod_stratumtwo_category::getCategoriesInCourse($this->courseid, true);
         $catChoices = array();
         foreach ($cats as $cat) {
             $catChoices[$cat->getId()] = $cat->getName();
@@ -58,7 +58,7 @@ class edit_exercise_form extends \moodleform {
         $mform->addRule('categoryid', null, 'required', null, 'client');
         
         // exercise round
-        $rounds = \mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->courseid);
+        $rounds = \mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->courseid, true);
         $roundChoices = array();
         foreach ($rounds as $round) {
             $roundChoices[$round->getId()] = $round->getName();
