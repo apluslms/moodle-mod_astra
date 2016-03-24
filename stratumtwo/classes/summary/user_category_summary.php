@@ -96,4 +96,25 @@ class user_category_summary {
     public function isSubmitted() {
         return $this->getSubmissionCount() > 0;
     }
+    
+    public function getTemplateContext() {
+        $totalPoints = $this->getTotalPoints();
+        $maxPoints = $this->getMaxPoints();
+
+        $ctx = new \stdClass();
+        $ctx->full_score = ($totalPoints >= $maxPoints);
+        $ctx->passed = $this->isPassed();
+        $ctx->missing_points = $this->isMissingPoints();
+        $ctx->points = $totalPoints;
+        $ctx->max = $maxPoints;
+        $ctx->points_to_pass = $this->getRequiredPoints();
+        $ctx->required = $this->getRequiredPoints();
+        $ctx->percentage = ($ctx->max == 0) ? 100 : round(100 * $ctx->points / $ctx->max);
+        $ctx->required_percentage = ($ctx->max == 0) ? 0 : round(100 * $ctx->required / $ctx->max);
+        return $ctx;
+    }
+    
+    public function getCategory() {
+        return $this->category;
+    }
 }

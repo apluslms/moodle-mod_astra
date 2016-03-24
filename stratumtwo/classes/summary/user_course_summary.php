@@ -13,6 +13,7 @@ class user_course_summary {
     
     protected $user;
     protected $course;
+    protected $exerciseRounds;
     protected $moduleSummariesByRoundId;
     protected $exerciseCount = 0; // number of exercises in the course
     protected $categorySummaries;
@@ -26,6 +27,9 @@ class user_course_summary {
         $this->course = $course;
         $this->user = $user;
         
+        // all exercise rounds in the course
+        $this->exerciseRounds = \mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($course->id);
+        
         // user_module_summary objects indexed by exercise round IDs
         $this->moduleSummariesByRoundId = array();
         // user_category_summary objects
@@ -38,9 +42,8 @@ class user_course_summary {
         global $DB;
         
         // all exercise rounds, exercises and categories in the course 
-        $exerciseRounds = \mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->course->id);
         $roundIds = array();
-        foreach ($exerciseRounds as $exround) {
+        foreach ($this->exerciseRounds as $exround) {
             $roundIds[] = $exround->getId();
         }
         $exerciseRecords = $DB->get_records_list(\mod_stratumtwo_exercise::TABLE,
@@ -48,12 +51,15 @@ class user_course_summary {
                 'roundid ASC, ordernum ASC, id ASC');
         $this->exerciseCount = \count($exerciseRecords);
         $exercisesByRoundId = array();
+        foreach ($roundIds as $roundId) {
+            // initialize before the next foreach, needed if some rounds have no exercises
+            $exercisesByRoundId[$roundId] = array();
+        }
         foreach ($exerciseRecords as $exrecord) {
-            if (!isset($exercisesByRoundId[$exrecord->roundid])) {
-                $exercisesByRoundId[$exrecord->roundid] = array();
-            }
+            // append exercises
             $exercisesByRoundId[$exrecord->roundid][] = new \mod_stratumtwo_exercise($exrecord);
         }
+        
         $categories = \mod_stratumtwo_category::getCategoriesInCourse($this->course->id);
         $exerciseSummariesByCategoryId = array();
         foreach ($categories as $cat) {
@@ -62,7 +68,7 @@ class user_course_summary {
         
         // initialize array for holding the best submissions
         $submissionsByExerciseId = array();
-        foreach ($exerciseRounds as $exround) {
+        foreach ($this->exerciseRounds as $exround) {
             foreach ($exercisesByRoundId[$exround->getId()] as $ex) {
                 $submissionsByExerciseId[$ex->getId()] = array(
                         'count' => 0,
@@ -87,7 +93,7 @@ class user_course_summary {
         // find best submissions
         foreach ($submissions as $record) {
             $sbms = new \mod_stratumtwo_submission($record);
-            $exerciseBest = $submissionsByExerciseId[$record->exerciseid];
+            $exerciseBest = &$submissionsByExerciseId[$record->exerciseid];
             $count = $exerciseBest['count'];
             $best = $exerciseBest['best'];
             if ($best === null || $sbms->getGrade() > $best->getGrade() ||
@@ -101,7 +107,7 @@ class user_course_summary {
         $submissions->close();
         
         // make summary objects
-        foreach ($exerciseRounds as $exround) {
+        foreach ($this->exerciseRounds as $exround) {
             $exerciseSummaries = array(); // user_exercise_summary objects for one exercise round
             foreach ($exercisesByRoundId[$exround->getId()] as $ex) {
                 $exerciseBest = $submissionsByExerciseId[$ex->getId()];
@@ -141,9 +147,15 @@ class user_course_summary {
         return $total;
     }
     
-    public function getTemplateContext() {
-        $ctx = new \stdClass();
-        //TODO
-        return $ctx;
+    public function getExerciseRounds() {
+        return $this->exerciseRounds;
+    }
+    
+    public function getModuleSummary($roundId) {
+        return $this->moduleSummariesByRoundId[$roundId];
+    }
+    
+    public function getCategorySummaries() {
+        return $this->categorySummaries;
     }
 }

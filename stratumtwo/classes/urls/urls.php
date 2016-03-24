@@ -131,4 +131,9 @@ class urls {
         $query = array('course' => $courseid);
         return self::buildUrl('/teachers/auto_setup.php', $query, $asMdlUrl);
     }
+    
+    public static function roundsIndex($courseid, $asMdlUrl = false) {
+        $query = array('id' => $courseid);
+        return self::buildUrl('/index.php', $query, $asMdlUrl);
+    }
 }

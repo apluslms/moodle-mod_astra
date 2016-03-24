@@ -11,7 +11,7 @@ class renderer extends \plugin_renderer_base {
      *
      * @return string html for the page
      */
-    protected function render_index_page($page) {
+    protected function render_index_page(\mod_stratumtwo\output\index_page $page) {
         $data = $page->export_for_template($this);
         return parent::render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/index_page', $data);
     }
