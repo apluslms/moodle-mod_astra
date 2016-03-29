@@ -587,9 +587,9 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $sum = 0;
         // sum the exercise points that were stored in the gradebook (should be
         // the best points for each exercise)
-        foreach ($grades as $gradeItemNumber => $grade) {
-            if ($gradeItemNumber != 0 && $grade->grade !== null) { // do not add the old exercise round points
-                $sum += $grade->grade;
+        foreach ($grades->items as $gradeItemNumber => $grade) {
+            if ($gradeItemNumber != 0 && isset($grade->grades[$userid]->grade)) { // do not add the old exercise round points
+                $sum += $grade->grades[$userid]->grade;
             }
         }
         $sum = (int) round($sum);
