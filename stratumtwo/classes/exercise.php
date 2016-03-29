@@ -68,6 +68,32 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return (int) $this->record->parentid;
     }
     
+    /**
+     * Return an array of the exercises that are direct children of this exercise.
+     * @param bool $includeHidden if true, hidden exercises are included
+     * @return mod_stratumtwo_exercise[]
+     */
+    public function getChildren($includeHidden = false) {
+        global $DB;
+        
+        if ($includeHidden) {
+            $exerciseRecords = $DB->get_records(self::TABLE, array(
+                    'parentid' => $this->record->id,
+            ), 'ordernum ASC, id ASC');
+        } else {
+            $exerciseRecords = $DB->get_records_select(self::TABLE,
+                    'parentid = ? AND status != ?',
+                    array($this->record->id, self::STATUS_HIDDEN),
+                    'ordernum ASC, id ASC');
+        }
+        
+        $exercises = array();
+        foreach ($exerciseRecords as $ex) {
+            $exercises[] = new mod_stratumtwo_exercise($ex);
+        }
+        return $exercises;
+    }
+    
     public function getOrder() {
         return (int) $this->record->ordernum;
     }

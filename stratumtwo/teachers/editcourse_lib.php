@@ -91,6 +91,18 @@ function stratumtwo_sort_activities_in_section($courseid, $course_section) {
  */
 function stratumtwo_renumber_rounds_and_exercises($courseid,
         $moduleNumberingStyle, $numberExercisesIgnoringModules = false) {
+    // derived from A+ (a-plus/course/tree.py)
+    $traverse = function($lobject, $start) use (&$traverse) {
+        $n = $start;
+        foreach ($lobject->getChildren() as $child) {
+            $n += 1;
+            $child->setOrder($n);
+            $child->save();
+            $traverse($child, 0);
+        }
+        return $n;
+    };
+    
     $roundOrder = 0;
     $exerciseOrder = 0;
     foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
@@ -104,9 +116,12 @@ function stratumtwo_renumber_rounds_and_exercises($courseid,
             $exerciseOrder = 0;
         }
         foreach ($exround->getExercises() as $ex) {
-            $exerciseOrder += 1;
-            $ex->setOrder($exerciseOrder);
-            $ex->save();
+            if (!$ex->getParentId()) { // top-level exercise
+                $exerciseOrder += 1;
+                $ex->setOrder($exerciseOrder);
+                $ex->save();
+                $traverse($ex, 0);
+            }
         }
     }
 }
