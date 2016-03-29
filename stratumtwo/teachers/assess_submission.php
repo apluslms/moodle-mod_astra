@@ -67,6 +67,9 @@ if ($fromform = $form->get_data()) {
     $bestSubmission = $exercise->getBestSubmissionForStudent($submitterId);
     $bestSubmission->writeToGradebook(true);
     
+    // send a notification to the student that she has received new assistant feedback
+    stratumtwo_send_assistant_feedback_notification($submission, $USER, $submission->getSubmitter());
+    
     redirect(\mod_stratumtwo\urls\urls::inspectSubmission($submission));
     exit(0);
     

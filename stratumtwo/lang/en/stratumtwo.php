@@ -18,6 +18,8 @@ $string['modulename_help'] = 'External Stratum2 exercises (Aalto SCI Dept. of Co
 $string['stratum'] = 'Stratum';
 $string['pluginadministration'] = 'Stratum2 exercises administration';
 $string['pluginname'] = 'Stratum2 exercises'; // Used by Moodle core
+// Moodle Message API
+$string['messageprovider:assistant_feedback_notification'] = 'Notification about new assistant feedback';
 
 // mod_form.php
 $string['deadline'] = 'Deadline';
@@ -108,6 +110,8 @@ $string['assessastfeedback'] = 'Assistant feedback';
 $string['assessastfeedback_help'] = 'HTML formatting is allowed. This will not override machine feedback.';
 $string['assessfeedback'] = 'Grader feedback';
 $string['assessfeedback_help'] = 'HTML formatting is allowed. This WILL override machine feedback.';
+$string['feedbackto'] = 'Feedback to {$a}';
+$string['youhavenewfeedback'] = 'You have new personal feedback to exercise <a href="{$a->exurl}">{$a->exname}</a>, <a href="{$a->sbmsurl}">submission {$a->sbmsid}</a>.';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';

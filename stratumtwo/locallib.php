@@ -79,3 +79,30 @@ function stratumtwo_navbar_add_inspect_submission(navigation_node $prevNode, mod
             null, 'inspect');
     return $inspectNav;
 }
+
+function stratumtwo_send_assistant_feedback_notification(mod_stratumtwo_submission $submission,
+        stdClass $fromUser, stdClass $toUser) {
+    $str = new stdClass();
+    $str->exname = $submission->getExercise()->getName();
+    $str->exurl = \mod_stratumtwo\urls\urls::exercise($submission->getExercise());
+    $str->sbmsurl = \mod_stratumtwo\urls\urls::submission($submission);
+    $str->sbmsid = $submission->getId();
+    $msg_start = get_string('youhavenewfeedback', \mod_stratumtwo_exercise_round::MODNAME, $str);
+    $full_msg = "<p>$msg_start</p>". $submission->getAssistantFeedback();
+    
+    $message = new \core\message\message();
+    $message->component = \mod_stratumtwo_exercise_round::MODNAME;
+    $message->name = 'assistant_feedback_notification';
+    $message->userfrom = $fromUser;
+    $message->userto = $toUser;
+    $message->subject = get_string('feedbackto', \mod_stratumtwo_exercise_round::MODNAME, $str->exname);
+    $message->fullmessage = $full_msg;
+    $message->fullmessageformat = FORMAT_HTML;
+    $message->fullmessagehtml = $full_msg;
+    $message->smallmessage = $msg_start;
+    $message->notification = 1;
+    $message->contexturl = \mod_stratumtwo\urls\urls::submission($submission);
+    $message->contexturlname = get_string('submissionnumber', \mod_stratumtwo_exercise_round::MODNAME, $submission->getId());
+    
+    return message_send($message);
+}
