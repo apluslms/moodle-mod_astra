@@ -204,6 +204,7 @@ class remote_page {
     
     protected function parsePageContent(\mod_stratumtwo_exercise $ex) {
         $this->fixFormAction($ex);
+        $this->fixFormMultipleCheckboxes();
         $this->content = $this->getElementOrBody('exercise');
         
         // parse metadata
@@ -286,6 +287,41 @@ class remote_page {
         foreach ($nodesList as $formNode) {
             if ($formNode->nodeType == \XML_ELEMENT_NODE) {
                 $formNode->setAttribute('action', $formAction);
+            }
+        }
+    }
+    
+    /**
+     * Add array notation to form checkbox groups.
+     * (If there are checkbox inputs that use the same name but the name
+     * does not end with brackets []. PHP cannot parse multi-checkbox form input
+     * without the array notation.)
+     */
+    protected function fixFormMultipleCheckboxes() {
+        $nodesList = $this->DOMdoc->getElementsByTagName('input');
+        $checkboxesByName = array();
+        // find checkbox groups (multiple checkboxes with the same name) such that
+        // their names do not use the array notation [] yet
+        foreach ($nodesList as $inputNode) {
+            if ($inputNode->nodeType == \XML_ELEMENT_NODE && 
+                    $inputNode->getAttribute('type') == 'checkbox') {
+                $name = $inputNode->getAttribute('name');
+                if ($name != '' && \strpos(\strrev($name), '][') !== 0) {
+                    // name attr not empty and does not already end with []
+                    if (!isset($checkboxesByName[$name])) {
+                        $checkboxesByName[$name] = array();
+                    }
+                    $checkboxesByName[$name][] = $inputNode;
+                }
+            }
+        }
+        
+        // add [] to the checkbox names, if they form a group
+        foreach ($checkboxesByName as $name => $inputNodes) {
+            if (\count($inputNodes) > 1) {
+                foreach ($inputNodes as $inputNode) {
+                    $inputNode->setAttribute('name', $name .'[]');
+                }
             }
         }
     }
