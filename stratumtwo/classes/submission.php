@@ -461,15 +461,17 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         // check submit limit
         $submissions = $this->getExercise()->getSubmissionsForStudent($this->record->submitter);
         $count = 0;
-        $thisIsBest = false;
+        $thisIsBest = true;
         foreach ($submissions as $record) {
-            // count the ordinal number for this submission ("how many'th submission")
-            if ($record->submissiontime <= $this->getSubmissionTime() && $record->id != $this->getId()) {
-                $count += 1;
-            }
-            // check if this submission is the best one
-            if ($record->grade < $adjustedGrade) {
-                $thisIsBest = true;
+            if ($record->id != $this->record->id) {
+                // count the ordinal number for this submission ("how many'th submission")
+                if ($record->submissiontime <= $this->getSubmissionTime()) {
+                    $count += 1;
+                }
+                // check if this submission is the best one
+                if ($record->grade >= $adjustedGrade) {
+                    $thisIsBest = false;
+                }
             }
         }
         $submissions->close();
