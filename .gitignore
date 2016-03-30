@@ -7,3 +7,5 @@ stratumtwo/testpage.php
 # script for copying files to logic-dev
 copy.sh
 
+# downloaded Node.js / NPM packages
+node_modules
