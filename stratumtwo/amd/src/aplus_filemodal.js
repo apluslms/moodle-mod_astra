@@ -1,5 +1,9 @@
 /**
  * A+ file modal as an AMD module for Moodle.
+ * In an HTML page, run the following Javascript code once to enable this
+ * file modal plugin:
+ * $('.file-modal').aplusFileModal();
+ * 
  * @module mod_stratumtwo/aplus_filemodal
  */
 define(['jquery', 'mod_stratumtwo/highlight', 'mod_stratumtwo/twbootstrap'], function(jQuery, hljs) {
