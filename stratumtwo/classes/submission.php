@@ -582,6 +582,8 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
             $ctx->late_penalty_applied_percent = (int) round($ctx->late_penalty_applied * 100);
         }
         $ctx->submitter_name = $this->getSubmitterName();
+        $assistantFeedback = $this->getAssistantFeedback();
+        $ctx->has_assistant_feedback = !empty($assistantFeedback); // empty supports only variables
         
         if ($this->isGraded()) {
             $ctx->is_graded = true;

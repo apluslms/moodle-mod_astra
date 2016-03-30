@@ -309,6 +309,34 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     }
     
     /**
+     * Return all submissions to this exercise.
+     * @param bool $excludeErrors if true, submissions with status error are excluded
+     * @return Moodle recordset (iterator) of database records (stdClass). 
+     * The caller of this method must call the close() method on the recordset.
+     */
+    public function getAllSubmissions($excludeErrors = false) {
+        global $DB;
+        
+        // exclude fields feedback, submissiondata, gradingdata
+        $fields = 'id,status,submissiontime,hash,exerciseid,submitter,grader,assistfeedback,grade,gradingtime,latepenaltyapplied,servicepoints,servicemaxpoints';
+        $orderBy = 'submitter ASC, submissiontime DESC';
+        
+        if ($excludeErrors) {
+            // exclude submissions with status error
+            $submissions = $DB->get_recordset_select(mod_stratumtwo_submission::TABLE,
+                    'exerciseid = ? AND status != ?', array(
+                            $this->getId(),
+                            mod_stratumtwo_submission::STATUS_ERROR,
+                    ), $orderBy, fields);
+        } else {
+            $submissions = $DB->get_recordset(mod_stratumtwo_submission::TABLE, array(
+                    'exerciseid' => $this->getId(),
+            ), $orderBy, $fields);
+        }
+        return $submissions;
+    }
+    
+    /**
      * Create or update the Moodle gradebook item for this exercise.
      * (In order to add grades for students, use the method updateGrades.)
      * @param bool $reset if true, delete all grades in the grade item

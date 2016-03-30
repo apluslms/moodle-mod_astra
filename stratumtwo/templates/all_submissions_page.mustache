@@ -1,0 +1,83 @@
+{{!
+List all submissions to an exercise.
+Derived from A+ (a-plus/exercise/templates/exercise/staff/list_submissions.html and
+a-plus/exercise/templates/exercise/staff/_submissions_table.html).
+
+Context variables:
+* count (int) number of submissions
+* submissions (array of objects), each object has fields 
+    - submitter_name (string) in the format "fullname (student id)"
+    - submission_time (int, Unix timestamp)
+    - late_penalty_applied (float, 0-1), null if no late penalty
+    - late_penalty_applied_percent (int, 0-100)
+    - state (string) status of the submission
+    - points (int)
+    - has_assistant_feedback (bool) true if there is any assistant feedback for this submission
+    - inspecturl (string) URL to inspect this submission
+* toDateStr callable Function that converts a Unix timestamp to a date string
+}}
+
+<div class="bs3-container-fluid">
+<div class="col-md-12">
+
+<p>
+    {{#str}} numbersubmissions, mod_stratumtwo, {{ count }} {{/str}}
+</p>
+<table class="table table-bordered filtered-table">
+    <thead>
+        <tr>
+            <th>{{#str}} submitters, mod_stratumtwo {{/str}}</th>
+            <th>{{#str}} submissiontime, mod_stratumtwo {{/str}}</th>
+            <th>{{#str}} status, mod_stratumtwo {{/str}}</th>
+            <th>{{#str}} grade, mod_stratumtwo {{/str}}</th>
+            <th>{{#str}} inspect, mod_stratumtwo {{/str}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{# submissions }}
+        <tr>
+            <td>
+                {{ submitter_name }}
+            </td>
+            <td>
+                {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
+                {{# late_penalty_applied }}
+                <span class="label label-warning">
+                    {{#str}} late, mod_stratumtwo {{/str}} <small>-{{ late_penalty_applied_percent }}%</small>
+                </span>
+                {{/ late_penalty_applied }}
+            </td>
+            <td>
+                {{ state }}
+            </td>
+            <td>
+                {{ points }}
+                {{# has_assistant_feedback }}
+                  <span class="label label-warning">{{#str}} assistantfeedback, mod_stratumtwo {{/str}}</span>
+                {{/ has_assistant_feedback }}
+            </td>
+            <td>
+                <a href="{{{ inspecturl }}}" class="btn btn-default btn-xs">
+                    <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+                    {{#str}} inspect, mod_stratumtwo {{/str}}
+                </a>
+            </td>
+        </tr>
+        {{/ submissions }}
+        {{^ submissions }}
+        <tr>
+            <td>{{#str}} nosubmissions, mod_stratumtwo {{/str}}</td>
+        </tr>
+        {{/ submissions }}
+    </tbody>
+</table>
+
+</div>
+</div>
+
+{{#js}}
+require(['jquery', 'mod_stratumtwo/aplus_tablefilter'], function($) {
+  /* Enable table filter */
+  $('.filtered-table').aplusTableFilter();
+});
+{{/js}}

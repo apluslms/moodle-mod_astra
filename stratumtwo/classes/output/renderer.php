@@ -35,7 +35,7 @@ class renderer extends \plugin_renderer_base {
         return parent::render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/submission_page', $data);
     }
     
-    protected function render_edit_course_page($page) {
+    protected function render_edit_course_page(\mod_stratumtwo\output\edit_course_page $page) {
         $data = $page->export_for_template($this);
         return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/edit_course_page', $data);
     }
@@ -53,6 +53,11 @@ class renderer extends \plugin_renderer_base {
     protected function render_assess_page(\mod_stratumtwo\output\assess_page $page) {
         $data = $page->export_for_template($this);
         return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/assess_page', $data);
+    }
+    
+    protected function render_all_submissions_page(\mod_stratumtwo\output\all_submissions_page $page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/all_submissions_page', $data);
     }
     
 }
