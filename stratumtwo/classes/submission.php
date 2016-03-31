@@ -495,12 +495,18 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     
     /**
      * Check if this submission was submitted after the exercise round closing time.
+     * Deadline deviation is taken into account.
      */
     public function isLate() {
         if ($this->getSubmissionTime() <= $this->getExercise()->getExerciseRound()->getClosingTime()) {
             return false;
         }
-        //TODO deadline deviations/extensions for specific students
+        // check deadline deviations/extensions for specific students
+        $deviation = mod_stratumtwo_deadline_deviation::findDeviation($this->getExercise(), $this->record->submitter);
+        if ($deviation !== null && !$deviation->useLatePenalty() && 
+                $this->getSubmissionTime() <= $deviation->getNewDeadline()) {
+            return false;
+        }
         return true;
     }
     
@@ -514,8 +520,15 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         if ($lateSbmsDl == 0) { // not set
             return false;
         }
-        return $this->getSubmissionTime() > $lateSbmsDl;
-        //TODO deviations
+        if ($this->getSubmissionTime() <= $lateSbmsDl) {
+            return false;
+        }
+        // check deviations
+        $deviation = mod_stratumtwo_deadline_deviation::findDeviation($this->getExercise(), $this->record->submitter);
+        if ($deviation !== null && $this->getSubmissionTime() <= $deviation->getNewLateSubmissionDeadline()) {
+            return false;
+        }
+        return true;
     }
     
     /**

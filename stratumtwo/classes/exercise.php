@@ -666,8 +666,12 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
     }
     
     public function getMaxSubmissionsForStudent(stdClass $user) {
-        // TODO deviations
-        return $this->getMaxSubmissions();
+        $max = $this->getMaxSubmissions(); // zero means no limit
+        $deviation = mod_stratumtwo_submission_limit_deviation::findDeviation($this, $user->id);
+        if ($deviation !== null && $max !== 0) {
+            return $max + $deviation->getExtraSubmissions();
+        }
+        return $max;
     }
     
     public function studentHasSubmissionsLeft(stdClass $user) {
@@ -684,10 +688,11 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         if ($exround->isOpen($when) || $exround->isLateSubmissionOpen($when))
             return true;
         if ($exround->hasStarted($when)) {
-            //TODO deviations
-            /*$deviation = $this->one_has_deadline_deviation(students)
-            if deviation and when <= deviation.get_new_deadline():
-                return True*/
+            // check deviations
+            $deviation = mod_stratumtwo_deadline_deviation::findDeviation($this, $user->id);
+            if ($deviation !== null && $when <= $deviation->getNewLateSubmissionDeadline()) {
+                return true;
+            }
         }
         return false;
     }

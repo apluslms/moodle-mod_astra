@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/stratumtwo/db" VERSION="20160203" COMMENT="XMLDB file for Moodle mod/stratumtwo"
+<XMLDB PATH="mod/stratumtwo/db" VERSION="20163003" COMMENT="XMLDB file for Moodle mod/stratumtwo"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -164,6 +164,44 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="course" UNIQUE="true" FIELDS="course"/>
+      </INDEXES>
+    </TABLE>
+    
+    <TABLE NAME="stratumtwo_dl_deviations" COMMENT="Student-specific deviations/extensions to exercise deadlines.">
+      <FIELDS>
+        <FIELD NAME="id" LENGTH="10" SEQUENCE="true" TYPE="int" NOTNULL="true"/>
+        <FIELD NAME="submitter" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Moodle user ID of the submitter who is affected by the deviation."/>
+        <FIELD NAME="exerciseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Exercise ID of the affected exercise."/>
+        <FIELD NAME="extraminutes" LENGTH="9" TYPE="int" NOTNULL="true" SEQUENCE="false"
+               COMMENT="Minutes to add to the normal deadline."/>
+        <FIELD NAME="withoutlatepenalty" LENGTH="1" TYPE="int" NOTNULL="true" DEFAULT="1" SEQUENCE="false"
+               COMMENT="1 = true (no late penalty), 0 = false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="submitter" UNIQUE="false" FIELDS="submitter"/>
+      </INDEXES>
+    </TABLE>
+    
+    <TABLE NAME="stratumtwo_maxsbms_devs" COMMENT="Student-specific deviations/extensions to exercise max submissions limits.">
+      <FIELDS>
+        <FIELD NAME="id" LENGTH="10" SEQUENCE="true" TYPE="int" NOTNULL="true"/>
+        <FIELD NAME="submitter" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Moodle user ID of the submitter who is affected by the deviation."/>
+        <FIELD NAME="exerciseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
+               COMMENT="Exercise ID of the affected exercise."/>
+        <FIELD NAME="extrasubmissions" LENGTH="9" TYPE="int" NOTNULL="true" SEQUENCE="false"
+               COMMENT="Number of submissions to add to the normal submission limit."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="submitter" UNIQUE="false" FIELDS="submitter"/>
       </INDEXES>
     </TABLE>
     
