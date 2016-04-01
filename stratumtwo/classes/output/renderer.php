@@ -60,4 +60,8 @@ class renderer extends \plugin_renderer_base {
         return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/all_submissions_page', $data);
     }
     
+    protected function render_deviations_list_page(\mod_stratumtwo\output\deviations_list_page $page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/list_deviations_page', $data);
+    }
 }

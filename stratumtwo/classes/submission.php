@@ -502,7 +502,7 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
             return false;
         }
         // check deadline deviations/extensions for specific students
-        $deviation = mod_stratumtwo_deadline_deviation::findDeviation($this->getExercise(), $this->record->submitter);
+        $deviation = mod_stratumtwo_deadline_deviation::findDeviation($this->getExercise()->getId(), $this->record->submitter);
         if ($deviation !== null && !$deviation->useLatePenalty() && 
                 $this->getSubmissionTime() <= $deviation->getNewDeadline()) {
             return false;
@@ -524,7 +524,7 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
             return false;
         }
         // check deviations
-        $deviation = mod_stratumtwo_deadline_deviation::findDeviation($this->getExercise(), $this->record->submitter);
+        $deviation = mod_stratumtwo_deadline_deviation::findDeviation($this->getExercise()->getId(), $this->record->submitter);
         if ($deviation !== null && $this->getSubmissionTime() <= $deviation->getNewLateSubmissionDeadline()) {
             return false;
         }

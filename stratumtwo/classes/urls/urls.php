@@ -136,4 +136,35 @@ class urls {
         $query = array('id' => $courseid);
         return self::buildUrl('/index.php', $query, $asMdlUrl);
     }
+    
+    public static function deviations($courseid, $asMdlUrl = false) {
+        $query = array('course' => $courseid);
+        return self::buildUrl('/teachers/deviations.php', $query, $asMdlUrl);
+    }
+    
+    public static function addDeadlineDeviation($courseid, $asMdlUrl = false) {
+        $query = array('course' => $courseid, 'type' => 'dl');
+        return self::buildUrl('/teachers/add_deviation.php', $query, $asMdlUrl);
+    }
+    
+    public static function addSubmissionLimitDeviation($courseid, $asMdlUrl = false) {
+        $query = array('course' => $courseid, 'type' => 'submitlimit');
+        return self::buildUrl('/teachers/add_deviation.php', $query, $asMdlUrl);
+    }
+    
+    public static function deleteDeadlineDeviation(\mod_stratumtwo_deadline_deviation $dev, $asMdlUrl = false) {
+        $query = array(
+                'remove' => 'dl',
+                'id' => $dev->getId(),
+        );
+        return self::buildUrl('/teachers/deviations.php', $query, $asMdlUrl);
+    }
+    
+    public static function deleteSubmissionLimitDeviation(\mod_stratumtwo_submission_limit_deviation $dev, $asMdlUrl = false) {
+        $query = array(
+                'remove' => 'submitlimit',
+                'id' => $dev->getId(),
+        );
+        return self::buildUrl('/teachers/deviations.php', $query, $asMdlUrl);
+    }
 }

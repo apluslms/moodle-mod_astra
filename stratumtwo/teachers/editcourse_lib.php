@@ -192,3 +192,36 @@ function stratumtwo_edit_course_navbar_add(moodle_page $page, $courseid, $title,
     $nav->make_active();
     return $nav;
 }
+
+/**
+ * Add deviations list page to the navbar.
+ * @param moodle_page $page $PAGE
+ * @param int $courseid
+ * @param bool $active
+ * @return navigation_node
+ */
+function stratumtwo_deviations_navbar(moodle_page $page, $courseid, $active = true) {
+    $courseNav = $page->navigation->find($courseid, navigation_node::TYPE_COURSE);
+    $deviNav = $courseNav->add(get_string('deviations', mod_stratumtwo_exercise_round::MODNAME),
+            \mod_stratumtwo\urls\urls::deviations($courseid, true),
+            navigation_node::TYPE_CUSTOM, null, 'deviations');
+    if ($active) {
+        $deviNav->make_active();
+    }
+    return $deviNav;
+}
+
+/**
+ * Add both deviations list page and another page to the navbar.
+ * @param moodle_page $page $PAGE
+ * @param int $courseid
+ * @param string $title
+ * @param moodle_url $url
+ * @param string $navkey
+ */
+function stratumtwo_deviations_navbar_add(moodle_page $page, $courseid, $title, moodle_url $url, $navkey) {
+    $deviNav = stratumtwo_deviations_navbar($page, $courseid, false);
+    $nav = $deviNav->add($title, $url, navigation_node::TYPE_CUSTOM, null, $navkey);
+    $nav->make_active();
+    return $nav;
+}

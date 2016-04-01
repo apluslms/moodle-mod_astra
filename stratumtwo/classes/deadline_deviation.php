@@ -43,4 +43,29 @@ class mod_stratumtwo_deadline_deviation extends mod_stratumtwo_deviation_rule {
     public function useLatePenalty() {
         return !((bool) $this->record->withoutlatepenalty);
     }
+    
+    public function getTemplateContext() {
+        $ctx = parent::getTemplateContext();
+        $ctx->extra_minutes = $this->getExtraTime();
+        $ctx->without_late_penalty = ($this->useLatePenalty() ? 'false' : 'true');
+        $ctx->remove_url = \mod_stratumtwo\urls\urls::deleteDeadlineDeviation($this);
+        return $ctx;
+    }
+    
+    public static function createNew($exerciseId, $userId, $extraMinutes, $withoutLatePenalty) {
+        global $DB;
+        
+        if (self::findDeviation($exerciseId, $userId) === null) {
+            // does not exist yet
+            $record = new stdClass();
+            $record->submitter = $userId;
+            $record->exerciseid = $exerciseId;
+            $record->extraminutes = $extraMinutes;
+            $record->withoutlatepenalty = (int) $withoutLatePenalty;
+            return $DB->insert_record(self::TABLE, $record);
+        } else {
+            // user already has a deviation in the exercise
+            return null;
+        }
+    }
 }

@@ -160,6 +160,29 @@ $string['roundremovalnote'] = '<p>If you remove this exercise round, <b>all exer
 $string['deleteobject'] = 'Delete object';
 $string['categorylow'] = 'category';
 $string['roundlow'] = 'exercise round';
+$string['deviations'] = 'Deviations';
+$string['addnewdldeviations'] = 'Add new deadline deviations';
+$string['dldeviations'] = 'Deadline deviations';
+$string['submitter'] = 'Submitter';
+$string['extraminutes'] = 'Extra minutes';
+$string['extraminutes_help'] = 'Amount of extra time given in minutes.';
+$string['withoutlatepenalty'] = 'Without late penalty';
+$string['withoutlatepenalty_help'] = 'If checked, late penalty is not applied during extra time (between the original deadline and the extended deadline). Late penalty is always applied between the extended deadline and the extended late submission deadline.';
+$string['actions'] = 'Actions';
+$string['nodldeviations'] = 'No deadline deviations.';
+$string['addnewsbmslimitdeviations'] = 'Add new submission limit deviations';
+$string['submitlimitdeviations'] = 'Submission limit deviations';
+$string['extrasubmissions'] = 'Extra submissions';
+$string['extrasubmissions_help'] = 'Number of extra submissions allowed. These are added to the original number of submissions allowed.';
+$string['nosbmslimitdeviations'] = 'No submission limit deviations.';
+$string['search'] = 'Search';
+$string['nomatches'] = 'No matches';
+$string['searchfor'] = 'Search for...';
+$string['deviationsexisted'] = 'Deviations already existed for the following users and exercises. They were not modified.';
+$string['deviationscreationerror'] = 'Deviations could not be created for the following users and exercises (database error).';
+$string['deviationscreatesuccess'] = 'All deviations created successfully.';
+$string['back'] = 'Back';
+$string['adddeviationsubmitternote'] = 'You can enter students either in the text input or in the multiselect box (hold ctrl down and left-click). If you use the text input, enter student ids or usernames separated by commas.';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';
@@ -233,6 +256,7 @@ $string['duplicateroundremotekey'] = 'Exercise round with this remote key alread
 $string['parentexinwronground'] = 'Parent exercise must be in the same exercise round. Unset parent if you are changing the round of this exercise.';
 $string['duplicateexerciseremotekey'] = 'Exercise with this remote key already exists in the course.';
 $string['invalidobjecttype'] = 'Invalid object type: {$a}.';
+$string['idsnotfound'] = 'The following identifiers could not be found in the database: {$a}';
 
 /*
 $string['stratumsbmsmaxbytes'] = 'Submission file max size in bytes';
