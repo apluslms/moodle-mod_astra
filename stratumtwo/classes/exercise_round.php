@@ -2,7 +2,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Exercise round in a course. An exercise round consists of exercises and the
+ * Exercise round in a course. An exercise round consists of learning objects
+ * (exercises and chapters) and the
  * round has a starting date and a closing date. The round can have required
  * points to pass that a student should earn in total in the exercises of the round.
  * The maximum points in a round is defined by the sum of the exercise maximum
@@ -357,44 +358,65 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     /**
-     * Return an array of the exercises in this round (as mod_stratumtwo_exercise
+     * Return an array of the learning objects in this round (as mod_stratumtwo_learning_object
      * instances).
-     * @param bool $includeHidden if true, hidden exercises are included
-     * @return array of mod_stratumtwo_exercise instances
+     * @param bool $includeHidden if true, hidden learning objects are included
+     * @return sorted array of mod_stratumtwo_learning_object instances
      */
-    public function getExercises($includeHidden = false) {
+    public function getLearningObjects($includeHidden = false) {
         global $DB;
         
-        if ($includeHidden) {
-            $exerciseRecords = $DB->get_records(mod_stratumtwo_exercise::TABLE, array(
-                'roundid' => $this->record->id,
-            ), 'ordernum ASC, id ASC');
-        } else {
-            $exerciseRecords = $DB->get_records_select(mod_stratumtwo_exercise::TABLE,
-                    'roundid = ? AND status != ?',
-                    array($this->getId(), mod_stratumtwo_exercise::STATUS_HIDDEN),
-                    'ordernum ASC, id ASC');
-        }
+        $where = ' WHERE lob.roundid = ?';
+        $params = array($this->getId());
         
-        $exercises = array();
+        if (!$includeHidden) {
+            $where .= ' AND status != ?';
+            $params[] = mod_stratumtwo_learning_object::STATUS_HIDDEN;
+        }
+        $exerciseRecords = $DB->get_records_sql(
+                mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE) . $where,
+                $params);
+        $chapterRecords = $DB->get_records_sql(
+                mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_chapter::TABLE) . $where,
+                $params);
+        
+        // gather all learning objects of the round in one array
+        $learningObjects = array();
         foreach ($exerciseRecords as $ex) {
-            $exercises[] = new mod_stratumtwo_exercise($ex);
+            $learningObjects[] = new mod_stratumtwo_exercise($ex);
+        }
+        foreach ($chapterRecords as $ch) {
+            $learningObjects[] = new mod_stratumtwo_chapter($ch);
         }
         
-        // sort again in case some exercises have parent exercises, output array should be in
+        // Sort again since some learning objects may have parent objects, and combining
+        // chapters and exercises messes up the order from the database.
+        // Output array should be in
         // the order that is used to print the exercises under the round
         // Sorting and flattening the exercise tree is derived from A+ (a-plus/course/tree.py).
         
-        // $parentid may be null to get top-level exercises
-        $children = function($parentid) use ($exercises) {
-            $child_exs = array();
-            foreach ($exercises as $ex) {
-                if ($ex->getParentId() == $parentid)
-                    $child_exs[] = $ex;
+        $orderSortCallback = function($obj1, $obj2) {
+            $ord1 = $obj1->getOrder();
+            $ord2 = $obj2->getOrder();
+            if ($ord1 < $ord2) {
+                return -1;
+            } else if ($ord1 == $ord2) {
+                return 0;
+            } else {
+                return 1;
             }
-            // the children are ordered by ordernum since $exercises array was sorted
-            // by the database API, and we take only exercises with the same parent here
-            return $child_exs;
+        };
+        
+        // $parentid may be null to get top-level learning objects
+        $children = function($parentid) use ($learningObjects, &$orderSortCallback) {
+            $child_objs = array();
+            foreach ($learningObjects as $obj) {
+                if ($obj->getParentId() == $parentid)
+                    $child_objs[] = $obj;
+            }
+            // sort children by ordernum, they all have the same parent
+            usort($child_objs, $orderSortCallback);
+            return $child_objs;
         };
         
         $traverse = function($parentid) use (&$children, &$traverse) {
@@ -407,6 +429,19 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         };
         
         return $traverse(null);
+    }
+    
+    /**
+     * Return an array of the exercises in this round.
+     * @param bool $includeHidden if true, hidden exercises are included
+     * @return mod_stratumtwo_exercise[]
+     */
+    public function getExercises($includeHidden = false) {
+        // array_filter keeps the old indexes/keys, so a numerically indexed array may
+        // have discontinuous indexes
+        return array_filter($this->getLearningObjects($includeHidden), function($lobj) {
+            return $lobj->isSubmittable();
+        });
     }
     
     /**
@@ -476,10 +511,11 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         
         $this->record->timemodified = time();
         $max = 0;
-        foreach ($this->getExercises(false) as $ex) {
+        foreach ($this->getLearningObjects(false) as $lobj) {
+            // chapters have no grading, ignore them
             // only non-hidden exercises, but must check categories too
-            if (!$ex->getCategory()->isHidden()) {
-                $max += $ex->getMaxPoints();
+            if ($lobj->isSubmittable() && !$lobj->getCategory()->isHidden()) {
+                $max += $lobj->getMaxPoints();
             }
         }
         $this->record->grade = $max;
@@ -624,30 +660,34 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         global $DB;
         if ($userid != 0) {
             // one student
-            foreach ($this->getExercises() as $ex) {
-                $sbms = $ex->getBestSubmissionForStudent($userid);
-                if (is_null($sbms)) {
-                    if ($nullifnone) {
-                        $g = new stdClass();
-                        $g->rawgrade = null;
-                        $g->userid = $userid;
-                        $ex->updateGrades(array($userid => $g));
+            foreach ($this->getLearningObjects() as $ex) {
+                if ($ex->isSubmittable()) {
+                    $sbms = $ex->getBestSubmissionForStudent($userid);
+                    if (is_null($sbms)) {
+                        if ($nullifnone) {
+                            $g = new stdClass();
+                            $g->rawgrade = null;
+                            $g->userid = $userid;
+                            $ex->updateGrades(array($userid => $g));
+                        }
+                    } else {
+                        $sbms->writeToGradebook(false);
                     }
-                } else {
-                    $sbms->writeToGradebook(false);
                 }
             }
             $this->updateGradeForOneStudent($userid);
         } else {
             // all users in the course
             $roundGrades = array();
-            foreach ($this->getExercises() as $ex) {
-                $exerciseGrades = $ex->writeAllGradesToGradebook();
-                foreach ($exerciseGrades as $student => $grade) {
-                    if (isset($roundGrades[$student])) {
-                        $roundGrades[$student] += $grade->rawgrade;
-                    } else {
-                        $roundGrades[$student] = $grade->rawgrade;
+            foreach ($this->getLearningObjects() as $ex) {
+                if ($ex->isSubmittable()) {
+                    $exerciseGrades = $ex->writeAllGradesToGradebook();
+                    foreach ($exerciseGrades as $student => $grade) {
+                        if (isset($roundGrades[$student])) {
+                            $roundGrades[$student] += $grade->rawgrade;
+                        } else {
+                            $roundGrades[$student] = $grade->rawgrade;
+                        }
                     }
                 }
             }
@@ -729,10 +769,15 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     public function deleteInstance() {
         global $DB;
         
-        // Delete all exercises of the round, since their foreign key roundid would become invalid
-        $exercises = $this->getExercises();
-        foreach ($exercises as $ex) {
-            $ex->deleteInstance(false);
+        // Delete all learning objects of the round, since their foreign key roundid would become invalid
+        $learningObjects = $this->getLearningObjects(true);
+        foreach ($learningObjects as $lobj) {
+            // TODO is there a problem that objects delete their child objects? Only delete top-level objects here?
+            if ($lobj->isSubmittable()) { // exercise
+                $lobj->deleteInstance(false);
+            } else {
+                $lobj->deleteInstance();
+            }
         }
         
         // delete calendar event for deadline
@@ -787,11 +832,19 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $exercise->roundid = $this->getId();
         $exercise->gradeitemnumber = $this->getNewGradebookItemNumber();
         
-        $exercise->id = $DB->insert_record(mod_stratumtwo_exercise::TABLE, $exercise);
+        $exercise->lobjectid = $DB->insert_record(mod_stratumtwo_learning_object::TABLE, $exercise);
         $ex = null;
-        if ($exercise->id) {
-            $ex = new mod_stratumtwo_exercise($DB->get_record(
-                    mod_stratumtwo_exercise::TABLE, array('id' => $exercise->id), '*', MUST_EXIST));
+        if ($exercise->lobjectid) {
+            $exercise->id = $DB->insert_record(mod_stratumtwo_exercise::TABLE, $exercise);
+            
+            try {
+                $ex = mod_stratumtwo_exercise::createFromId($exercise->lobjectid);
+            } catch (dml_exception $e) {
+                // learning object row was created but not the exercise row, remove learning object
+                $DB->delete_records(mod_stratumtwo_learning_object::TABLE, array('id' => $exercise->lobjectid));
+                return null;
+            }
+            
             if (!$ex->isHidden() && !$this->isHidden() && !$category->isHidden()) {
                 // create gradebook item
                 $ex->updateGradebookItem();
@@ -805,15 +858,46 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     /**
+     * Create a new chapter to this exercise round.
+     * @param stdClass $chapter settings for the nex chapter: object with fields
+     * status, parentid, ordernum, remotekey, name, serviceurl, generatetoc
+     * @param mod_stratumtwo_category $category category of the chapter
+     * @return mod_stratumtwo_chapter the new chapter, or null if failed
+     */
+    public function createNewChapter(stdClass $chapter, mod_stratumtwo_category $category) {
+        global $DB;
+        
+        $chapter->categoryid = $category->getId();
+        $chapter->roundid = $this->getId();
+        
+        $chapter->lobjectid = $DB->insert_record(mod_stratumtwo_learning_object::TABLE, $chapter);
+        $ch = null;
+        if ($chapter->lobjectid) {
+            $chapter->id = $DB->insert_record(mod_stratumtwo_chapter::TABLE, $chapter);
+            
+            try {
+                $ch = mod_stratumtwo_chapter::createFromId($chapter->lobjectid);
+            } catch (dml_exception $e) {
+                // learning object row was created but not the chapter row, remove learning object
+                $DB->delete_records(mod_stratumtwo_learning_object::TABLE, array('id' => $chapter->lobjectid));
+            }
+        }
+        
+        return $ch;
+    }
+    
+    /**
      * Find an unused gradebook item number from the exercises of this round.
      */
     public function getNewGradebookItemNumber() {
-        $exs = $this->getExercises();
+        $exs = $this->getLearningObjects(true);
         $max = 0;
         foreach ($exs as $ex) {
-            $num = $ex->getGradebookItemNumber();
-            if ($num > $max) {
-                $max = $num;
+            if ($ex->isSubmittable()) {
+                $num = $ex->getGradebookItemNumber();
+                if ($num > $max) {
+                    $max = $num;
+                }
             }
         }
         return $max + 1;
@@ -849,8 +933,12 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     public function getTemplateContextWithExercises($includeHiddenExercises = false) {
         $ctx = $this->getTemplateContext();
         $ctx->all_exercises = array();
-        foreach ($this->getExercises($includeHiddenExercises) as $ex) {
-            $ctx->all_exercises[] = $ex->getTemplateContext(null, false, false);
+        foreach ($this->getLearningObjects($includeHiddenExercises) as $ex) {
+            if ($ex->isSubmittable()) {
+                $ctx->all_exercises[] = $ex->getExerciseTemplateContext(null, false, false);
+            } else {
+                $ctx->all_exercises[] = $ex->getTemplateContext(false);
+            }
         }
         $ctx->has_exercises = !empty($ctx->all_exercises);
         return $ctx;

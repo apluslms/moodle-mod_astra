@@ -1,4 +1,5 @@
 {{!
+Base template for displaying one learning object or a submission.
 Derived from A+ (a-plus/exercise/templates/exercise/exercise_base.html)
 
 Context variables:
@@ -19,11 +20,13 @@ Context variables:
 Blocks that child templates should override:
 * exercisecontent (exercise-specific content, e.g., instructions and submission form)
 * exerciseinfo (includes the exercise info panel, override if more panels are needed in the right-side of the page)
+* submissionsnavbar (includes the submissions navbar (not the same as Moodle page navbar),
+    override if the submissions navbar is not needed, e.g., on a chapter page)
 }}
 
 <div class="bs3-container-fluid">
 <div class="col-lg-9">
-
+  {{$ submissionsnavbar }}
   <ul class="nav nav-tabs">
       <li class="menu-exercise">
           <a href="{{{ exercise.url }}}">
@@ -78,7 +81,8 @@ Blocks that child templates should override:
       </li>
       {{/ is_course_staff }}
   </ul>
-
+  {{/ submissionsnavbar }}
+  
   {{# error }}
     {{> mod_stratumtwo/_error_alert }}
   {{/ error }}

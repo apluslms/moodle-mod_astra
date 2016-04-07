@@ -15,7 +15,7 @@ class inspect_page implements \renderable, \templatable {
         $ctx = $this->submission->getTemplateContext(true, true);
         $ctx->status = $ctx->state;
         
-        $ctx->exercise = $this->submission->getExercise()->getTemplateContext(null, false, false);
+        $ctx->exercise = $this->submission->getExercise()->getExerciseTemplateContext(null, false, false);
         
         $context = \context_module::instance($this->submission->getExercise()->getExerciseRound()->getCourseModule()->id);
         $ctx->manual_grading_url = \mod_stratumtwo\urls\urls::assessSubmissionManually($this->submission);

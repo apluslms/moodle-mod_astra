@@ -159,13 +159,13 @@ class remote_page {
     }
     
     /**
-     * Load the exercise page (usually containing instructions and submission form)
-     * from the exercise service
-     * @param \mod_stratumtwo_exercise $exercise
+     * Load the exercise page (usually containing instructions and submission form,
+     * or chapter content) from the exercise service.
+     * @param \mod_stratumtwo_learning_object $learningObject
      * @return \stdClass with field content
      */
-    public function loadExercisePage(\mod_stratumtwo_exercise $exercise) {
-        $this->parsePageContent($exercise);
+    public function loadExercisePage(\mod_stratumtwo_learning_object $learningObject) {
+        $this->parsePageContent($learningObject);
         $page = new \stdClass();
         $page->content = $this->content;
         return $page;
@@ -202,9 +202,12 @@ class remote_page {
         }
     }
     
-    protected function parsePageContent(\mod_stratumtwo_exercise $ex) {
-        $this->fixFormAction($ex);
-        $this->fixFormMultipleCheckboxes();
+    protected function parsePageContent(\mod_stratumtwo_learning_object $lobj) {
+        if ($lobj->isSubmittable()) {
+            $this->fixFormAction($lobj);
+            $this->fixFormMultipleCheckboxes();
+        }
+        //TODO embedded exercises in a chapter
         $this->content = $this->getElementOrBody('exercise');
         
         // parse metadata

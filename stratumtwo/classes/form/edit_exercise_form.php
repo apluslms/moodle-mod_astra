@@ -18,7 +18,7 @@ class edit_exercise_form extends \moodleform {
      * Constructor.
      * @param \mod_stratumtwo_exercise_round $exround current exercise round of an existing exercise or
      * the round which a new exercise is going to be added to (can be changed in the form).
-     * @param int $editExerciseId ID of the exercise if editing, zero if creating new
+     * @param int $editExerciseId learning object ID of the exercise if editing, zero if creating new
      * @param string $action form action URL
      */
     public function __construct(\mod_stratumtwo_exercise_round $exround, $editExerciseId = 0, $action = null) {
@@ -41,9 +41,10 @@ class edit_exercise_form extends \moodleform {
         // status
         $mform->addElement('select', 'status', \get_string('status', \mod_stratumtwo_exercise_round::MODNAME),
             array(
-                \mod_stratumtwo_exercise::STATUS_READY => \get_string('statusready', \mod_stratumtwo_exercise_round::MODNAME),
-                \mod_stratumtwo_exercise::STATUS_HIDDEN => \get_string('statushidden', \mod_stratumtwo_exercise_round::MODNAME),
-                \mod_stratumtwo_exercise::STATUS_MAINTENANCE => \get_string('statusmaintenance', \mod_stratumtwo_exercise_round::MODNAME),
+                \mod_stratumtwo_learning_object::STATUS_READY => \get_string('statusready', \mod_stratumtwo_exercise_round::MODNAME),
+                \mod_stratumtwo_learning_object::STATUS_HIDDEN => \get_string('statushidden', \mod_stratumtwo_exercise_round::MODNAME),
+                \mod_stratumtwo_learning_object::STATUS_MAINTENANCE => \get_string('statusmaintenance', \mod_stratumtwo_exercise_round::MODNAME),
+                \mod_stratumtwo_learning_object::STATUS_UNLISTED => \get_string('statusunlisted', \mod_stratumtwo_exercise_round::MODNAME),
             ));
         $mform->addRule('status', null, 'required', null, 'client');
         
@@ -68,8 +69,8 @@ class edit_exercise_form extends \moodleform {
         $mform->addRule('roundid', null, 'required', null, 'client');
         $mform->setDefault('roundid', $this->exround->getId());
         
-        // parent id, optional (can only choose an exercise from the current round)
-        $exercises = $this->exround->getExercises(true);
+        // parent id, optional (can only choose a learning object from the current round)
+        $exercises = $this->exround->getLearningObjects(true);
         $parentChoices = array(0 => '---');
         foreach ($exercises as $ex) {
             if ($ex->getId() != $this->editExerciseId) { // parent must not be the exercise itself
@@ -156,7 +157,7 @@ class edit_exercise_form extends \moodleform {
         
         // cannot change the round and parent at the same time: parent must be in the same round as this exercise
         $newExround = \mod_stratumtwo_exercise_round::createFromId($data['roundid']);
-        $exercises = $newExround->getExercises(true);
+        $exercises = $newExround->getLearningObjects(true);
         $parentInSameRound = false;
         if ($data['parentid']) {
             foreach ($exercises as $ex) {
@@ -173,10 +174,14 @@ class edit_exercise_form extends \moodleform {
         }
         
         // remotekey should be unique in all exercises in the course
-        $exerciseRecords = $DB->get_records(\mod_stratumtwo_exercise::TABLE, array('remotekey' => $data['remotekey']));
+        // first fetch all exercises with the same remotekey, check course in the loop
+        $exerciseRecords = $DB->get_records_sql(
+                \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE) .
+                ' WHERE lob.remotekey = ?',
+                array($data['remotekey']));
         foreach ($exerciseRecords as $exrecord) {
             $otherExercise = new \mod_stratumtwo_exercise($exrecord);
-            if ($exrecord->id != $this->editExerciseId && 
+            if ($otherExercise->getId() != $this->editExerciseId && 
                     $otherExercise->getExerciseRound()->getCourse()->courseid == $this->courseid) {
                 $errors['remotekey'] = \get_string('duplicateexerciseremotekey', \mod_stratumtwo_exercise_round::MODNAME);
                 break;

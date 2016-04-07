@@ -51,7 +51,7 @@ $event->trigger();
 stratumtwo_page_require($PAGE);
 
 $PAGE->set_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/view.php', array('id' => $cm->id));
-$PAGE->set_title(format_string($stratumtwo->name));
+$PAGE->set_title(format_string($exround->getName()));
 $PAGE->set_heading(format_string($course->fullname));
 
 // render page content

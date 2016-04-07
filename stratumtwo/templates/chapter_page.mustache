@@ -1,0 +1,30 @@
+{{!
+Display one chapter.
+Derived from A+ (a-plus/exercise/templates/exercise/exercise.html)
+
+Context variables:
+* (most variables required by exercise_base.mustache are not actually needed here)
+* error (string) set if an error message should be shown before the content
+* chapter (object) with fields
+    - url (string) URL for displaying the chapter
+* page (stdClass) with fields
+    content (html string)
+}}
+
+{{< mod_stratumtwo/exercise_base }}
+
+{{! remove submissions navbar, a chapter does not accept submissions }}
+{{$ submissionsnavbar }}
+{{/ submissionsnavbar }}
+
+{{$ exercisecontent }}
+<div id="exercise" data-aplus-chapter="{{{ chapter.url }}}">
+    {{{ page.content }}}
+</div>
+{{/ exercisecontent }}
+
+{{! remove exercise info box, a chapter does not accept submissions }}
+{{$ exerciseinfo }}
+{{/ exerciseinfo }}
+
+{{/ mod_stratumtwo/exercise_base }}

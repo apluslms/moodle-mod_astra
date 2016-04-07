@@ -1,14 +1,20 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Course-wide Stratum2 settings.
+ */
 class mod_stratumtwo_course_config extends mod_stratumtwo_database_object {
     const TABLE = 'stratumtwo_course_settings';
     
+    // numbering of exercise rounds
     const MODULE_NUMBERING_NONE          = 0;
-    const MODULE_NUMBERING_ARABIC        = 1;
-    const MODULE_NUMBERING_ROMAN         = 2;
+    const MODULE_NUMBERING_ARABIC        = 1; // 1, 2, ...
+    const MODULE_NUMBERING_ROMAN         = 2; // I, II, ...
     const MODULE_NUMBERING_HIDDEN_ARABIC = 3;
+    // no number in the module name but exercise numbers start with the module number, e.g., 1.1
     
+    // numbering of objects in rounds
     const CONTENT_NUMBERING_NONE   = 0;
     const CONTENT_NUMBERING_ARABIC = 1;
     const CONTENT_NUMBERING_ROMAN  = 2;

@@ -47,13 +47,41 @@ function stratumtwo_roman_numeral($number) {
     return $roman;
 }
 
-function stratumtwo_navbar_add_exercise(moodle_page $page, $cmid, mod_stratumtwo_exercise $exercise) {
+/**
+ * Add a learning object with its parent objects to the page navbar after the exercise round node.
+ * @param moodle_page $page
+ * @param int $cmid Moodle course module ID of the exercise round
+ * @param mod_stratumtwo_learning_object $exercise
+ * @return navigation_node the new navigation node of the given exercise
+ */
+function stratumtwo_navbar_add_exercise(moodle_page $page, $cmid, mod_stratumtwo_learning_object $exercise) {
     $roundNav = $page->navigation->find($cmid, navigation_node::TYPE_ACTIVITY);
-    $exerciseNav = $roundNav->add($exercise->getName(),
-            \mod_stratumtwo\urls\urls::exercise($exercise, true),
+    
+    $parents = array($exercise);
+    $ex = $exercise;
+    while ($ex = $ex->getParentObject()) {
+        $parents[] = $ex;
+    }
+    
+    $previousNode = $roundNav;
+    // leaf child comes last in the navbar
+    for ($i = count($parents) - 1; $i >= 0; --$i) {
+        $previousNode = stratumtwo_navbar_add_one_exercise($previousNode, $parents[$i]);
+    }
+    
+    return $previousNode;
+}
+
+/**
+ * Add a single learning object navbar node after the given node.
+ * @param navigation_node $previousNode
+ * @param mod_stratumtwo_learning_object $learningObject
+ */
+function stratumtwo_navbar_add_one_exercise(navigation_node $previousNode, mod_stratumtwo_learning_object $learningObject) {
+    return $previousNode->add($learningObject->getName(),
+            \mod_stratumtwo\urls\urls::exercise($learningObject, true),
             navigation_node::TYPE_CUSTOM,
-            null, 'ex'.$exercise->getId());
-    return $exerciseNav;
+            null, 'ex'.$learningObject->getId());
 }
 
 function stratumtwo_navbar_add_submission(navigation_node $prevNode, mod_stratumtwo_submission $submission) {
@@ -80,6 +108,12 @@ function stratumtwo_navbar_add_inspect_submission(navigation_node $prevNode, mod
     return $inspectNav;
 }
 
+/**
+ * Send a Moodle message to a user about new assistant feedback in a submission.
+ * @param mod_stratumtwo_submission $submission
+ * @param stdClass $fromUser assistant
+ * @param stdClass $toUser student
+ */
 function stratumtwo_send_assistant_feedback_notification(mod_stratumtwo_submission $submission,
         stdClass $fromUser, stdClass $toUser) {
     $str = new stdClass();

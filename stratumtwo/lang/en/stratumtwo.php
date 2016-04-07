@@ -79,6 +79,7 @@ $string['totalnumberofsubmitters'] = 'Total number of submitters';
 $string['statuserror'] = 'Error';
 $string['statuswaiting'] = 'Waiting';
 $string['statusinitialized'] = 'Initialized';
+$string['statusunlisted'] = 'Unlisted';
 $string['submissionnumber'] = 'Submission {$a}';
 $string['filesinthissubmission'] = 'Files in this submission';
 $string['download'] = 'Download';
@@ -233,7 +234,6 @@ $string['configbadduration'] = 'Unable to parse duration: {$a}.';
 $string['configexercisekeymissing'] = 'Exercise requires a key.';
 $string['configexercisecatmissing'] = 'Exercise requires a category.';
 $string['configexerciseunknowncat'] = 'Exercise has an unknown category: {$a}.';
-$string['configchapternotsupported'] = 'Moodle plugin supports only exercises, not other learning objects (chapters).';
 
 
 // plugin file area descriptions

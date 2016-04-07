@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Displays a Stratum2 exercise.
+ * Displays a Stratum2 learning object (exercise/chapter).
  *
  * @package    mod_stratumtwo
  * @copyright  2016 Aalto SCI CS dept.
@@ -11,20 +11,17 @@
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/locallib.php');
 
-$id = required_param('id', PARAM_INT); // exercise ID
+$id = required_param('id', PARAM_INT); // learning object ID
 
-$exerciseRecord = $DB->get_record(mod_stratumtwo_exercise::TABLE, array('id' => $id), '*', MUST_EXIST);
-$exroundRecord  = $DB->get_record(mod_stratumtwo_exercise_round::TABLE, array('id' => $exerciseRecord->roundid), '*', MUST_EXIST);
-list($course, $cm) = get_course_and_cm_from_instance($exroundRecord->id, mod_stratumtwo_exercise_round::TABLE);
-
-$exround = new mod_stratumtwo_exercise_round($exroundRecord);
-$exercise = new mod_stratumtwo_exercise($exerciseRecord);
+$learningObject = mod_stratumtwo_learning_object::createFromId($id);
+$exround = $learningObject->getExerciseRound();
+list($course, $cm) = get_course_and_cm_from_instance($exround->getId(), mod_stratumtwo_exercise_round::TABLE);
 
 require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
 // this should prevent guest access
 require_capability('mod/stratumtwo:view', $context);
-if ((!$cm->visible || $exround->isHidden() || $exercise->isHidden()) &&
+if ((!$cm->visible || $exround->isHidden() || $learningObject->isHidden()) &&
         !has_capability('moodle/course:manageactivities', $context)) {
             // show hidden exercise only to teachers
             throw new required_capability_exception($context,
@@ -32,13 +29,14 @@ if ((!$cm->visible || $exround->isHidden() || $exercise->isHidden()) &&
 }
 
 $errorMsg = null;
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && $learningObject->isSubmittable()) {
+    // new submission, can only submit to exercises
     require_capability('mod/stratumtwo:submit', $context);
     
     // user submitted a new solution, create a database record
     // check if submission is allowed (deadline, submit limit)
-    if ($exercise->isSubmissionAllowed($USER)) {
-        $sbmsId = mod_stratumtwo_submission::createNewSubmission($exercise, $USER->id, $_POST);
+    if ($learningObject->isSubmissionAllowed($USER)) {
+        $sbmsId = mod_stratumtwo_submission::createNewSubmission($learningObject, $USER->id, $_POST);
         if ($sbmsId == 0) {
             // error: the new submission was not stored in the database
             $errorMsg = get_string('submissionfailed', mod_stratumtwo_exercise_round::MODNAME);
@@ -71,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
                 
                 // send the new submission to the exercise service
-                $exercise->uploadSubmissionToService($sbms, false, $tmpFiles, false);
+                $learningObject->uploadSubmissionToService($sbms, false, $tmpFiles, false);
                 
             } catch (Exception $e) {
                 $errorMsg = get_string('uploadtoservicefailed', mod_stratumtwo_exercise_round::MODNAME);
@@ -106,11 +104,11 @@ $event->trigger();
 stratumtwo_page_require($PAGE);
 
 // add Moodle navbar item for the exercise, round is already there
-$exerciseNav = stratumtwo_navbar_add_exercise($PAGE, $cm->id, $exercise);
+$exerciseNav = stratumtwo_navbar_add_exercise($PAGE, $cm->id, $learningObject);
 $exerciseNav->make_active();
 
-$PAGE->set_url(\mod_stratumtwo\urls\urls::exercise($exercise, true));
-$PAGE->set_title(format_string($exerciseRecord->name));
+$PAGE->set_url(\mod_stratumtwo\urls\urls::exercise($learningObject, true));
+$PAGE->set_title(format_string($learningObject->getName()));
 $PAGE->set_heading(format_string($course->fullname));
 
 // render page content
@@ -118,7 +116,7 @@ $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
 
 echo $output->header();
 
-$renderable = new \mod_stratumtwo\output\exercise_page($exround, $exercise, $USER, $errorMsg);
+$renderable = new \mod_stratumtwo\output\exercise_page($exround, $learningObject, $USER, $errorMsg);
 echo $output->render($renderable);
 
 echo $output->footer();

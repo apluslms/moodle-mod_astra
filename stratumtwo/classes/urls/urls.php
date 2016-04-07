@@ -3,6 +3,9 @@ namespace mod_stratumtwo\urls;
 
 defined('MOODLE_INTERNAL') || die;
 
+/**
+ * Utility class that gathers all URLs in the plugin into one place.
+ */
 class urls {
     public static function baseURL() {
         global $CFG;
@@ -43,12 +46,13 @@ class urls {
         return self::exercise($ex, $asMdlUrl); // POST to the exercise page
     }
     
-    public static function exercise(\mod_stratumtwo_exercise $ex, $asMdlUrl = false) {
+    // also used for other learning objects (chapters), not just exercises
+    public static function exercise(\mod_stratumtwo_learning_object $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId());
         return self::buildUrl('/exercise.php', $query, $asMdlUrl);
     }
     
-    public static function editExercise(\mod_stratumtwo_exercise $ex, $asMdlUrl = false) {
+    public static function editExercise(\mod_stratumtwo_learning_object $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId());
         return self::buildUrl('/teachers/edit_exercise.php', $query, $asMdlUrl);
     }
@@ -58,7 +62,7 @@ class urls {
         return self::buildUrl('/teachers/edit_exercise.php', $query, $asMdlUrl);
     }
     
-    public static function deleteExercise(\mod_stratumtwo_exercise $ex, $asMdlUrl = false) {
+    public static function deleteExercise(\mod_stratumtwo_learning_object $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId(), 'type' => 'exercise');
         return self::buildUrl('/teachers/delete.php', $query, $asMdlUrl);
     }

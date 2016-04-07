@@ -26,7 +26,10 @@ if ($submissionRecord === false) {
 }
 
 $submission = new mod_stratumtwo_submission($submissionRecord);
-$exerciseRecord = $DB->get_record(mod_stratumtwo_exercise::TABLE, array('id' => $submissionRecord->exerciseid), '*', IGNORE_MISSING);
+$exerciseRecord = $DB->get_record_sql(mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE) .
+        ' WHERE lob.id = ?',
+        array($submissionRecord->exerciseid),
+        IGNORE_MISSING);
 if ($exerciseRecord === false) {
     http_response_code(404);
     exit(0);

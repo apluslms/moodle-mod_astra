@@ -40,6 +40,7 @@ class user_module_summary {
     protected function generate() {
         global $DB;
         
+        // all exercises in the round, no chapters
         $exercises = $this->exround->getExercises();
         $submissionsByExerciseId = array();
         foreach ($exercises as $ex) {
@@ -53,10 +54,9 @@ class user_module_summary {
         $sql = 
             'SELECT id, status, exerciseid, grade, submissiontime 
              FROM {'. \mod_stratumtwo_submission::TABLE .'} '
-           .'WHERE submitter = ? AND exerciseid IN (
-                 SELECT id FROM {'. \mod_stratumtwo_exercise::TABLE .'} 
-                 WHERE roundid = ?
-            )';
+           .'WHERE submitter = ? AND exerciseid IN (' .
+                 \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE, 'lob.id') .
+                 ' WHERE lob.roundid = ?)';
         $submissions = $DB->get_recordset_sql($sql, array($this->user->id, $this->exround->getId()));
         // find best submission for each exercise
         foreach ($submissions as $record) {
@@ -175,7 +175,7 @@ class user_module_summary {
             
                 // exercise context
                 $exSumCtx = array(
-                    'exercise' => $exSummary->getExercise()->getTemplateContext($this->user),
+                    'exercise' => $exSummary->getExercise()->getExerciseTemplateContext($this->user),
                     'exercise_summary' => $exSummary->getTemplateContext(),
                 );
                 // append under the category context

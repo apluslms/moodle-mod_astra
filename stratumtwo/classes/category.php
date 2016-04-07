@@ -2,8 +2,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Exercise category in a course. Each exercise belongs to one category and
- * the category counts the total points in the category. A category can have
+ * Exercise category in a course. Each exercise (learning object) belongs to one category
+ * and the category counts the total points in the category. A category can have
  * required points to pass that the student should earn in total from the
  * exercises in the category. Exercises in a category can be scattered across
  * multiple exercise rounds.
@@ -51,28 +51,61 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
         $this->record->status = self::STATUS_HIDDEN;
     }
     
+    private function getLearningObjects_sql($subtypeTable, $includeHidden = false, $fields = null) {
+        if ($fields === null) {
+            // use default fields (all)
+            $sql = mod_stratumtwo_learning_object::getSubtypeJoinSQL($subtypeTable) . ' WHERE lob.categoryid = ?';
+        } else {
+            $sql = mod_stratumtwo_learning_object::getSubtypeJoinSQL($subtypeTable, $fields) . ' WHERE lob.categoryid = ?';
+        }
+        $params = array($this->getId());
+        
+        if (!$includeHidden) {
+            $sql .= ' AND status != ?';
+            $params[] = mod_stratumtwo_learning_object::STATUS_HIDDEN;
+        }
+        
+        return array($sql, $params);
+    }
+    
+    /**
+     * Return all learning objects in this category.
+     * @param bool $includeHidden if true, hidden learning objects are included
+     * @return mod_stratumtwo_learning_object[], indexed by learning object IDs
+     */
+    public function getLearningObjects($includeHidden = false) {
+        global $DB;
+        
+        list($chapters_sql, $ch_params) = $this->getLearningObjects_sql(mod_stratumtwo_chapter::TABLE, $includeHidden);
+        $chapterRecords = $DB->get_records_sql($chapters_sql, $ch_params);
+        
+        $learningObjects = $this->getExercises($includeHidden);
+        
+        foreach ($chapterRecords as $rec) {
+            $learningObjects[$rec->id] = new mod_stratumtwo_chapter($rec);
+        }
+        
+        return $learningObjects;
+    }
+    
     /**
      * Return all exercises in this category.
      * @param bool $includeHidden if true, hidden exercises are included
-     * @return mod_stratumtwo_exercise[]
+     * @return mod_stratumtwo_exercise[], indexed by exercise/learning object IDs
      */
     public function getExercises($includeHidden = false) {
         global $DB;
-        $sort = 'roundid ASC, ordernum ASC, id ASC';
-        if ($includeHidden) {
-            $exerciseRecords = $DB->get_records(mod_stratumtwo_exercise::TABLE, array(
-                    'categoryid' => $this->getId(),
-            ), $sort);
-        } else {
-            $exerciseRecords = $DB->get_records_select(mod_stratumtwo_exercise::TABLE,
-                    'categoryid = ? AND status != ?', array($this->getId(), mod_stratumtwo_exercise::STATUS_HIDDEN),
-                    $sort);
-        }
+        
+        list($sql, $params) = $this->getLearningObjects_sql(mod_stratumtwo_exercise::TABLE, $includeHidden);
+        
+        $exerciseRecords = $DB->get_records_sql($sql, $params);
         
         $exercises = array();
-        foreach ($exerciseRecords as $record) {
-            $exercises[] = new mod_stratumtwo_exercise($record);
+        
+        foreach ($exerciseRecords as $rec) {
+            $exercises[$rec->id] = new mod_stratumtwo_exercise($rec);
         }
+        
         return $exercises;
     }
     
@@ -80,11 +113,26 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
      * Return the count of exercises in this category.
      * @return int
      */
-    public function countExercises() {
+    public function countExercises($includeHidden = false) {
         global $DB;
-        return $DB->count_records(mod_stratumtwo_exercise::TABLE, array(
-                'categoryid' => $this->getId(),
-        ));
+        
+        list($sql, $params) = $this->getLearningObjects_sql(mod_stratumtwo_exercise::TABLE,
+                $includeHidden, 'COUNT(lob.id)');
+        
+        return $DB->count_records_sql($sql, $params);
+    }
+    
+    /**
+     * Return the count of learning objects in this category.
+     * @return int
+     */
+    public function countLearningObjects($includeHidden = false) {
+        global $DB;
+    
+        list($ch_sql, $ch_params) = $this->getLearningObjects_sql(mod_stratumtwo_chapter::TABLE,
+                $includeHidden, 'COUNT(lob.id)');
+
+        return $this->countExercises($includeHidden) + $DB->count_records_sql($ch_sql, $ch_params);
     }
     
     /**
@@ -153,18 +201,21 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
     
     public function delete() {
         global $DB;
-        // delete exercises in this category
-        $DB->delete_records(mod_stratumtwo_exercise::TABLE, array(
-                'categoryid' => $this->getId(),
-        ));
-        $DB->delete_records(self::TABLE, array('id' => $this->getId()));
+        
+        // delete learning objects in this category
+        foreach ($this->getLearningObjects(true) as $lobject) {
+            $lobject->deleteInstance();
+        }
+        
+        return $DB->delete_records(self::TABLE, array('id' => $this->getId()));
     }
     
     public function getTemplateContext() {
         $ctx = new stdClass();
         $ctx->name = $this->getName();
         $ctx->editurl = \mod_stratumtwo\urls\urls::editCategory($this);
-        $ctx->has_exercises = ($this->countExercises() > 0);
+        //$ctx->has_exercises = ($this->countExercises() > 0); // unneeded
+        $ctx->has_learning_objects = ($this->countLearningObjects() > 0);
         $ctx->removeurl = \mod_stratumtwo\urls\urls::deleteCategory($this);
         $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
         $ctx->status_str = $this->getStatus(true);

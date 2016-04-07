@@ -13,11 +13,14 @@ define('AJAX_SCRIPT', true); // not an HTML page
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once(dirname(__FILE__).'/async_lib.php');
 
-$id = required_param('id', PARAM_INT); // exercise ID
+$id = required_param('id', PARAM_INT); // exercise learning object ID
 $userid = required_param('userid', PARAM_INT);
 $hash = required_param('hash', PARAM_ALPHANUM); // submission hash
 
-$exerciseRecord = $DB->get_record(mod_stratumtwo_exercise::TABLE, array('id' => $id), '*', IGNORE_MISSING);
+$exerciseRecord = $DB->get_record_sql(mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE) .
+        ' WHERE lob.id = ?',
+        array($id),
+        IGNORE_MISSING);
 if ($exerciseRecord === false) {
     http_response_code(404);
     exit(0);

@@ -43,7 +43,7 @@
       </INDEXES>
     </TABLE>
     
-    <TABLE NAME="stratumtwo_categories" COMMENT="Each exercise belongs to a category.">
+    <TABLE NAME="stratumtwo_categories" COMMENT="Each learning object belongs to a category.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -52,7 +52,7 @@
         <FIELD NAME="name" TYPE="char" LENGTH="35" NOTNULL="true" SEQUENCE="false"
                COMMENT="Name that is displayed to users. Name should be unique within a course."/>
         <FIELD NAME="pointstopass" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
-               COMMENT="Min points to pass a category."/>        
+               COMMENT="Min points to pass a category."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -62,22 +62,41 @@
       </INDEXES>
     </TABLE>
     
-    <TABLE NAME="stratumtwo_exercises" COMMENT="Exercise that accepts submissions and sends them to the serviceurl for grading.">
+    <TABLE NAME="stratumtwo_lobjects" COMMENT="Learning objects: base class table for exercises and chapters. Each object belongs to a round.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Ready = 0. Hidden = 1. Maintenance = 2."/>
+        <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Ready = 0. Hidden = 1. Maintenance = 2. Unlisted = 3."/>
         <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
-               COMMENT="Category ID"/>
+               COMMENT="Category ID. Each learning object belongs to a category."/>
         <FIELD NAME="roundid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Exercise round ID."/>
         <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" 
-               COMMENT="If null, the exercise is listed under the round. If parent is set, the exercise is listed under the parent exercise."/>
+               COMMENT="If null, the object is listed under the round. If parent is set, the chapter is listed under the parent object."/>
         <FIELD NAME="ordernum" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" 
-               COMMENT="Order for listing the exercises under the round. Smaller comes first."/>
+               COMMENT="Order for listing the learning objects under the round. Smaller comes first."/>
         <FIELD NAME="remotekey" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" 
-               COMMENT="Unique exercise key in the exercise service server. ('key' in exercise service configuration.)"/>
+               COMMENT="Unique exercise key in the exercise service server. ('key' in exercise service configuration.) Should be unique within a course."/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name that is displayed to users."/>
         <FIELD NAME="serviceurl" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" 
-               COMMENT="URL of the exercise service for this exercise."/>
+               COMMENT="URL of the exercise service for this chapter."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="categoryid" TYPE="foreign" FIELDS="categoryid" REFTABLE="stratumtwo_categories" REFFIELDS="id"/>
+        <KEY NAME="roundid" TYPE="foreign" FIELDS="roundid" REFTABLE="stratumtwo" REFFIELDS="id"/>
+        <KEY NAME="parentid" TYPE="foreign" FIELDS="parentid" REFTABLE="stratumtwo_lobjects" REFFIELDS="id" 
+             COMMENT="Foreign key to another learning object."/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="remotekey" UNIQUE="false" FIELDS="remotekey" COMMENT="Unique false because it might only be unique within a course."/>
+      </INDEXES>
+    </TABLE>
+    
+    <TABLE NAME="stratumtwo_exercises" COMMENT="Exercise that accepts submissions and sends them to the serviceurl for grading.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"
+               COMMENT="Primary key required by Moodle, otherwise unnecessary since lobjectid functions as a unique key."/>
+        <FIELD NAME="lobjectid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"
+               COMMENT="Foreign key to learning object id."/>
         <FIELD NAME="allowastgrading" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
                COMMENT="Allow assistant grading: 0 = no, 1 = yes. If yes, non-editing teachers in Moodle can modify submission points and assistant feedback."/>
         <FIELD NAME="maxsubmissions" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="10" SEQUENCE="false" 
@@ -91,13 +110,28 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="categoryid" TYPE="foreign" FIELDS="categoryid" REFTABLE="stratumtwo_categories" REFFIELDS="id"/>
-        <KEY NAME="roundid" TYPE="foreign" FIELDS="roundid" REFTABLE="stratumtwo" REFFIELDS="id"/>
-        <KEY NAME="parentid" TYPE="foreign" FIELDS="parentid" REFTABLE="stratumtwo_exercises" REFFIELDS="id" 
-             COMMENT="Foreign key to another exercise."/>
+        <KEY NAME="lobjectid" TYPE="foreign" FIELDS="lobjectid" REFTABLE="stratumtwo_lobjects" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="remotekey" UNIQUE="false" FIELDS="remotekey" COMMENT="Unique false because it might only be unique within a round."/>
+        <INDEX NAME="lobjectid" UNIQUE="true" FIELDS="lobjectid" COMMENT="One-to-one relationship between exercises and learning objects base table."/>
+      </INDEXES>
+    </TABLE>
+    
+    <TABLE NAME="stratumtwo_chapters" COMMENT="Course chapters offer and organize material as one-page chapters. Exercises can be embedded in chapters.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"
+               COMMENT="Primary key required by Moodle, otherwise unnecessary since lobjectid functions as a unique key."/>
+        <FIELD NAME="lobjectid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"
+               COMMENT="Foreign key to learning object id."/>
+        <FIELD NAME="generatetoc" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"
+               COMMENT="Generate table of contents, 1 = yes, 0 = no."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="lobjectid" TYPE="foreign" FIELDS="lobjectid" REFTABLE="stratumtwo_lobjects" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="lobjectid" UNIQUE="true" FIELDS="lobjectid" COMMENT="One-to-one relationship between chapters and learning objects base table."/>
       </INDEXES>
     </TABLE>
     
@@ -111,7 +145,7 @@
         <FIELD NAME="hash" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" 
                COMMENT="Random string."/>
         <FIELD NAME="exerciseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
-               COMMENT="Exercise ID."/>
+               COMMENT="Exercise learning object ID (lobjectid)."/>
         <FIELD NAME="submitter" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
                COMMENT="Moodle user ID of the submitter."/>
         <FIELD NAME="grader" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" 
@@ -137,7 +171,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="stratumtwo_exercises" REFFIELDS="id"/>
+        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="stratumtwo_exercises" REFFIELDS="lobjectid"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="hash" UNIQUE="false" FIELDS="hash" COMMENT="Unique false because there is a random chance it is not unique."/>
@@ -173,7 +207,7 @@
         <FIELD NAME="submitter" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
                COMMENT="Moodle user ID of the submitter who is affected by the deviation."/>
         <FIELD NAME="exerciseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
-               COMMENT="Exercise ID of the affected exercise."/>
+               COMMENT="Exercise ID (lobjectid) of the affected exercise."/>
         <FIELD NAME="extraminutes" LENGTH="9" TYPE="int" NOTNULL="true" SEQUENCE="false"
                COMMENT="Minutes to add to the normal deadline."/>
         <FIELD NAME="withoutlatepenalty" LENGTH="1" TYPE="int" NOTNULL="true" DEFAULT="1" SEQUENCE="false"
@@ -181,6 +215,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="stratumtwo_exercises" REFFIELDS="lobjectid"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="submitter" UNIQUE="false" FIELDS="submitter"/>
@@ -193,12 +228,13 @@
         <FIELD NAME="submitter" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
                COMMENT="Moodle user ID of the submitter who is affected by the deviation."/>
         <FIELD NAME="exerciseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
-               COMMENT="Exercise ID of the affected exercise."/>
+               COMMENT="Exercise ID (lobjectid) of the affected exercise."/>
         <FIELD NAME="extrasubmissions" LENGTH="9" TYPE="int" NOTNULL="true" SEQUENCE="false"
                COMMENT="Number of submissions to add to the normal submission limit."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="stratumtwo_exercises" REFFIELDS="lobjectid"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="submitter" UNIQUE="false" FIELDS="submitter"/>

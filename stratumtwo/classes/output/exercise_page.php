@@ -3,21 +3,28 @@ namespace mod_stratumtwo\output;
 
 defined('MOODLE_INTERNAL') || die;
 
+/**
+ * Page for displaying a learning object (exercise/page).
+ */
 class exercise_page implements \renderable, \templatable {
     
     protected $exround;
-    protected $exercise;
-    protected $exerciseSummary;
+    protected $learningObject;
+    protected $exerciseSummary; // if the learning object is an exercise
     protected $user;
     protected $errorMsg;
     
     public function __construct(\mod_stratumtwo_exercise_round $exround,
-            \mod_stratumtwo_exercise $exercise,
+            \mod_stratumtwo_learning_object $learningObject,
             \stdClass $user, $errorMsg = null) {
         $this->exround = $exround;
-        $this->exercise = $exercise;
+        $this->learningObject = $learningObject;
         $this->user = $user;
-        $this->exerciseSummary = new \mod_stratumtwo\summary\user_exercise_summary($exercise, $user);
+        if ($learningObject->isSubmittable()) {
+            $this->exerciseSummary = new \mod_stratumtwo\summary\user_exercise_summary($learningObject, $user);
+        } else {
+            $this->exerciseSummary = null;
+        }
         $this->errorMsg = $errorMsg;
     }
     
@@ -33,12 +40,12 @@ class exercise_page implements \renderable, \templatable {
         $data->is_editing_teacher = \has_capability('mod/stratumtwo:addinstance', $ctx);
         $data->is_manual_grader = \has_capability('mod/stratumtwo:grademanually', $ctx);
         
-        $data->status_maintenance = ($this->exround->isUnderMaintenance() || $this->exercise->isUnderMaintenance());
+        $data->status_maintenance = ($this->exround->isUnderMaintenance() || $this->learningObject->isUnderMaintenance());
         $data->not_started = !$this->exround->hasStarted();
 
         if (!($data->status_maintenance || $data->not_started) || $data->is_course_staff) {
             try {
-                $data->page = $this->exercise->loadPage($this->user->id);
+                $data->page = $this->learningObject->loadPage($this->user->id);
             } catch (\mod_stratumtwo\protocol\remote_page_exception $e) {
                 $data->error = \get_string('serviceconnectionfailed', \mod_stratumtwo_exercise_round::MODNAME);
                 $page = new \stdClass();
@@ -55,11 +62,15 @@ class exercise_page implements \renderable, \templatable {
             }
         }
         
-        $data->exercise = $this->exercise->getTemplateContext($this->user);
-        $data->submissions = $this->exercise->getSubmissionsTemplateContext($this->user->id);
-        $data->submission = false;
-        
-        $data->summary = $this->exerciseSummary->getTemplateContext();
+        if ($this->learningObject->isSubmittable()) {
+            $data->exercise = $this->learningObject->getExerciseTemplateContext($this->user, true, true);
+            $data->submissions = $this->learningObject->getSubmissionsTemplateContext($this->user->id);
+            $data->submission = false;
+
+            $data->summary = $this->exerciseSummary->getTemplateContext();
+        } else {
+            $data->chapter = $this->learningObject->getTemplateContext(false);
+        }
         
         $data->toDateStr = new \mod_stratumtwo\output\date_to_string();
         

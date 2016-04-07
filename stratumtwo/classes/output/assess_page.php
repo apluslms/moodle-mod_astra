@@ -17,7 +17,7 @@ class assess_page implements \renderable, \templatable {
         $ctx = $this->submission->getTemplateContext(true, true);
         $ctx->status = $ctx->state;
         
-        $ctx->exercise = $this->submission->getExercise()->getTemplateContext(null, false, false);
+        $ctx->exercise = $this->submission->getExercise()->getExerciseTemplateContext(null, false, false);
         
         $ctx->toDateStr = new \mod_stratumtwo\output\date_to_string();
         $ctx->fileSizeFormatter = new \mod_stratumtwo\output\file_size_formatter();

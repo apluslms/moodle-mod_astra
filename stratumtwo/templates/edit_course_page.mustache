@@ -6,7 +6,7 @@ Context variables:
 * categories (array of stdClass objects), each object has fields 
     - name (string)
     - editurl (string) URL to category edit page
-    - has_exercises (bool) true if there is at least one exercise/learning object in the category
+    - has_learning_objects (bool) true if there is at least one learning object in the category
     - removeurl (string) URL for deleting the category
     - status_ready (bool) true if ready
     - status_str (string) human-readable status
@@ -20,7 +20,8 @@ Context variables:
     - removeurl (string) URL for deleting the round
     - url (string) URL for viewing the round
     - addnewobjecturl (string) URL for adding a new learning object to the round
-    - all_exercises (array of objects) includes also hidden exercises, each object has fields 
+    - all_exercises (array of objects) all learning objects (exercises/chapters) of the round,
+            includes also hidden objects, each object has fields 
         * name (string) with ordinal number
         * status_ready (bool) true if status is ready
         * status_str (string) status as human-readable string
@@ -59,11 +60,11 @@ Context variables:
                         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
                         {{#str}} editcategory, mod_stratumtwo {{/str}}
                     </a>
-                    {{^ has_exercises }}
+                    {{^ has_learning_objects }}
                     <a class="btn btn-default btn-xs" href="{{{ removeurl }}}">
                         <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> {{#str}} remove, mod_stratumtwo {{/str}}
                     </a>
-                    {{/ has_exercises }}
+                    {{/ has_learning_objects }}
                 </td>
             </tr>
             {{/ categories }}
@@ -126,9 +127,11 @@ Context variables:
                     <a class="btn btn-link btn-xs" href="{{{ url }}}">
                         {{#str}} openexercise, mod_stratumtwo {{/str}}
                     </a>
+                    {{# submissionlisturl }}
                     <a class="btn btn-link btn-xs" href="{{{ submissionlisturl }}}">
                         {{#str}} viewsubmissions, mod_stratumtwo {{/str}}
                     </a>
+                    {{/ submissionlisturl }}
                 </td>
             </tr>
             {{/ all_exercises }}

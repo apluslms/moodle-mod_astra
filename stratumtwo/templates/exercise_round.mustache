@@ -14,7 +14,7 @@ Context variables:
 * categories array of arrays. The outer array must have numeric indexes and the inner arrays must
         have keys id (category ID), name (category name),
         exercise_summaries (array of arrays), the inner arrays have keys
-            exercise (object with keys url, name, submissionlisturl),
+            exercise (object with keys url, name, submissionlisturl, status_unlisted (bool), parenturl),
             exercise_summary (object with keys that are required by _points_badge.mustache)
 
 * is_course_staff bool
@@ -91,14 +91,15 @@ Context variables:
       <tr data-category="{{ id }}">
         <td>
           {{^ course_module.not_started }}
-          {{! {% if exercise.status == 'unlisted' %}
-          <a href="{ exercise.parent|url }">{ exercise }</a>
-          {% else %}  }}
-          
-          <a href="{{{ exercise.url }}}">{{ exercise.name }}</a>
+            {{# exercise.status_unlisted }}
+              <a href="{{{ exercise.parenturl }}}">{{ exercise.name }}</a>
+            {{/ exercise.status_unlisted }}
+            {{^ exercise.status_unlisted }}
+              <a href="{{{ exercise.url }}}">{{ exercise.name }}</a>
+            {{/ exercise.status_unlisted }}
           {{/ course_module.not_started }}
           {{# course_module.not_started }}
-          {{ exercise.name }}
+            {{ exercise.name }}
           {{/ course_module.not_started }}
         </td>
         {{# is_course_staff }}

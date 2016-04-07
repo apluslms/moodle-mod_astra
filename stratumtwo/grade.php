@@ -18,3 +18,4 @@ $userid = optional_param('userid', 0, PARAM_INT); // Graded user ID (optional).
 
 // In the simplest case just redirect to the view page.
 redirect('view.php?id='.$id);
+//TODO round or exercise page, teachers to inspect page

@@ -18,7 +18,7 @@ class auto_setup {
     }
     
     /**
-     * Configure course content (exercises, rounds and categories) based on
+     * Configure course content (exercises, chapters, rounds and categories) based on
      * the configuration downloaded from the URL. Creates new content
      * and updates existing content in Moodle, depending on what already exists
      * in Moodle. Hides content that exists in Moodle but is not listed in the
@@ -48,7 +48,7 @@ class auto_setup {
     }
     
     /**
-     * Configure course content (exercises, rounds and categories) based on
+     * Configure course content (exercises, chapters, rounds and categories) based on
      * the configuration JSON. Creates new content
      * and updates existing content in Moodle, depending on what already exists
      * in Moodle. Hides content that exists in Moodle but is not listed in the
@@ -105,16 +105,16 @@ class auto_setup {
             }
         }
         
-        // hide rounds and exercises that exist in Moodle but were not seen in the config
+        // hide rounds and exercises/chapters that exist in Moodle but were not seen in the config
         foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid, true) as $exround) {
             if (! \in_array($exround->getId(), $seen_modules)) {
                 $exround->setStatus(\mod_stratumtwo_exercise_round::STATUS_HIDDEN);
                 $exround->save();
             }
-            foreach ($exround->getExercises() as $ex) {
-                if (! \in_array($ex->getId(), $seen_exercises)) {
-                    $ex->setStatus(\mod_stratumtwo_exercise::STATUS_HIDDEN);
-                    $ex->save();
+            foreach ($exround->getLearningObjects() as $lobj) {
+                if (! \in_array($lobj->getId(), $seen_exercises)) {
+                    $lobj->setStatus(\mod_stratumtwo_learning_object::STATUS_HIDDEN);
+                    $lobj->save();
                 }
             }
         }
@@ -128,7 +128,7 @@ class auto_setup {
         // clean up obsolete categories
         foreach (\mod_stratumtwo_category::getCategoriesInCourse($courseid, true) as $cat) {
             if ($cat->getStatus() == \mod_stratumtwo_category::STATUS_HIDDEN &&
-                    $cat->countExercises() == 0) {
+                    $cat->countLearningObjects(true) == 0) {
                 $cat->delete();
             }
         }
@@ -287,9 +287,9 @@ class auto_setup {
             $exercise_order = 0;
         }
         
-        // parse exercises in the exercise round
+        // parse exercises/chapters in the exercise round
         if (isset($module->children)) {
-            $exercise_order = $this->configure_exercises($categories, $exround, $module->children,
+            $exercise_order = $this->configure_learning_objects($categories, $exround, $module->children,
                     $seen_exercises, $errors, null, $exercise_order);
         }
         
@@ -342,20 +342,20 @@ class auto_setup {
     }
     
     /**
-     * Configure exercises (create/update) in an exercise round based on
-     * the configuration JSON.
+     * Configure learning objects (exercises/chapters) (create/update) in an
+     * exercise round based on the configuration JSON.
      * @param array $categories \mod_stratumtwo_category objects indexed by keys
      * @param \mod_stratumtwo_exercise_round $exround
      * @param array $config configuration JSON of the exercises
      * @param array $seen array of exercise IDs that have been seen in the config
      * @param array $errors
-     * @param \mod_stratumtwo_exercise $parent set if the exercise is listed under another exercise,
-     * null if there is no parent exercise.
+     * @param \mod_stratumtwo_learning_object $parent set if the object is listed under another object,
+     * null if there is no parent object.
      * @param int $n ordering number
      * @return int new ordering number, use if exercises are numerated course-wide
      */
-    protected function configure_exercises(array &$categories, \mod_stratumtwo_exercise_round $exround,
-            array $config, array &$seen, array &$errors, \mod_stratumtwo_exercise $parent = null, $n = 0) {
+    protected function configure_learning_objects(array &$categories, \mod_stratumtwo_exercise_round $exround,
+            array $config, array &$seen, array &$errors, \mod_stratumtwo_learning_object $parent = null, $n = 0) {
         global $DB;
         
         foreach ($config as $o) {
@@ -371,123 +371,167 @@ class auto_setup {
                 $errors[] = \get_string('configexerciseunknowncat', \mod_stratumtwo_exercise_round::MODNAME, $o->category);
                 continue;
             }
-            if (!isset($o->max_submissions)) {
-                $errors[] = \get_string('configchapternotsupported', \mod_stratumtwo_exercise_round::MODNAME);
-                continue;
-            }
             
-            // find if an exercise with the key exists in the same course as the exercise round
-            $exerciseRecord = $DB->get_record_select(\mod_stratumtwo_exercise::TABLE,
+            // find if a learning object with the key exists in the same course as the exercise round
+            $lobjectRecord = $DB->get_record_select(\mod_stratumtwo_learning_object::TABLE,
                     'remotekey = ? AND roundid IN (SELECT id FROM {'. \mod_stratumtwo_exercise_round::TABLE .'} WHERE course = ?)',
                     array($o->key, $exround->getCourse()->courseid), '*', IGNORE_MISSING);
-            if ($exerciseRecord === false) {
+            if ($lobjectRecord === false) {
                 // create new later
-                $exerciseRecord = new \stdClass();
-                $exerciseRecord->remotekey = $o->key;
+                $lobjectRecord = new \stdClass();
+                $lobjectRecord->remotekey = $o->key;
                 $oldRoundId = null;
             } else {
-                $oldRoundId = $exerciseRecord->roundid;
+                $oldRoundId = $lobjectRecord->roundid;
             }
 
-            $exerciseRecord->roundid = $exround->getId();
-            $exerciseRecord->categoryid = $categories[$o->category]->getId();
-            if ($parent !== null)
-                $exerciseRecord->parentid = $parent->getId();
-            
-            if (isset($o->allow_assistant_grading)) {
-                $exerciseRecord->allowastgrading = $this->parseBool($o->allow_assistant_grading, $errors);
+            $lobjectRecord->roundid = $exround->getId();
+            $lobjectRecord->categoryid = $categories[$o->category]->getId();
+            if ($parent !== null) {
+                $lobjectRecord->parentid = $parent->getId();
+            } else {
+                $lobjectRecord->parentid = null;
             }
             
-            $maxsbms = $this->parseInt($o->max_submissions, $errors);
-            if ($maxsbms !== null)
-                $exerciseRecord->maxsubmissions = $maxsbms;
-            
-            if (isset($o->max_points)) {
-                $maxpoints = $this->parseInt($o->max_points, $errors);
-                if ($maxpoints !== null)
-                    $exerciseRecord->maxpoints = $maxpoints;
+            // is it an exercise or chapter?
+            if (isset($o->max_submissions)) { // exercise
+                if (isset($lobjectRecord->id)) { // the exercise exists in Moodle, read old field values
+                    $exerciseRecord = $DB->get_record(\mod_stratumtwo_exercise::TABLE, array('lobjectid' => $lobjectRecord->id),
+                            '*', \MUST_EXIST);
+                    // copy object fields
+                    foreach ($exerciseRecord as $key => $val) {
+                        // exercise table has its own id, keep that id here since lobjectid is the base table id
+                        $lobjectRecord->$key = $val;
+                    }
+                }
+                
+                if (isset($o->allow_assistant_grading)) {
+                    $lobjectRecord->allowastgrading = $this->parseBool($o->allow_assistant_grading, $errors);
+                }
+                
+                $maxsbms = $this->parseInt($o->max_submissions, $errors);
+                if ($maxsbms !== null)
+                    $lobjectRecord->maxsubmissions = $maxsbms;
+                
+                if (isset($o->max_points)) {
+                    $maxpoints = $this->parseInt($o->max_points, $errors);
+                    if ($maxpoints !== null)
+                        $lobjectRecord->maxpoints = $maxpoints;
+                }
+                if (!isset($lobjectRecord->maxpoints))
+                    $lobjectRecord->maxpoints = 100;
+                
+                if (isset($o->points_to_pass)) {
+                    $pointstopass = $this->parseInt($o->points_to_pass, $errors);
+                    if ($pointstopass !== null)
+                        $lobjectRecord->pointstopass = $pointstopass;
+                }
+                if (!isset($lobjectRecord->pointstopass))
+                    $lobjectRecord->pointstopass = 0;
+            } else {
+                // chapter
+                if (isset($lobjectRecord->id)) { // the chapter exists in Moodle, read old field values
+                    $chapterRecord = $DB->get_record(\mod_stratumtwo_chapter::TABLE, array('lobjectid' => $lobjectRecord->id),
+                            '*', \MUST_EXIST);
+                    // copy object fields
+                    foreach ($chapterRecord as $key => $val) {
+                        // chapter table has its own id, keep that id here since lobjectid is the base table id
+                        $lobjectRecord->$key = $val;
+                    }
+                }
+                
+                if (isset($o->generate_table_of_contents)) {
+                    $lobjectRecord = $this->parseBool($o->generate_table_of_contents, $errors);
+                }
             }
-            if (!isset($exerciseRecord->maxpoints))
-                $exerciseRecord->maxpoints = 100;
-            
-            if (isset($o->points_to_pass)) {
-                $pointstopass = $this->parseInt($o->points_to_pass, $errors);
-                if ($pointstopass !== null)
-                    $exerciseRecord->pointstopass = $pointstopass;
-            }
-            if (!isset($exerciseRecord->pointstopass))
-                $exerciseRecord->pointstopass = 0;
             
             if (isset($o->order)) {
                 $order = $this->parseInt($o->order, $errors);
                 if ($order !== null)
-                    $exerciseRecord->ordernum = $order;
+                    $lobjectRecord->ordernum = $order;
             } else {
                 $n += 1;
-                $exerciseRecord->ordernum = $n;
+                $lobjectRecord->ordernum = $n;
             }
             
             if (isset($o->url)) {
-                $exerciseRecord->serviceurl = (string) $o->url;
+                $lobjectRecord->serviceurl = (string) $o->url;
             }
             if (isset($o->status)) {
-                $exerciseRecord->status = $this->parseExerciseStatus($o->status, $errors);
+                $lobjectRecord->status = $this->parseLearningObjectStatus($o->status, $errors);
             }
 
             if (isset($o->title)) {
-                $exerciseRecord->name = (string) $o->title;
+                $lobjectRecord->name = (string) $o->title;
             } else if (isset($o->name)) {
-                $exerciseRecord->name = (string) $o->name;
+                $lobjectRecord->name = (string) $o->name;
             }
-            if (empty($exerciseRecord->name)) {
-                $exerciseRecord->name = '-';
+            if (empty($lobjectRecord->name)) {
+                $lobjectRecord->name = '-';
             }
             
             
-            if (isset($exerciseRecord->id)) {
+            if (isset($lobjectRecord->id)) {
                 // update existing
-                $exercise = new \mod_stratumtwo_exercise($exerciseRecord);
-                if ($oldRoundId == $exerciseRecord->roundid) { // round not changed
-                    $exercise->save($exercise->isHidden() ||
-                            $exercise->getExerciseRound()->isHidden() || $exercise->getCategory()->isHidden());
-                    // updates gradebook for exercise 
+                if (isset($o->max_submissions)) { // exercise
+                    $learningObject = new \mod_stratumtwo_exercise($lobjectRecord);
+                    if ($oldRoundId == $lobjectRecord->roundid) { // round not changed
+                        $learningObject->save($learningObject->isHidden() ||
+                                $learningObject->getExerciseRound()->isHidden() ||
+                                $learningObject->getCategory()->isHidden());
+                        // updates gradebook for exercise 
+                    } else {
+                        // round changed
+                        $learningObject->deleteGradebookItem();
+                        // gradeitemnumber must be unique in the new round
+                        $newRound = $learningObject->getExerciseRound();
+                        $lobjectRecord->gradeitemnumber = $newRound->getNewGradebookItemNumber();
+                        $learningObject->save($learningObject->isHidden() ||
+                                $newRound->isHidden() || $learningObject->getCategory()->isHidden());
+                        // updates gradebook item (creates new item)
+                    }
                 } else {
-                    // round changed
-                    $exercise->deleteGradebookItem();
-                    // gradeitemnumber must be unique in the new round
-                    $newRound = $exercise->getExerciseRound();
-                    $exerciseRecord->gradeitemnumber = $newRound->getNewGradebookItemNumber();
-                    $exercise->save($exercise->isHidden() || $newRound->isHidden() || $exercise->getCategory()->isHidden());
-                    // updates gradebook item (creates new item)
+                    // chapter
+                    $learningObject = new \mod_stratumtwo_chapter($lobjectRecord);
+                    $learningObject->save();
                 }
             } else {
-                // create new exercise
-                $exercise = $exround->createNewExercise($exerciseRecord, $categories[$o->category]);
+                // create new
+                if (isset($o->max_submissions)) {
+                    // create new exercise
+                    $learningObject = $exround->createNewExercise($lobjectRecord, $categories[$o->category]);
+                } else {
+                    // chapter
+                    $learningObject = $exround->createNewChapter($lobjectRecord, $categories[$o->category]);
+                }
             }
             
-            $seen[] = $exercise->getId();
+            $seen[] = $learningObject->getId();
             
             if (isset($o->children)) {
-                $this->configure_exercises($categories, $exround, $o->children, $seen, $errors, $exercise);
+                $this->configure_learning_objects($categories, $exround, $o->children, $seen, $errors, $learningObject);
             }
         }
         return $n;
     }
     
-    protected function parseExerciseStatus($value, &$errors) {
+    protected function parseLearningObjectStatus($value, &$errors) {
         switch ($value) {
             case 'ready':
-                return \mod_stratumtwo_exercise::STATUS_READY;
+                return \mod_stratumtwo_learning_object::STATUS_READY;
                 break;
             case 'hidden':
-                return \mod_stratumtwo_exercise::STATUS_HIDDEN;
+                return \mod_stratumtwo_learning_object::STATUS_HIDDEN;
                 break;
             case 'maintenance':
-                return \mod_stratumtwo_exercise::STATUS_MAINTENANCE;
+                return \mod_stratumtwo_learning_object::STATUS_MAINTENANCE;
+                break;
+            case 'unlisted':
+                return \mod_stratumtwo_learning_object::STATUS_UNLISTED;
                 break;
             default:
                 $errors[] = \get_string('configbadstatus', \mod_stratumtwo_exercise_round::MODNAME, $value);
-                return \mod_stratumtwo_exercise::STATUS_HIDDEN;
+                return \mod_stratumtwo_learning_object::STATUS_HIDDEN;
         }
     }
     

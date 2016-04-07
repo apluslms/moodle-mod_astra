@@ -6,142 +6,8 @@ defined('MOODLE_INTERNAL') || die();
  * and one category. An exercise has a service URL that is used to connect to
  * the exercise service. An exercise has max points and minimum points to pass.
  */
-class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
+class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
     const TABLE = 'stratumtwo_exercises'; // database table name
-    const STATUS_READY       = 0;
-    const STATUS_HIDDEN      = 1;
-    const STATUS_MAINTENANCE = 2;
-    
-    // cache of references to other records, used in corresponding getter methods
-    protected $category = null;
-    protected $exerciseRound = null;
-    protected $parentExercise = null;
-    
-    public function getStatus($asString = false) {
-        if ($asString) {
-            switch ((int) $this->record->status) {
-                case self::STATUS_READY:
-                    return get_string('statusready', mod_stratumtwo_exercise_round::MODNAME);
-                    break;
-                case self::STATUS_MAINTENANCE:
-                    return get_string('statusmaintenance', mod_stratumtwo_exercise_round::MODNAME);
-                    break;
-                default:
-                    return get_string('statushidden', mod_stratumtwo_exercise_round::MODNAME);
-            }
-        }
-        return (int) $this->record->status;
-    }
-    
-    public function getCategory() {
-        if (is_null($this->category)) {
-            $this->category = mod_stratumtwo_category::createFromId($this->record->categoryid);
-        }
-        return $this->category;
-    }
-    
-    public function getCategoryId() {
-        return $this->record->categoryid;
-    }
-    
-    public function getExerciseRound() {
-        if (is_null($this->exerciseRound)) {
-            $this->exerciseRound = mod_stratumtwo_exercise_round::createFromId($this->record->roundid);
-        }
-        return $this->exerciseRound;
-    }
-    
-    public function getParentExercise() {
-        if (empty($this->record->parentid)) {
-            return null;
-        }
-        if (is_null($this->parentExercise)) {
-            $this->parentExercise = self::createFromId($this->record->parentid);
-        }
-        return $this->parentExercise;
-    }
-    
-    public function getParentId() {
-        if (empty($this->record->parentid)) {
-            return null;
-        }
-        return (int) $this->record->parentid;
-    }
-    
-    /**
-     * Return an array of the exercises that are direct children of this exercise.
-     * @param bool $includeHidden if true, hidden exercises are included
-     * @return mod_stratumtwo_exercise[]
-     */
-    public function getChildren($includeHidden = false) {
-        global $DB;
-        
-        if ($includeHidden) {
-            $exerciseRecords = $DB->get_records(self::TABLE, array(
-                    'parentid' => $this->record->id,
-            ), 'ordernum ASC, id ASC');
-        } else {
-            $exerciseRecords = $DB->get_records_select(self::TABLE,
-                    'parentid = ? AND status != ?',
-                    array($this->record->id, self::STATUS_HIDDEN),
-                    'ordernum ASC, id ASC');
-        }
-        
-        $exercises = array();
-        foreach ($exerciseRecords as $ex) {
-            $exercises[] = new mod_stratumtwo_exercise($ex);
-        }
-        return $exercises;
-    }
-    
-    public function getOrder() {
-        return (int) $this->record->ordernum;
-    }
-    
-    public function getRemoteKey() {
-        return $this->record->remotekey;
-    }
-    
-    public function getNumber() {
-        $parent = $this->getParentExercise();
-        if ($parent !== null) {
-            return $parent->getNumber() . ".{$this->record->ordernum}";
-        }
-        return ".{$this->record->ordernum}";
-    }
-    
-    public function getName($includeOrder = true) {
-        require_once(dirname(dirname(__FILE__)) .'/locallib.php');
-        // number formatting based on A+ (a-plus/exercise/exercise_models.py)
-        
-        if ($includeOrder && $this->getOrder() >= 0) {
-            $conf = mod_stratumtwo_course_config::getForCourseId($this->getExerciseRound()->getCourse()->courseid);
-            if ($conf !== null) {
-                $contentNumbering = $conf->getContentNumbering();
-                $moduleNumbering = $conf->getModuleNumbering();
-            } else {
-                $contentNumbering = mod_stratumtwo_course_config::getDefaultContentNumbering();
-                $moduleNumbering = mod_stratumtwo_course_config::getDefaultModuleNumbering();
-            }
-            
-            if ($contentNumbering == mod_stratumtwo_course_config::CONTENT_NUMBERING_ARABIC) {
-                $number = $this->getNumber();
-                if ($moduleNumbering == mod_stratumtwo_course_config::MODULE_NUMBERING_ARABIC ||
-                        $moduleNumbering == mod_stratumtwo_course_config::MODULE_NUMBERING_HIDDEN_ARABIC) {
-                    return $this->getExerciseRound()->getOrder() . "$number {$this->record->name}";
-                }
-                // leave out the module number ($number starts with a dot)
-                return substr($number, 1) .' '. $this->record->name;
-            } else if ($contentNumbering == mod_stratumtwo_course_config::CONTENT_NUMBERING_ROMAN) {
-                return stratumtwo_roman_numeral($this->getOrder()) .' '. $this->record->name;
-            }
-        }
-        return $this->record->name;
-    }
-    
-    public function getServiceUrl() {
-        return $this->record->serviceurl;
-    }
     
     public function isAssistantGradingAllowed() {
         return (bool) $this->record->allowastgrading;
@@ -163,31 +29,18 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return $this->record->gradeitemnumber;
     }
     
-    public function isHidden() {
-        return $this->getStatus() === self::STATUS_HIDDEN;
-    }
-    
-    public function isUnderMaintenance() {
-        return $this->getStatus() === self::STATUS_MAINTENANCE;
-    }
-    
-    public function setStatus($status) {
-        $this->record->status = $status;
-    }
-    
-    public function setOrder($newOrder) {
-        $this->record->ordernum = $newOrder;
+    public function isSubmittable() {
+        return true;
     }
     
     /**
-     * Delete this exercise instance from the database.
+     * Delete this exercise instance from the database, and possible child
+     * learning objects. All submissions to this exercise are also deleted.
      * @param bool $updateRoundMaxPoints if true, the max points of the 
      * exercise round are updated here
      */
     public function deleteInstance($updateRoundMaxPoints = true) {
         global $DB;
-        
-        // Delete any dependent records here.
         
         // all submitted files to this exercise (in Moodle file API) (file itemid is a submission id)
         $fs = \get_file_storage();
@@ -199,8 +52,6 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         $DB->delete_records(mod_stratumtwo_submission::TABLE, array(
             'exerciseid' => $this->record->id,
         ));
-        // this exercise
-        $DB->delete_records(self::TABLE, array('id' => $this->record->id));
         
         // delete exercise gradebook item
         $this->deleteGradebookItem();
@@ -210,7 +61,8 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
             $this->getExerciseRound()->updateMaxPoints();
         }
         
-        return true; // success
+        // this exercise (both lobject and exercise tables) and children
+        return parent::deleteInstance();
     }
     
     /**
@@ -469,6 +321,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         if (!$skipGradebook) {
             $this->updateGradebookItem();
         }
+        
         return parent::save();
     }
     
@@ -508,14 +361,10 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return $ctx;
     }
     
-    public function getTemplateContext(stdClass $user = null,
+    public function getExerciseTemplateContext(stdClass $user = null,
             $includeTotalSubmitterCount = true, $includeCourseModule = true) {
-        $ctx = new stdClass();
-        $ctx->url = \mod_stratumtwo\urls\urls::exercise($this);
-        $ctx->name = $this->getName();
+        $ctx = parent::getTemplateContext($includeCourseModule);
         $ctx->submissionlisturl = \mod_stratumtwo\urls\urls::submissionList($this);
-        $ctx->editurl = \mod_stratumtwo\urls\urls::editExercise($this);
-        $ctx->removeurl = \mod_stratumtwo\urls\urls::deleteExercise($this);
         
         $ctx->max_points = $this->getMaxPoints();
         $ctx->max_submissions = $this->getMaxSubmissions();
@@ -526,12 +375,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         if ($includeTotalSubmitterCount) {
             $ctx->total_submitter_count = $this->getTotalSubmitterCount(); // heavy DB query
         }
-        if ($includeCourseModule) {
-            $ctx->course_module = $this->getExerciseRound()->getTemplateContext();
-        }
         $ctx->allow_assistant_grading = $this->isAssistantGradingAllowed();
-        $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
-        $ctx->status_str = $this->getStatus(true);
         
         return $ctx;
     }
@@ -552,44 +396,8 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_database_object {
         return $this->getServiceUrl() .'?'. http_build_query($query_data, 'i_', '&');
     }
     
-    /**
-     * Load the exercise page from the exercise service.
-     * @param int $userid user ID
-     * @throws mod_stratumtwo\protocol\remote_page_exception if there are errors
-     * in connecting to the server
-     * @return stdClass with field content
-     */
-    public function loadPage($userid) {
-        $serviceUrl = $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncNewSubmission($this, $userid));
-        try {
-            $remotePage = new \mod_stratumtwo\protocol\remote_page($serviceUrl);
-            return $remotePage->loadExercisePage($this);
-        } catch (\mod_stratumtwo\protocol\stratum_connection_exception $e) {
-            // error logging
-            $event = \mod_stratumtwo\event\stratum_connection_failed::create(array(
-                    'context' => context_module::instance($this->getExerciseRound()->getCourseModule()->id),
-                    'other' => array(
-                            'error' => $e->getMessage(),
-                            'url' => $serviceUrl,
-                            'objtable' => self::TABLE,
-                            'objid' => $this->getId(),
-                    )
-            ));
-            $event->trigger();
-            throw $e;
-        } catch (\mod_stratumtwo\protocol\stratum_server_exception $e) {
-            $event = \mod_stratumtwo\event\stratum_server_failed::create(array(
-                    'context' => context_module::instance($this->getExerciseRound()->getCourseModule()->id),
-                    'other' => array(
-                            'error' => $e->getMessage(),
-                            'url' => $serviceUrl,
-                            'objtable' => self::TABLE,
-                            'objid' => $this->getId(),
-                    )
-            ));
-            $event->trigger();
-            throw $e;
-        }
+    public function getLoadUrl($userid) {
+        return $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncNewSubmission($this, $userid));
     }
     
     /**

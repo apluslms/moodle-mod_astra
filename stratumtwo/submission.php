@@ -13,14 +13,10 @@ require_once(dirname(__FILE__).'/locallib.php');
 
 $id = required_param('id', PARAM_INT); // submission ID
 
-$submissionRecord = $DB->get_record(mod_stratumtwo_submission::TABLE, array('id' => $id), '*', MUST_EXIST);
-$exerciseRecord = $DB->get_record(mod_stratumtwo_exercise::TABLE, array('id' => $submissionRecord->exerciseid), '*', MUST_EXIST);
-$exroundRecord  = $DB->get_record(mod_stratumtwo_exercise_round::TABLE, array('id' => $exerciseRecord->roundid), '*', MUST_EXIST);
-list($course, $cm) = get_course_and_cm_from_instance($exroundRecord->id, mod_stratumtwo_exercise_round::TABLE);
-
-$submission = new mod_stratumtwo_submission($submissionRecord);
-$exround = new mod_stratumtwo_exercise_round($exroundRecord);
-$exercise = new mod_stratumtwo_exercise($exerciseRecord);
+$submission = mod_stratumtwo_submission::createFromId($id);
+$exercise = $submission->getExercise();
+$exround = $exercise->getExerciseRound();
+list($course, $cm) = get_course_and_cm_from_instance($exround->getId(), mod_stratumtwo_exercise_round::TABLE);
 
 require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
@@ -50,7 +46,7 @@ $submissionNav = stratumtwo_navbar_add_submission($exerciseNav, $submission);
 $submissionNav->make_active();
 
 $PAGE->set_url(\mod_stratumtwo\urls\urls::submission($submission, true));
-$PAGE->set_title(format_string($exerciseRecord->name));
+$PAGE->set_title(format_string($exercise->getName()));
 $PAGE->set_heading(format_string($course->fullname));
 
 // render page content

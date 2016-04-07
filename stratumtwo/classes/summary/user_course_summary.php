@@ -46,9 +46,15 @@ class user_course_summary {
         foreach ($this->exerciseRounds as $exround) {
             $roundIds[] = $exround->getId();
         }
-        $exerciseRecords = $DB->get_records_list(\mod_stratumtwo_exercise::TABLE,
-                'roundid', $roundIds, 
-                'roundid ASC, ordernum ASC, id ASC');
+        
+        if (empty($roundIds)) {
+            $exerciseRecords = array();
+        } else {
+            $exerciseRecords = $DB->get_records_sql(
+                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL() .
+                    ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .')' .
+                    ' ORDER BY lob.roundid ASC, lob.ordernum ASC, lob.id ASC');
+        }
         $this->exerciseCount = \count($exerciseRecords);
         $exercisesByRoundId = array();
         $categories = \mod_stratumtwo_category::getCategoriesInCourse($this->course->id); // only visible categories
@@ -59,7 +65,7 @@ class user_course_summary {
         foreach ($exerciseRecords as $exrecord) {
             // append exercises
             // filter out hidden exercises or exercises in hidden categories
-            if ($exrecord->status != \mod_stratumtwo_exercise::STATUS_HIDDEN &&
+            if ($exrecord->status != \mod_stratumtwo_learning_object::STATUS_HIDDEN &&
                     isset($categories[$exrecord->categoryid])) {
                 $exercisesByRoundId[$exrecord->roundid][] = new \mod_stratumtwo_exercise($exrecord);
             }
@@ -85,9 +91,9 @@ class user_course_summary {
         $sql =
             'SELECT id, status, exerciseid, grade, submissiontime
              FROM {'. \mod_stratumtwo_submission::TABLE .'} 
-             WHERE submitter = ? AND exerciseid IN (
-                 SELECT id FROM {'. \mod_stratumtwo_exercise::TABLE .'} 
-                 WHERE categoryid IN ( 
+             WHERE submitter = ? AND exerciseid IN (' .
+                 \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE, 'lob.id') .
+                 ' WHERE lob.categoryid IN (
                      SELECT id FROM {'. \mod_stratumtwo_category::TABLE .'} 
                      WHERE course = ?
                  )
