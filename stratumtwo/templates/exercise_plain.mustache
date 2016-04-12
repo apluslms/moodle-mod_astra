@@ -1,0 +1,103 @@
+{{!
+Template for an embedded exercise that can be inserted into a chapter page.
+Derived from A+ (a-plus/exercise/templates/exercise/exercise_plain.html).
+
+Context variables:
+* exercise (object) with fields
+    - is_submittable (bool) true if the learning object can receive submissions (is an exercise, not chapter)
+    - max_submissions_for_user (int) max number of submissions the user may submit
+    - points_to_pass (int)
+    - submissionlisturl (string) URL to the list of all submissions
+* summary (object) exercise summary with fields 
+    - fields required by _points_badge.mustache
+    - best_submission_url (string) URL to view the best submission
+    - submission_count (int) number of submissions from the user
+* submissions (array of objects, the latest submission first), each object has keys 
+    url (string), submission_time (int, timestamp), nth (int, ordinal number),
+    the variables required by _points_badge.mustache (set status if the submission is not graded)
+* module (object) exercise round, with fields 
+    - closingtime (int) Unix timestamp of the round closing time
+* is_course_staff (bool) true if the user can view all submissions
+* toDateStr callable Function that converts a Unix timestamp to a date string
+* error (string) set if an error message should be displayed
+* page (stdClass) with fields
+    content (html string)
+}}
+
+        <div id="exercise-all">
+
+      {{# exercise.is_submittable }}
+            <ul class="exercise-summary nav nav-pills">
+                <li>
+                    <a href="{{# summary.best_submission_url }}{{ summary.best_submission_url }}{{/ summary.best_submission_url }}{{^ summary.best_submission_url }}#{{/ summary.best_submission_url }}">
+                        {{#str}} points, mod_stratumtwo {{/str}}
+                        {{# summary }}
+                          {{> mod_stratumtwo/_points_badge }}
+                        {{/ summary }}
+                    </a>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        {{#str}} submissions, mod_stratumtwo {{/str}}
+                        <span class="badge">
+                            {{ summary.submission_count }}
+                            {{# exercise.max_submissions_for_user }}
+                            / {{ exercise.max_submissions_for_user }}
+                            {{/ exercise.max_submissions_for_user }}
+                        </span>
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        {{# submissions }}
+                        <li>
+                            <a href="{{{ url }}}">
+                                {{ nth }}.
+                                {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
+                                {{> mod_stratumtwo/_points_badge }}
+                            </a>
+                        </li>
+                        {{/ submissions }}
+                        {{^ submissions }}
+                        <li>
+                            <a href="#">{{#str}} nosubmissionsyet, mod_stratumtwo {{/str}}</a>
+                        </li>
+                        {{/ submissions }}
+                    </ul>
+                </li>
+                <li>
+                    <p class="navbar-text navbar-btn">
+                        <small>
+                            {{# exercise.points_to_pass }}
+                            {{#str}} requiredpoints, mod_stratumtwo, {{ exercise.points_to_pass }} {{/str}}. 
+                            {{/ exercise.points_to_pass }}
+                            {{#str}} deadline, mod_stratumtwo {{/str}} {{# toDateStr }}{{ module.closingtime }}{{/ toDateStr }}
+                        </small>
+                    </p>
+                </li>
+                {{# is_course_staff }}
+                <li>
+                    <p class="navbar-text navbar-btn">
+                        <a class="btn btn-default btn-xs" href="{{{ exercise.submissionlisturl }}}">
+                            <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+                            {{#str}} viewallsubmissions, mod_stratumtwo {{/str}}
+                        </a>
+                    </p>
+                </li>
+                {{/ is_course_staff }}
+            </ul>
+      {{/ exercise.is_submittable }}
+
+            <div class="exercise-response">
+                {{# error }}
+                  {{> mod_stratumtwo/_error_alert }}
+                {{/ error }}
+                <div id="exercise">
+                    {{{ page.content }}}
+                </div>
+                {{! if this page receives submissions (is rendered when a new submission is uploaded, 
+                and exercise service tells us to wait a short time,
+                poll for the grading status of the new submission
+                {> mod_stratumtwo/_exercise_wait }
+                }}
+            </div>
+        </div>

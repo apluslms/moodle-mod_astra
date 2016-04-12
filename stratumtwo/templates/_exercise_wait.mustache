@@ -1,0 +1,23 @@
+{{!
+Progress bar for waiting a submission to be graded asynchronously.
+Derived from A+ (a-plus/exercise/templates/exercise/_exercise_wait.html).
+
+Context variables:
+* page (object) with fields 
+    - is_wait (bool) true if Moodle should wait a short time and poll while waiting
+        for the submission to be graded asynchronously
+* submission (object) with fields 
+    - poll_url (string) URL for polling the status of the submission 
+        (response consists of only the status string of the submission)
+}}
+
+{{# page.is_wait }}
+<div class="exercise-wait hide progress"
+  data-poll-url="{{{ submission.poll_url }}}"
+  data-msg-error="{{#str}} exercisecommerror, mod_stratumtwo {{/str}}"
+  data-msg-timeout="{{#str}} gradingtakeslonger, mod_stratumtwo {{/str}}">
+  <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;">
+    {{#str}} gradingsubmission, mod_stratumtwo {{/str}}
+  </div>
+</div>
+{{/ page.is_wait }}

@@ -21,6 +21,19 @@ Context variables:
 <div id="exercise" data-aplus-chapter="{{{ chapter.url }}}">
     {{{ page.content }}}
 </div>
+
+<div id="submit-progress" class="hide progress">
+  <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;">
+    {{#str}} postingsubmission, mod_stratumtwo {{/str}}
+  </div>
+</div>
+
+<div id="loading-indicator" class="hide progress"
+  data-msg-load="{{#str}} loadingexercise, mod_stratumtwo {{/str}}"
+  data-msg-submit="{{#str}} postingsubmission, mod_stratumtwo {{/str}}"
+  data-msg-error="{{#str}} exercisecommerror, mod_stratumtwo {{/str}}">
+  <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
+</div>
 {{/ exercisecontent }}
 
 {{! remove exercise info box, a chapter does not accept submissions }}
@@ -28,3 +41,10 @@ Context variables:
 {{/ exerciseinfo }}
 
 {{/ mod_stratumtwo/exercise_base }}
+
+{{#js}}
+require(['jquery', 'mod_stratumtwo/aplus_chapter'], function($) {
+  // Construct the page chapter element.
+  $('#exercise').aplusChapter();
+});
+{{/js}}

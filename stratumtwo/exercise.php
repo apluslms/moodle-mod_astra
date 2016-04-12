@@ -114,9 +114,15 @@ $PAGE->set_heading(format_string($course->fullname));
 // render page content
 $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
 
+$renderable = new \mod_stratumtwo\output\exercise_page($exround, $learningObject,
+        $USER, $PAGE->requires, $errorMsg);
+// must call render before outputting any page content (header), since the
+// exercise page must add page requirements (CSS, JS) based on the remote page
+// downloaded from the exercise service
+$page_content = $output->render($renderable);
+
 echo $output->header();
 
-$renderable = new \mod_stratumtwo\output\exercise_page($exround, $learningObject, $USER, $errorMsg);
-echo $output->render($renderable);
+echo $page_content;
 
 echo $output->footer();

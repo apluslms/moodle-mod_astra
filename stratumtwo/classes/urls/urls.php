@@ -52,6 +52,12 @@ class urls {
         return self::buildUrl('/exercise.php', $query, $asMdlUrl);
     }
     
+    // plain exercise for embedding into chapters (AJAX)
+    public static function plainExercise(\mod_stratumtwo_learning_object $ex, $asMdlUrl = false) {
+        $query = array('id' => $ex->getId());
+        return self::buildUrl('/exercise_plain.php', $query, $asMdlUrl);
+    }
+    
     public static function editExercise(\mod_stratumtwo_learning_object $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId());
         return self::buildUrl('/teachers/edit_exercise.php', $query, $asMdlUrl);

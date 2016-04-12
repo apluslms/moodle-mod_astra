@@ -23,6 +23,8 @@ class remote_page {
     protected $isWait = false;
     protected $points; // int, if grader returns results synchronously
     
+    protected $aplusHeadElements; // \DOMNode[], nodes in document head with aplus attribute
+    
     /**
      * Create a remote page: a HTML page whose content and metadata are
      * downloaded from a server.
@@ -162,12 +164,13 @@ class remote_page {
      * Load the exercise page (usually containing instructions and submission form,
      * or chapter content) from the exercise service.
      * @param \mod_stratumtwo_learning_object $learningObject
-     * @return \stdClass with field content
+     * @return \stdClass with fields content and remote_page
      */
     public function loadExercisePage(\mod_stratumtwo_learning_object $learningObject) {
         $this->parsePageContent($learningObject);
         $page = new \stdClass();
         $page->content = $this->content;
+        $page->remote_page = $this;
         return $page;
     }
     
@@ -206,9 +209,24 @@ class remote_page {
         if ($lobj->isSubmittable()) {
             $this->fixFormAction($lobj);
             $this->fixFormMultipleCheckboxes();
+        } else {
+            // chapter: find embedded exercise elements and add exercise URL to data attributes,
+            // AJAX Javascript will load the exercise to the DOM
+            $replaceValues = array();
+            foreach ($lobj->getChildren() as $childEx) {
+                $replaceValues[$childEx->getOrder()] = array(
+                        'data-aplus-order' => $childEx->getOrder(),
+                        'data-aplus-exercise' => \mod_stratumtwo\urls\urls::plainExercise($childEx),
+                );
+            }
+            $this->findAndReplaceElementAttributes('div', 'data-aplus-exercise', $replaceValues);
         }
-        //TODO embedded exercises in a chapter
-        $this->content = $this->getElementOrBody('exercise');
+        // find tags in <head> that have attribute data-aplus
+        $this->aplusHeadElements = $this->findHeadElementsWithAttribute('data-aplus');
+        
+        // find learning object content
+        $this->content = $this->getElementOrBody(array('exercise', 'aplus', 'chapter'),
+                array('class' => 'entry-content'));
         
         // parse metadata
         $maxPoints = $this->getMeta('max-points');
@@ -243,18 +261,66 @@ class remote_page {
     }
     
     /**
-     * Return HTML string of the element with the given id, or body if no id is given or
-     * the id does not exist in the HTML document.
-     * @param string|null $id ID value of the HTML element that should be returned,
-     * null for body
+     * Return href values of link elements in the document head that have
+     * the attribute data-aplus.
+     * (The page must be loaded before calling this.)
+     * @return array of strings
+     */
+    public function getInjectedCSS_URLs() {
+        $css_urls = array();
+        foreach ($this->aplusHeadElements as $element) {
+            if ($element->nodeName == 'link' && $element->getAttribute('rel') == 'stylesheet') {
+                $href = $element->getAttribute('href');
+                if ($href != '') {
+                    $css_urls[] = $href;
+                }
+            }
+        }
+        return $css_urls;
+    }
+    
+    /**
+     * Return src values and inline Javascript code strings of script elements
+     * in the document head that have the attribute data-aplus.
+     * (The page must be loaded before calling this.)
+     * @return array of two arrays: the first array is a list of URLs (strings) to
+     * JS code files; the second array is a list of Javascript code strings (inline code).
+     */
+    public function getInjectedJsUrlsAndInline() {
+        $js_urls = array();
+        $js_inline_elements = array();
+        foreach ($this->aplusHeadElements as $element) {
+            if ($element->nodeName == 'script') {
+                $src = $element->getAttribute('src');
+                if ($src != '') {
+                    // link to JS code file
+                    $js_urls[] = $src;
+                } else {
+                    // inline JS code
+                    $js_inline_elements[] = $element->textContent; // code inside <script> tags
+                }
+            }
+        }
+        return array($js_urls, $js_inline_elements);
+    }
+    
+    /**
+     * Return HTML string of the element with the given id or attribute value, or
+     * body if no element is found with the given id or attribute in the HTML document.
+     * @param array $ids array of ID values to search for; the first hit is returned.
+     * Use empty array to avoid searching for IDs.
+     * @param array $searchAttrs array of (div) element attributes to search for; the first hit
+     * is returned but only if no ID was found. Array keys are attribute names and
+     * array values are attribute values.
      * @return NULL|string HTML string, null if the document has no body
      */
-    protected function getElementOrBody($id = null) {
+    protected function getElementOrBody(array $ids, array $searchAttrs) {
         $element = null;
-        if (!is_null($id)) {
+        // search for id
+        foreach ($ids as $id) {
             $element = $this->DOMdoc->getElementById($id);
             if (!is_null($element)) {
-                if ($element->getAttribute('id') == 'exercise') {
+                if ($id == 'exercise') {
                     $element->removeAttribute('id');
                     // remove id since this content is inserted to a new div with id=exercise
                 }
@@ -262,7 +328,18 @@ class remote_page {
             }
         }
         
-        // resort to body since the id content was not found
+        // search for attributes
+        foreach ($this->DOMdoc->getElementsByTagName('div') as $node) {
+            if ($node->nodeType == \XML_ELEMENT_NODE) {
+                foreach ($searchAttrs as $attrName => $attrValue) {
+                    if ($node->getAttribute($attrName) == $attrValue) {
+                        return $this->DOMdoc->saveHTML($node);
+                    }
+                }
+            }
+        }
+        
+        // resort to body since no id/attr was found
         // Note: using id is more reliable than parsing content from body
         $nodesList = $this->DOMdoc->getElementsByTagName('body');
         if ($nodesList->length == 0)
@@ -356,5 +433,49 @@ class remote_page {
             return $node->textContent; 
         }
         return null;
+    }
+    
+    /**
+     * Find elements of type $tagName that have attribute $attrName, and the value of
+     * the attribute is a key in $replaceValues. Then, replace the attributes of the
+     * element with the attribute values in $replaceValues. Only the attributes
+     * given in $replaceValues are affected.
+     * @param string $tagName name of the elements/tags that are searched
+     * @param strig $attrName attribute name that is used in the search of elements
+     * @param array $replaceValues array of new attribute values, separately for each
+     * element. Outer array keys are values of attribute $attrName, the matching inner array
+     * is used to replace attribute values. The inner array has attribute names as keys and
+     * attribute values as array values.
+     */
+    protected function findAndReplaceElementAttributes($tagName, $attrName, array $replaceValues) {
+        foreach ($this->DOMdoc->getElementsByTagName($tagName) as $node) {
+            if ($node->nodeType == \XML_ELEMENT_NODE && $node->hasAttribute($attrName)) {
+                if (isset($replaceValues[$node->getAttribute($attrName)])) {
+                    $attrsToReplace = $replaceValues[$node->getAttribute($attrName)];
+                    foreach ($attrsToReplace as $replaceAttrName => $replaceAttrValue) {
+                        $node->setAttribute($replaceAttrName, $replaceAttrValue);
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Return an array of DOMNodes that are located inside the document head
+     * element and have attribute $attrName.
+     * @param string $attrName attribute name to search
+     * @return \DOMNode[]
+     */
+    protected function findHeadElementsWithAttribute($attrName) {
+        $elements = array();
+        // there should be one head element
+        foreach ($this->DOMdoc->getElementsByTagName('head') as $head) {
+            foreach ($head->childNodes as $node) {
+                if ($node->nodeType == \XML_ELEMENT_NODE && $node->hasAttribute($attrName)) {
+                    $elements[] = $node;
+                }
+            }
+        }
+        return $elements;
     }
 }

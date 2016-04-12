@@ -66,6 +66,7 @@ $string['viewsubmissions'] = 'View submissions';
 $string['notopenedyet'] = 'This module has not been opened yet.';
 $string['exercisedescription'] = 'Exercise description';
 $string['mysubmissions'] = 'My submissions';
+$string['submissions'] = 'Submissions';
 $string['nosubmissionsyet'] = 'No submissions yet';
 $string['inspectsubmission'] = 'Inspect submission';
 $string['viewallsubmissions'] = 'View all submissions';
@@ -115,6 +116,9 @@ $string['feedbackto'] = 'Feedback to {$a}';
 $string['youhavenewfeedback'] = 'You have new personal feedback to exercise <a href="{$a->exurl}">{$a->exname}</a>, <a href="{$a->sbmsurl}">submission {$a->sbmsid}</a>.';
 $string['numbersubmissions'] = '{$a} submissions';
 $string['inspect'] = 'Inspect';
+$string['gradingsubmission'] = 'Grading submission...';
+$string['postingsubmission'] = 'Posting submission...';
+$string['loadingexercise'] = 'Loading exercise...';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';
@@ -257,6 +261,8 @@ $string['parentexinwronground'] = 'Parent exercise must be in the same exercise 
 $string['duplicateexerciseremotekey'] = 'Exercise with this remote key already exists in the course.';
 $string['invalidobjecttype'] = 'Invalid object type: {$a}.';
 $string['idsnotfound'] = 'The following identifiers could not be found in the database: {$a}';
+$string['exercisecommerror'] = 'Communication error with the exercise.';
+$string['gradingtakeslonger'] = 'Unfortunately grading takes longer than expected. Return later to see the result.';
 
 /*
 $string['stratumsbmsmaxbytes'] = 'Submission file max size in bytes';

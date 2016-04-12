@@ -291,6 +291,7 @@ abstract class mod_stratumtwo_learning_object extends mod_stratumtwo_database_ob
         $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
         $ctx->status_str = $this->getStatus(true);
         $ctx->status_unlisted = ($this->getStatus() === self::STATUS_UNLISTED);
+        $ctx->is_submittable = $this->isSubmittable();
         
         return $ctx;
     }

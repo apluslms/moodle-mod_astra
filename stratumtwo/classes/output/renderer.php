@@ -74,4 +74,9 @@ class renderer extends \plugin_renderer_base {
         $data = $page->export_for_template($this);
         return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/list_deviations_page', $data);
     }
+    
+    protected function render_exercise_plain_page(\mod_stratumtwo\output\exercise_plain_page $page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/exercise_plain', $data);
+    }
 }
