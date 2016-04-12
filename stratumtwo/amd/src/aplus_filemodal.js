@@ -4,12 +4,14 @@
  * file modal plugin:
  * $('.file-modal').aplusFileModal();
  * 
+ * Source: A+ (a-plus/assets/js/aplus.js)
+ * License: GNU GPL v3
+ * 
  * @module mod_stratumtwo/aplus_filemodal
  */
 define(['jquery', 'mod_stratumtwo/highlight', 'mod_stratumtwo/twbootstrap'], function(jQuery, hljs) {
 /**
  * Open submitted file in a modal.
- * Source: A+ (a-plus/assets/js/aplus.js)
  */
 (function($, window, document, undefined) {
  	"use strict";

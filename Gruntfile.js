@@ -27,6 +27,8 @@ module.exports = function(grunt) {
         cwd = process.env.PWD || process.cwd(),
         inAMD = path.basename(cwd) == 'amd';
 
+    var saveLicense = require('uglify-save-license');
+
     // Project configuration.
     grunt.initConfig({
         jshint: {
@@ -42,6 +44,9 @@ module.exports = function(grunt) {
         },
         uglify: {
             dynamic_mappings: {
+                options: {
+                    preserveComments: saveLicense,
+                },
                 files: grunt.file.expandMapping(
                     ['**/src/*.js', '!**/node_modules/**'],
                     '',
@@ -55,7 +60,19 @@ module.exports = function(grunt) {
                         }
                     }
                 )
-            }
+            },
+            static_mappings: {
+                // if there is a need to avoid processing all files at once, list some files here
+                options: {
+                    preserveComments: saveLicense,
+                },
+                files: {
+                    'stratumtwo/amd/build/aplus_filemodal.min.js': ['stratumtwo/amd/src/aplus_filemodal.js'],
+                    'stratumtwo/amd/build/aplus_tablefilter.min.js': ['stratumtwo/amd/src/aplus_tablefilter.js'],
+                    'stratumtwo/amd/build/aplus_searchselect.min.js': ['stratumtwo/amd/src/aplus_searchselect.js'],
+                    'stratumtwo/amd/build/aplus_chapter.min.js': ['stratumtwo/amd/src/aplus_chapter.js'],
+                }
+            },
         },
         /*less: {
             bootstrapbase: {
@@ -76,7 +93,7 @@ module.exports = function(grunt) {
     //grunt.loadNpmTasks('grunt-contrib-less');
 
     // Register JS tasks.
-    grunt.registerTask('amd', ['uglify']);
+    grunt.registerTask('amd', ['uglify:dynamic_mappings']);
 
     // Register CSS taks.
     //grunt.registerTask('css', ['less:bootstrapbase']);

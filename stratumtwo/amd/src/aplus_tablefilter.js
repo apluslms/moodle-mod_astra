@@ -3,13 +3,15 @@
  * In an HTML page, run the following JS code once to activate it:
  * $('.filtered-table').aplusTableFilter();
  * 
+ * Source: A+ (a-plus/assets/js/aplus.js)
+ * License: GNU GPL v3
+ * 
  * @module mod_stratumtwo/aplus_tablefilter
  */
 define(['jquery'], function(jQuery) {
 
 /**
  * Table row filter.
- * Source: A+ (a-plus/assets/js/aplus.js)
  */
 (function($, window, document, undefined) {
     "use strict";

@@ -4,13 +4,15 @@
  * $('.search-select').aplusSearchSelect();
  * (The targeted element should be a <select> element.)
  * 
+ * Source: A+ (a-plus/assets/js/aplus.js)
+ * License: GNU GPL v3
+ * 
  * @module mod_stratumtwo/aplus_searchselect
  */
 define(['jquery'], function(jQuery) {
 
 /**
  * Multiple select as search and remove.
- * Source: A+ (a-plus/assets/js/aplus.js)
  */
 (function($, window, document, undefined) {
     "use strict";

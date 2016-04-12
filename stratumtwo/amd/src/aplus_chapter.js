@@ -6,14 +6,16 @@
  * // Construct the page chapter element.
  * $("#exercise").aplusChapter();
  * 
+ * Source: A+ (a-plus/exercise/static/exercise/chapter.js)
+ * Some parts have been disabled since Bootstrap modal dialogues do not work in Moodle.
+ * License: GNU GPL v3
+ * 
  * @module mod_stratumtwo/aplus_chapter
  */
 define(['jquery', 'mod_stratumtwo/twbootstrap'], function(jQuery) {
 
 /**
  * Chapter element containing number of exercise elements.
- * Source: A+ (a-plus/exercise/static/exercise/chapter.js)
- * Some parts have been disabled since Bootstrap modal dialogues do not work in Moodle.
  */
 ;(function($, window, document, undefined) {
 	//"use strict";
