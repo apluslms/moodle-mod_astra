@@ -99,6 +99,11 @@ class exercise_page implements \renderable, \templatable {
             $data->summary = $this->exerciseSummary->getTemplateContext();
         } else {
             $data->chapter = $this->learningObject->getTemplateContext(false);
+            if ($this->learningObject->shouldGenerateTableOfContents()) {
+                $data->round_toc = \mod_stratumtwo\output\exercise_round_page::getRoundTableOfContentsContext($this->exround);
+            } else {
+                $data->round_toc = false;
+            }
         }
         
         $data->toDateStr = new \mod_stratumtwo\output\date_to_string();

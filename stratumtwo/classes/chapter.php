@@ -15,7 +15,7 @@ class mod_stratumtwo_chapter extends mod_stratumtwo_learning_object {
     
     public function getTemplateContext($includeCourseModule = true) {
         $ctx = parent::getTemplateContext($includeCourseModule);
-        $ctx->generate_toc = $this->shouldGenerateTableOfContents(); //TODO needed?
+        $ctx->generate_toc = $this->shouldGenerateTableOfContents();
         return $ctx;
     }
 }

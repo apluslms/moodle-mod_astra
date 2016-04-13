@@ -9,6 +9,8 @@ Context variables:
     - url (string) URL for displaying the chapter
 * page (stdClass) with fields
     content (html string)
+* round_toc (object) table of contents of the exercise round, set if it should be printed,
+    object has the fields required by _round_toc.mustache
 }}
 
 {{< mod_stratumtwo/exercise_base }}
@@ -18,6 +20,11 @@ Context variables:
 {{/ submissionsnavbar }}
 
 {{$ exercisecontent }}
+{{# round_toc }}
+  <h4>{{#str}} toc, mod_stratumtwo {{/str}}</h4>
+  {{> mod_stratumtwo/_round_toc }}
+{{/ round_toc }}
+
 <div id="exercise" data-aplus-chapter="{{{ chapter.url }}}">
     {{{ page.content }}}
 </div>
