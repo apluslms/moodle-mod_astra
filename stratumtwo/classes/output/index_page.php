@@ -49,6 +49,102 @@ class index_page implements \renderable, \templatable {
         
         $data->toDateStr = new \mod_stratumtwo\output\date_to_string();
         
+        $data->toc = $this->getCourseTableOfContentsContext();
+        
         return $data;
+    }
+    
+    protected function getCourseTableOfContentsContext() {
+        global $DB;
+        
+        $roundIds = array();
+        foreach ($this->rounds as $exround) {
+            $roundIds[] = $exround->getId();
+        }
+        
+        // all learning objects in the course, minimize the number of DB queries
+        if (empty($roundIds)) {
+            $exerciseRecords = array();
+            $chapterRecords = array();
+        } else {
+            $params = array(\mod_stratumtwo_learning_object::STATUS_HIDDEN);
+            $exerciseRecords = $DB->get_records_sql(
+                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE) .
+                    ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .') AND lob.status != ?',
+                    $params);
+            $chapterRecords = $DB->get_records_sql(
+                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_chapter::TABLE) .
+                    ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .') AND lob.status != ?',
+                    $params);
+        }
+        
+        $lobjectsByRoundId = array(); // organize by round ID
+        foreach ($roundIds as $rid) {
+            $lobjectsByRoundId[$rid] = array();
+        }
+        foreach ($exerciseRecords as $rec) {
+            $lobjectsByRoundId[$rec->roundid][] = new \mod_stratumtwo_exercise($rec);
+        }
+        foreach ($chapterRecords as $rec) {
+            $lobjectsByRoundId[$rec->roundid][] = new \mod_stratumtwo_chapter($rec);
+        }
+        
+        $toc = new \stdClass(); // table of contents
+        $toc->exercise_rounds = array();
+        foreach ($this->rounds as $exround) {
+            $roundCtx = $exround->getTemplateContext();
+            $roundCtx->has_started = $exround->hasStarted();
+            $roundCtx->lobjects = self::buildRoundLobjectsContextForToc($lobjectsByRoundId[$exround->getId()]);
+            $toc->exercise_rounds[] = $roundCtx;
+        }
+        return $toc;
+    }
+    
+    /**
+     * Return a template context object of the learning objects in an exercise round for
+     * the use in a table of contents.
+     * @param \mod_stratumtwo_learning_object[] $learningObjects learning objects in a round
+     * @return \stdClass[]
+     */
+    public static function buildRoundLobjectsContextForToc($learningObjects) {
+        $orderSortCallback = function($obj1, $obj2) {
+            $ord1 = $obj1->getOrder();
+            $ord2 = $obj2->getOrder();
+            if ($ord1 < $ord2) {
+                return -1;
+            } else if ($ord1 == $ord2) {
+                return 0;
+            } else {
+                return 1;
+            }
+        };
+        
+        // $parentid may be null to get top-level learning objects
+        $children = function($parentid) use ($learningObjects, &$orderSortCallback) {
+            $child_objs = array();
+            foreach ($learningObjects as $obj) {
+                if ($obj->getParentId() == $parentid && !$obj->isUnlisted())
+                    $child_objs[] = $obj;
+            }
+            // sort children by ordernum, they all have the same parent
+            usort($child_objs, $orderSortCallback);
+            return $child_objs;
+        };
+        
+        $traverse = function($parentid) use (&$children, &$traverse) {
+            $container = array();
+            foreach ($children($parentid) as $child) {
+                $childCtx = new \stdClass();
+                $childCtx->is_empty = $child->isEmpty();
+                $childCtx->name = $child->getName();
+                $childCtx->url = \mod_stratumtwo\urls\urls::exercise($child);
+                $childCtx->children = $traverse($child->getId());
+                $childCtx->has_children = \count($childCtx->children) > 0;
+                $container[] = $childCtx;
+            }
+            return $container;
+        };
+        
+        return $traverse(null);
     }
 }

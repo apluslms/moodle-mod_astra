@@ -1,0 +1,44 @@
+{{!
+Learning object list item in a table of contents with a nested list of the
+child objects.
+Derived from A+ (a-plus/course/templates/course/_module_toc.html).
+
+Context variables: 
+* has_started (bool) true if the round has been opened
+* is_empty (bool) true if the learning object is empty (no service URL)
+* name (string) name of the learning object (with ordinal number)
+* url (string) URL to the learning object
+* has_children (bool) true if the learning object has child objects
+* children (array of objects), child objects, each object has fields 
+    - is_empty (bool), name (string), url (string), has_children (bool), children (array)
+        as defined above
+* is_course_staff (bool) true if the user can see hidden/inactive content
+}}
+
+<li>
+    {{# has_started }}
+      {{# is_empty }}
+        {{ name }}
+      {{/ is_empty }}
+      {{^ is_empty }}
+        <a href="{{{ url }}}">{{ name }}</a>
+      {{/ is_empty }}
+    {{/ has_started }}
+    {{^ has_started }}
+      {{ name }}
+      {{# is_course_staff }}
+        <a class="btn btn-default btn-xs" href="{{{ url }}}">
+          <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+          {{#str}} earlyaccess, mod_stratumtwo {{/str}}
+        </a>
+      {{/ is_course_staff }}
+    {{/ has_started }}
+</li>
+
+{{# has_children }}
+  <ul class="toc">
+      {{# children }}
+        {{> mod_stratumtwo/_lobject_toc_item }}
+      {{/ children }}
+  </ul>
+{{/ has_children }}

@@ -10,10 +10,30 @@ Context variables:
     - name (string) name of the category
     - summary (object) with fields required by _points_progress.mustache
     - status_ready (bool) true if status is ready
+* toc (object) with fields 
+    - exercise_rounds (array of objects) as required by _course_toc.mustache
 }}
 
 <div class="bs3-container-fluid">
 
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active">
+      <a href="#course-summary" aria-controls="course-summary" role="tab" data-toggle="tab">
+        {{#str}} exerciseresults, mod_stratumtwo {{/str}}
+      </a>
+    </li>
+    <li role="presentation">
+      <a href="#course-toc" aria-controls="course-toc" role="tab" data-toggle="tab">
+        {{#str}} toc, mod_stratumtwo {{/str}}
+      </a>
+    </li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+  
+  <div role="tabpanel" class="tab-pane active" id="course-summary">
   <div class="row">
   {{# categories }}
     {{# status_ready }}
@@ -38,6 +58,15 @@ Context variables:
   {{# rounds }}
     {{> mod_stratumtwo/exercise_round }}
   {{/ rounds }}
+  </div> <!-- close tab-pane -->
+
+  <div role="tabpanel" class="tab-pane" id="course-toc">
+  {{# toc }}
+    {{> mod_stratumtwo/_course_toc }}
+  {{/ toc }}
+  </div>
+  
+  </div> <!-- close tab-content -->
 
 </div>
 

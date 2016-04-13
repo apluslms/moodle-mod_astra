@@ -1,0 +1,29 @@
+{{!
+Table of contents for one exercise round.
+Derived from A+ (a-plus/course/templates/course/_module_toc.html).
+
+Context variables:
+* status_maintenance (bool) true if the exercise round is under maintenance
+* has_started (bool) true if the round has been opened
+* lobjects (array of objects), top-level learning objects in the round, each object has fields 
+    - is_empty (bool), name (string), url (string), has_children (bool), 
+        children (array of objects) as required by _lobject_toc_item.mustache
+* is_course_staff (bool) true if the user can see hidden/inactive content
+}}
+
+{{# status_maintenance }}
+<p>
+  {{#str}} undermaintenance, mod_stratumtwo {{/str}}
+</p>
+{{/ status_maintenance }}
+{{^ status_maintenance }}
+
+<ul class="toc">
+{{# lobjects }}
+
+    {{> mod_stratumtwo/_lobject_toc_item }}
+    
+{{/ lobjects }}
+</ul>
+
+{{/ status_maintenance }}

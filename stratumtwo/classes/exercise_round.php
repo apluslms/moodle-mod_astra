@@ -361,9 +361,10 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
      * Return an array of the learning objects in this round (as mod_stratumtwo_learning_object
      * instances).
      * @param bool $includeHidden if true, hidden learning objects are included
-     * @return sorted array of mod_stratumtwo_learning_object instances
+     * @param bool $sort if true, the result array is sorted
+     * @return (sorted) array of mod_stratumtwo_learning_object instances
      */
-    public function getLearningObjects($includeHidden = false) {
+    public function getLearningObjects($includeHidden = false, $sort = true) {
         global $DB;
         
         $where = ' WHERE lob.roundid = ?';
@@ -394,7 +395,23 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         // Output array should be in
         // the order that is used to print the exercises under the round
         // Sorting and flattening the exercise tree is derived from A+ (a-plus/course/tree.py).
-        
+        if ($sort) {
+            return self::sortRoundLearningObjects($learningObjects);
+        } else {
+            return $learningObjects; // no sorting
+        }
+    }
+    
+    /**
+     * Sort the given learning objects that should all belong to the same round.
+     * The sorting uses ordernums of the objects and places child objects after their parent.
+     * @param array $learningObjects array of mod_stratumtwo_learning_objects that are to be sorted
+     * @param int|null $startParentId only include objects starting from this level.
+     * This is an ID of an object that is parent to other objects. Only the children and their
+     * children etc. of the object are included. Give null for top level (include all).
+     * @return mod_stratumtwo_learning_object[] a new array of the sorted objects
+     */
+    public static function sortRoundLearningObjects(array $learningObjects, $startParentId = null) {
         $orderSortCallback = function($obj1, $obj2) {
             $ord1 = $obj1->getOrder();
             $ord2 = $obj2->getOrder();

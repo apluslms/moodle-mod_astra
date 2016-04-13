@@ -3,11 +3,41 @@ Show one exercise round.
 
 Context variables:
 * variables required by exercise_round.mustache
+* toc (object) table of contents context for the round, has fields as required by
+        _round_toc.mustache
 }}
 
 <div class="bs3-container-fluid">
 
-{{> mod_stratumtwo/exercise_round }}
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active">
+      <a href="#round-summary-tab" aria-controls="round-summary-tab" role="tab" data-toggle="tab">
+        {{#str}} exerciseresults, mod_stratumtwo {{/str}}
+      </a>
+    </li>
+    <li role="presentation">
+      <a href="#round-toc-tab" aria-controls="round-toc-tab" role="tab" data-toggle="tab">
+        {{#str}} toc, mod_stratumtwo {{/str}}
+      </a>
+    </li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+  
+  <div role="tabpanel" class="tab-pane active" id="round-summary-tab">
+    {{> mod_stratumtwo/exercise_round }}
+  </div> <!-- close tab-pane -->
+  
+  <div role="tabpanel" class="tab-pane" id="round-toc-tab">
+  <h3>{{#str}} toc, mod_stratumtwo {{/str}}</h3>
+  {{# toc }}
+    {{> mod_stratumtwo/_round_toc }}
+  {{/ toc }}
+  </div> <!-- close tab-pane -->
+
+  </div> <!-- close tab-content -->
 
 </div>
 

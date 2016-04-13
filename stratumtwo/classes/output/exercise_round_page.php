@@ -29,8 +29,23 @@ class exercise_round_page implements \renderable, \templatable {
         
         $data->toDateStr = new \mod_stratumtwo\output\date_to_string();
         
+        $data->toc = self::getRoundTableOfContentsContext($this->exround);
+        
         return $data;
         // It should return an stdClass with properties that are only made of simple types:
         // int, string, bool, float, stdClass or arrays of these types
+    }
+    
+    /**
+     * Return table of contents context for an exercise round.
+     * @param \mod_stratumtwo_exercise_round $exround
+     * @return stdClass
+     */
+    public static function getRoundTableOfContentsContext(\mod_stratumtwo_exercise_round $exround) {
+        $toc = $exround->getTemplateContext();
+        $toc->has_started = $exround->hasStarted();
+        $toc->lobjects = \mod_stratumtwo\output\index_page::buildRoundLobjectsContextForToc(
+                $exround->getLearningObjects(false, false));
+        return $toc;
     }
 }

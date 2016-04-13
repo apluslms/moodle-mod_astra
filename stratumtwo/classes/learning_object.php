@@ -236,8 +236,16 @@ abstract class mod_stratumtwo_learning_object extends mod_stratumtwo_database_ob
         return $this->record->serviceurl;
     }
     
+    public function isEmpty() {
+        return empty($this->record->serviceurl);
+    }
+    
     public function isHidden() {
         return $this->getStatus() === self::STATUS_HIDDEN;
+    }
+    
+    public function isUnlisted() {
+        return $this->getStatus() === self::STATUS_UNLISTED;
     }
     
     public function isUnderMaintenance() {

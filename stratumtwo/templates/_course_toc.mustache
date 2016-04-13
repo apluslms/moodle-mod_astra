@@ -1,0 +1,47 @@
+{{!
+Table of contents of Stratum2 content in a course (all rounds).
+Derived from A+ (a-plus/course/templates/course/toc.html).
+
+Context variables: 
+* exercise_rounds (array of objects), each object has round-specific fields 
+    that are required by _round_toc.mustache, and 
+    - url (string) URL to the round
+    - name (string) name of the round with ordinal number
+    - openingtime (int) Unix timestamp
+    - closingtime (int) Unix timestamp
+* is_course_staff (bool) true if the user can see hidden/inactive content
+* toDateStr callable Function that converts a Unix timestamp to a date string
+}}
+
+<h3>{{#str}} toc, mod_stratumtwo {{/str}}</h3>
+
+<ul class="toc">
+    {{# exercise_rounds }}
+    <li>
+      {{# has_started }}
+        <h3>
+            <a href="{{{ url }}}">{{ name }}</a>
+        </h3>
+        <p>
+            <small>{{#toDateStr}}{{ openingtime }}{{/toDateStr}} &ndash; {{#toDateStr}}{{ closingtime }}{{/toDateStr}}</small>
+        </p>
+      {{/ has_started }}
+      {{^ has_started }}
+        <h3>
+          {{ module }}
+          {{# is_course_staff }}
+          <a class="btn btn-default btn-xs" href="{{{ url }}}">
+              <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+              {{#str}} earlyaccess, mod_stratumtwo {{/str}}
+          </a>
+          {{/ is_course_staff }}
+        </h3>
+        <h4>
+            <span class="label label-info">{{#str}} opens, mod_stratumtwo {{/str}} {{#toDateStr}}{{ openingtime }}{{/toDateStr}}</span>
+            <small>&ndash; {{#toDateStr}}{{ closingtime }}{{/toDateStr}}</small>
+        </h4>
+      {{/ has_started }}
+      {{> mod_stratumtwo/_round_toc }}
+    </li>
+    {{/ exercise_rounds }}
+</ul>

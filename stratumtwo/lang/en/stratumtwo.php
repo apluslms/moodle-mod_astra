@@ -119,6 +119,8 @@ $string['inspect'] = 'Inspect';
 $string['gradingsubmission'] = 'Grading submission...';
 $string['postingsubmission'] = 'Posting submission...';
 $string['loadingexercise'] = 'Loading exercise...';
+$string['exerciseresults'] = 'Exercise results';
+$string['toc'] = 'Table of contents';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';
