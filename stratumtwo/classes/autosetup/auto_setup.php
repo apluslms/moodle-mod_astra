@@ -107,6 +107,7 @@ class auto_setup {
         
         // hide rounds and exercises/chapters that exist in Moodle but were not seen in the config
         foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid, true) as $exround) {
+            $updateRoundMaxPoints = false;
             if (! \in_array($exround->getId(), $seen_modules)) {
                 $exround->setStatus(\mod_stratumtwo_exercise_round::STATUS_HIDDEN);
                 $exround->save();
@@ -115,7 +116,11 @@ class auto_setup {
                 if (! \in_array($lobj->getId(), $seen_exercises)) {
                     $lobj->setStatus(\mod_stratumtwo_learning_object::STATUS_HIDDEN);
                     $lobj->save();
+                    $updateRoundMaxPoints = true;
                 }
+            }
+            if ($updateRoundMaxPoints) {
+                $exround->updateMaxPoints();
             }
         }
         

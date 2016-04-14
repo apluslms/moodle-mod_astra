@@ -56,13 +56,15 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         // delete exercise gradebook item
         $this->deleteGradebookItem();
         
-        // update round max points (subtract this exercise)
+        // this exercise (both lobject and exercise tables) and children
+        $res = parent::deleteInstance();
+        
+        // update round max points (this exercise must have been deleted from the DB before this)
         if ($updateRoundMaxPoints) {
             $this->getExerciseRound()->updateMaxPoints();
         }
         
-        // this exercise (both lobject and exercise tables) and children
-        return parent::deleteInstance();
+        return $res;
     }
     
     /**

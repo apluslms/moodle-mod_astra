@@ -451,12 +451,13 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     /**
      * Return an array of the exercises in this round.
      * @param bool $includeHidden if true, hidden exercises are included
+     * @param bool $sort if true, the result array is sorted
      * @return mod_stratumtwo_exercise[]
      */
-    public function getExercises($includeHidden = false) {
+    public function getExercises($includeHidden = false, $sort = true) {
         // array_filter keeps the old indexes/keys, so a numerically indexed array may
         // have discontinuous indexes
-        return array_filter($this->getLearningObjects($includeHidden), function($lobj) {
+        return array_filter($this->getLearningObjects($includeHidden, $sort), function($lobj) {
             return $lobj->isSubmittable();
         });
     }
@@ -528,10 +529,10 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         
         $this->record->timemodified = time();
         $max = 0;
-        foreach ($this->getLearningObjects(false) as $lobj) {
+        foreach ($this->getExercises(false, false) as $lobj) {
             // chapters have no grading, ignore them
             // only non-hidden exercises, but must check categories too
-            if ($lobj->isSubmittable() && !$lobj->getCategory()->isHidden()) {
+            if (!$lobj->getCategory()->isHidden()) {
                 $max += $lobj->getMaxPoints();
             }
         }
