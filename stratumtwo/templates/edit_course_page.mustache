@@ -19,7 +19,8 @@ Context variables:
     - has_exercises (bool) true if there is at least one exercise/learning object in the round
     - removeurl (string) URL for deleting the round
     - url (string) URL for viewing the round
-    - addnewobjecturl (string) URL for adding a new learning object to the round
+    - addnewexerciseurl (string) URL for adding a new exercise to the round
+    - addnewchapterurl (string) URL for adding a new chapter to the round
     - all_exercises (array of objects) all learning objects (exercises/chapters) of the round,
             includes also hidden objects, each object has fields 
         * name (string) with ordinal number
@@ -137,9 +138,13 @@ Context variables:
             {{/ all_exercises }}
             <tr>
                 <td colspan="2">
-                    <a class="btn btn-success btn-xs" href="{{{ addnewobjecturl }}}">
+                    <a class="btn btn-success btn-xs" href="{{{ addnewexerciseurl }}}">
                         <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
-                        {{#str}} addnewlearningobject, mod_stratumtwo {{/str}}
+                        {{#str}} addnewexercise, mod_stratumtwo {{/str}}
+                    </a>
+                    <a class="btn btn-success btn-xs" href="{{{ addnewchapterurl }}}">
+                        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                        {{#str}} addnewchapter, mod_stratumtwo {{/str}}
                     </a>
                 </td>
             </tr>

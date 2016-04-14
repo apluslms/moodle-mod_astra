@@ -942,7 +942,8 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $ctx->editurl = \mod_stratumtwo\urls\urls::editExerciseRound($this);
         $ctx->removeurl = \mod_stratumtwo\urls\urls::deleteExerciseRound($this);
         $ctx->url = \mod_stratumtwo\urls\urls::exerciseRound($this);
-        $ctx->addnewobjecturl = \mod_stratumtwo\urls\urls::createExercise($this);
+        $ctx->addnewexerciseurl = \mod_stratumtwo\urls\urls::createExercise($this);
+        $ctx->addnewchapterurl = \mod_stratumtwo\urls\urls::createChapter($this);
         
         return $ctx;
     }
