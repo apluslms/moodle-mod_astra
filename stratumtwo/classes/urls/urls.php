@@ -64,7 +64,12 @@ class urls {
     }
     
     public static function createExercise(\mod_stratumtwo_exercise_round $exround, $asMdlUrl = false) {
-        $query = array('round' => $exround->getId());
+        $query = array('round' => $exround->getId(), 'type' => 'exercise');
+        return self::buildUrl('/teachers/edit_exercise.php', $query, $asMdlUrl);
+    }
+    
+    public static function createChapter(\mod_stratumtwo_exercise_round $exround, $asMdlUrl = false) {
+        $query = array('round' => $exround->getId(), 'type' => 'chapter');
         return self::buildUrl('/teachers/edit_exercise.php', $query, $asMdlUrl);
     }
     

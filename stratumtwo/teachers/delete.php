@@ -1,5 +1,5 @@
 <?php
-/** Page for deleting a Stratum2 object (exercise round/exercise/category).
+/** Page for deleting a Stratum2 object (exercise round/exercise/chapter/category).
  */
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // defines MOODLE_INTERNAL for libraries
 require_once($CFG->dirroot .'/course/lib.php');
@@ -9,8 +9,8 @@ require_once(dirname(dirname(__FILE__)).'/locallib.php');
 $id       = required_param('id', PARAM_INT); // ID of the object to delete
 $type     = required_param('type', PARAM_ALPHAEXT);
 
-if ($type == 'exercise') {
-    $exercise = mod_stratumtwo_exercise::createFromId($id);
+if ($type == 'exercise') { // exercise or chapter
+    $exercise = mod_stratumtwo_learning_object::createFromId($id);
     $exround = $exercise->getExerciseRound();
     $courseid = $exround->getCourse()->courseid;
     $page_url = \mod_stratumtwo\urls\urls::deleteExercise($exercise, true);
@@ -20,7 +20,7 @@ if ($type == 'exercise') {
     $msg->type = $typeInTitle;
     $msg->name = $exercise->getName();
     $message = get_string('learningobjectremoval', mod_stratumtwo_exercise_round::MODNAME, $msg) .
-            get_string('exerciseremovalnote', mod_stratumtwo_exercise_round::MODNAME);
+            ($exercise->isSubmittable() ? get_string('exerciseremovalnote', mod_stratumtwo_exercise_round::MODNAME) : '');
 } else if ($type == 'category') {
     $category = mod_stratumtwo_category::createFromId($id);
     $courseid = $category->getCourse()->courseid;
@@ -55,7 +55,7 @@ require_capability('mod/stratumtwo:addinstance', $context);
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['delete'])) {
         if ($type == 'exercise') {
-            $exercise->deleteInstance(); // updates gradebook
+            $exercise->deleteInstance(); // updates gradebook, if it is an exercise
         } else if ($type == 'category') {
             $category->delete();
         } else {

@@ -46,4 +46,14 @@ abstract class mod_stratumtwo_database_object {
         global $DB;
         return $DB->update_record(static::TABLE, $this->record);
     }
+    
+    /**
+     * Return the database record of the object (as stdClass).
+     * Please do not use this method to change the state of the object by
+     * modifying the record; use this when Moodle requires data as stdClass.
+     * @return stdClass 
+     */
+    public function getRecord() {
+        return $this->record;
+    }
 }

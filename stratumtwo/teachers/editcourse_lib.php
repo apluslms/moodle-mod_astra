@@ -115,8 +115,8 @@ function stratumtwo_renumber_rounds_and_exercises($courseid,
         if (!$numberExercisesIgnoringModules) {
             $exerciseOrder = 0;
         }
-        foreach ($exround->getExercises() as $ex) {
-            if (!$ex->getParentId()) { // top-level exercise
+        foreach ($exround->getLearningObjects() as $ex) {
+            if (!$ex->getParentId()) { // top-level learning object
                 $exerciseOrder += 1;
                 $ex->setOrder($exerciseOrder);
                 $ex->save();
