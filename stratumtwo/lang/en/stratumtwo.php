@@ -269,6 +269,7 @@ $string['invalidobjecttype'] = 'Invalid object type: {$a}.';
 $string['idsnotfound'] = 'The following identifiers could not be found in the database: {$a}';
 $string['exercisecommerror'] = 'Communication error with the exercise.';
 $string['gradingtakeslonger'] = 'Unfortunately grading takes longer than expected. Return later to see the result.';
+$string['exerciselobjectexpected'] = 'Exercise expected, but the id matches a learning object of other type.';
 
 /*
 $string['stratumsbmsmaxbytes'] = 'Submission file max size in bytes';

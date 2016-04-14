@@ -7,6 +7,10 @@ require_once(dirname(dirname(__FILE__)).'/locallib.php');
 $id = required_param('id', PARAM_INT); // exercise learning object ID
 
 $exercise = mod_stratumtwo_learning_object::createFromId($id);
+if (!$exercise->isSubmittable()) {
+    // no submissions in a chapter
+    print_error('exerciselobjectexpected', mod_stratumtwo_exercise_round::MODNAME);
+}
 $exround = $exercise->getExerciseRound();
 $cm = $exround->getCourseModule();
 
