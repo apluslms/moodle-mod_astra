@@ -120,7 +120,7 @@ class user_course_summary {
         foreach ($this->exerciseRounds as $exround) {
             $exerciseSummaries = array(); // user_exercise_summary objects for one exercise round
             foreach ($exercisesByRoundId[$exround->getId()] as $ex) {
-                $exerciseBest = $submissionsByExerciseId[$ex->getId()];
+                $exerciseBest = &$submissionsByExerciseId[$ex->getId()];
                 $exerciseSummary = new user_exercise_summary($ex, $this->user,
                         $exerciseBest['count'], $exerciseBest['best'], 
                         $categories[$ex->getCategoryId()], false);
