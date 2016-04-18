@@ -133,7 +133,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     /**
-     * Return true if this exercise round has closed (not open and the opening time
+     * Return true if this exercise round has closed (not open and the closing time
      * has passed).
      * @param int|null $when time to check, null for current time
      * @return boolean
