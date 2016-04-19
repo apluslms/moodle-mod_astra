@@ -82,7 +82,8 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
         $learningObjects = $this->getExercises($includeHidden);
         
         foreach ($chapterRecords as $rec) {
-            $learningObjects[$rec->id] = new mod_stratumtwo_chapter($rec);
+            $chapter = new mod_stratumtwo_chapter($rec);
+            $learningObjects[$chapter->getId()] = $chapter;
         }
         
         return $learningObjects;
@@ -103,7 +104,8 @@ class mod_stratumtwo_category extends mod_stratumtwo_database_object {
         $exercises = array();
         
         foreach ($exerciseRecords as $rec) {
-            $exercises[$rec->id] = new mod_stratumtwo_exercise($rec);
+            $ex = new mod_stratumtwo_exercise($rec);
+            $exercises[$ex->getId()] = $ex;
         }
         
         return $exercises;
