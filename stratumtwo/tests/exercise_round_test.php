@@ -487,4 +487,72 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
                 'eventtype' => mod_stratumtwo_exercise_round::EVENT_DL_TYPE,
         )));
     }
+    
+    public function test_getExerciseRoundsInCourse() {
+        global $DB, $CFG;
+        
+        $this->resetAfterTest(true);
+        
+        $this->add_course();
+        
+        // create exercise rounds
+        $numRounds = 5;
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_stratumtwo');
+        $rounds = array();
+        for ($i = 1; $i <= $numRounds; ++$i) {
+            if ($i == 3) {
+                $status = mod_stratumtwo_exercise_round::STATUS_HIDDEN;
+            } else if ($i == 4) {
+                $status = mod_stratumtwo_exercise_round::STATUS_MAINTENANCE;
+            } else {
+                $status = mod_stratumtwo_exercise_round::STATUS_READY;
+            }
+            $round = array(
+                'course' => $this->course->id,
+                'name' => "$i. Test round $i",
+                'remotekey' => "testround$i",
+                'openingtime' => time(),
+                'closingtime' => time() + 3600 * 24 * 7,
+                'ordernum' => $i,
+                'status' => $status,
+                'pointstopass' => 0,
+                'latesbmsallowed' => 1,
+                'latesbmsdl' => time() + 3600 * 24 * 14,
+                'latesbmspenalty' => 0.4,
+            );
+            $rounds[] = $generator->create_instance($round); // stdClass record
+        }
+        
+        $anotherCourse = $this->getDataGenerator()->create_course();
+        $round = array(
+                'course' => $anotherCourse->id,
+                'name' => "1. Other test round 1",
+                'remotekey' => "testround1",
+                'openingtime' => time(),
+                'closingtime' => time() + 3600 * 24 * 7,
+                'ordernum' => 1,
+                'status' => mod_stratumtwo_exercise_round::STATUS_MAINTENANCE,
+                'pointstopass' => 0,
+                'latesbmsallowed' => 1,
+                'latesbmsdl' => time() + 3600 * 24 * 14,
+                'latesbmspenalty' => 0.4,
+        );
+        $rounds[] = $generator->create_instance($round); // stdClass record
+        
+        // test
+        $course1_rounds = mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->course->id, false);
+        $this->assertEquals($numRounds - 1, count($course1_rounds)); // one round is hidden
+        $this->assertEquals($rounds[0]->id, $course1_rounds[0]->getId());
+        $this->assertEquals($rounds[1]->id, $course1_rounds[1]->getId());
+        $this->assertEquals($rounds[3]->id, $course1_rounds[2]->getId());
+        $this->assertEquals($rounds[4]->id, $course1_rounds[3]->getId());
+        
+        $course1_rounds_with_hidden = mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->course->id, true);
+        $this->assertEquals($numRounds, count($course1_rounds_with_hidden));
+        $this->assertEquals($rounds[2]->id, $course1_rounds_with_hidden[2]->getId());
+        
+        $course2_rounds_with_hidden = mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($anotherCourse->id, true);
+        $this->assertEquals(1, count($course2_rounds_with_hidden));
+        $this->assertEquals($rounds[count($rounds) - 1]->id, $course2_rounds_with_hidden[0]->getId());
+    }
 }
