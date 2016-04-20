@@ -50,7 +50,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
                 array('stratumexerciseid' => $this->getId()));
         // all submissions to this exercise
         $DB->delete_records(mod_stratumtwo_submission::TABLE, array(
-            'exerciseid' => $this->record->id,
+            'exerciseid' => $this->getId(),
         ));
         
         // delete exercise gradebook item
