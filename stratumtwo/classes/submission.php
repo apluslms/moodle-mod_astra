@@ -208,14 +208,16 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
      * form input (not files) from the user. Keys should be strings (form input names).
      * Null if there is no data.
      * @param int $status
+     * @param int|null $submissionTime Unix timestamp of the submission time. If null, uses
+     * the current time.
      * @return int ID of the new submission record, zero on failure
      */
     public static function createNewSubmission(mod_stratumtwo_exercise $ex, $submitterId,
-            $submissionData = null, $status = self::STATUS_INITIALIZED) {
+            $submissionData = null, $status = self::STATUS_INITIALIZED, $submissionTime = null) {
         global $DB;
         $row = new stdClass();
         $row->status = $status;
-        $row->submissiontime = time();
+        $row->submissiontime = ($submissionTime === null ? time() : $submissionTime);
         $row->hash = self::getRandomString();
         $row->exerciseid = $ex->getId();
         $row->submitter = $submitterId;
@@ -476,7 +478,7 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         }
         $submissions->close();
         $count += 1;
-        $maxSubmissions = $this->getExercise()->getMaxSubmissions();
+        $maxSubmissions = $this->getExercise()->getMaxSubmissionsForStudent($this->getSubmitter());
         if ($maxSubmissions > 0 && $count > $maxSubmissions) {
             // this submission exceeded the submission limit
             $this->record->grade = 0;
