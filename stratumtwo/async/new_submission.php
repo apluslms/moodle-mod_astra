@@ -41,4 +41,12 @@ if ($hash != $validHash) {
 
 $PAGE->set_context(context_module::instance($exercise->getExerciseRound()->getCourseModule()->id));
 
-stratumtwo_async_submission_handler($exercise, $user, $_POST);
+try {
+    stratumtwo_send_json_response(
+        stratumtwo_async_submission_handler($exercise, $user, $_POST));
+} catch (mod_stratumtwo_async_forbidden_access_exception $e) {
+    http_response_code(403);
+    stratumtwo_send_json_response(array(
+            'errors' => array($e->getMessage()),
+    ));
+}

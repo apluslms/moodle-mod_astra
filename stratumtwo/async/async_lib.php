@@ -2,6 +2,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+class mod_stratumtwo_async_forbidden_access_exception extends \Exception {
+}
+
 // Functions derived from A+ (a-plus/exercise/async_views.py)
 
 /**
@@ -11,13 +14,15 @@ defined('MOODLE_INTERNAL') || die();
  * @param array $postData null if GET
  * @param mod_stratumtwo_submission $submission the submission that is graded, or null
  * if creating a new graded submission
+ * @return array
+ * @throws mod_stratumtwo_async_forbidden_access_exception if the request originates from
+ * an IP address that does not match the exercise service.
  */
 function stratumtwo_async_submission_handler(mod_stratumtwo_exercise $exercise,
         stdClass $user, $postData, mod_stratumtwo_submission $submission = null) {
     // async requests should only originate from the exercise service, check the request IP address
     if ($_SERVER['REMOTE_ADDR'] != stratumtwo_get_service_ip($exercise->getServiceUrl())) {
-        http_response_code(403);
-        exit(0);
+        throw new mod_stratumtwo_async_forbidden_access_exception('Access denied from this IP address.');
     }
     if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         // GET requests receive a JSON response about the current state of the exercise for the user
@@ -26,20 +31,20 @@ function stratumtwo_async_submission_handler(mod_stratumtwo_exercise $exercise,
     // create a new submission if it is not provided in parameters
     if (is_null($submission)) {
         if (!$exercise->isSubmissionAllowed($user)) {
-            return stratumtwo_send_json_response(array(
+            return array(
                 'success' => false,
                 'errors'  => array('New submissions are not allowed anymore.'),
-            ));
+            );
         }
         // create a new submission
         $sbmsId = mod_stratumtwo_submission::createNewSubmission($exercise, $user->id);
         if ($sbmsId != 0)
             $submission = mod_stratumtwo_submission::createFromId($sbmsId);
         else
-            return stratumtwo_send_json_response(array(
+            return array(
                 'success' => false,
                 'errors'  => array('Creating a new submission in the database failed.'),
-            ));
+            );
     }
     
     return stratumtwo_post_async_submission($exercise, $submission, $user, $postData);
@@ -81,10 +86,10 @@ function stratumtwo_post_async_submission(mod_stratumtwo_exercise $exercise,
         $ctx->error = get_string('servicemalfunction', \mod_stratumtwo_exercise_round::MODNAME);
         $submission->setFeedback($renderer->render_from_template(\mod_stratumtwo_exercise_round::MODNAME . '/_error_alert', $ctx));
         $submission->save();
-        return stratumtwo_send_json_response(array(
+        return array(
                 'success' => false,
                 'errors' => array('Invalid POST data.'),
-        ));
+        );
     }
     // grade the submission
     $submission->grade($points, $max_points, $feedback, $postData);
@@ -92,10 +97,10 @@ function stratumtwo_post_async_submission(mod_stratumtwo_exercise $exercise,
         $submission->setError();
         $submission->save();
     }
-    return stratumtwo_send_json_response(array(
+    return array(
             'success' => true,
             'errors' => array(),
-    ));
+    );
 }
 
 /**
@@ -113,13 +118,13 @@ function stratumtwo_get_async_submission_info(mod_stratumtwo_exercise $exercise,
     }
     $submissionCount = \iterator_count($submissions);
     $submissions->close();
-    return stratumtwo_send_json_response(array(
+    return array(
             'max_points' => $exercise->getMaxPoints(),
             'max_submissions' => $exercise->getMaxSubmissions(),
             'current_submissions' => $submissionCount,
             'current_points' => $points,
             'is_open' => $exercise->getExerciseRound()->isOpen(),
-    ));
+    );
 }
 
 /**
