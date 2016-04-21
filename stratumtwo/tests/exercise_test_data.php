@@ -89,7 +89,7 @@ trait exercise_test_data {
                 'ordernum' => $counter,
                 'remotekey' => "testexercise$counter",
                 'name' => "Exercise $counter",
-                'serviceurl' => 'localhost',
+                'serviceurl' => 'http://localhost',
                 'maxsubmissions' => 3,
                 'pointstopass' => 5,
                 'maxpoints' => 10,
