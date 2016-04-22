@@ -384,14 +384,35 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
         return $res;
     }
     
-    public function delete() {
+    /**
+     * Remove this submission and its submitted files from the database.
+     * @param bool $updateGradebook if true, the points in the gradebook are updated
+     * (best points left in the exercise and the round).
+     */
+    public function delete($updateGradebook = true) {
         global $DB;
         // delete submitted files from Moodle file API
-        delete_area_files(context_module::instance($this->getExercise()->getExerciseRound()->getCourseModule()->id),
+        $fs = get_file_storage();
+        $fs->delete_area_files(context_module::instance($this->getExercise()->getExerciseRound()->getCourseModule()->id)->id,
                 mod_stratumtwo_exercise_round::MODNAME, self::SUBMITTED_FILES_FILEAREA,
                 $this->record->id);
         
         $DB->delete_records(self::TABLE, array('id' => $this->record->id));
+        
+        if ($updateGradebook) {
+            // the best points of the exercise may change when this submission is deleted
+            $newBestSubmission = $this->getExercise()->getBestSubmissionForStudent($this->record->submitter);
+            if ($newBestSubmission !== null) {
+                $newBestSubmission->writeToGradebook(true);
+            } else {
+                // no submission, zero points
+                $this->record->submissiontime = null;
+                $this->record->gradingtime = null;
+                $this->record->grade = null;
+                $this->writeToGradebook(true);
+            }
+        }
+        return true;
     }
     
     /**
