@@ -107,6 +107,8 @@
                COMMENT="Max points available in the exercise."/>
         <FIELD NAME="gradeitemnumber" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" 
                COMMENT="Moodle gradebook item number. 0 is reserved for the exercise round and each exercise needs a unique item number within the round."/>
+        <FIELD NAME="maxsbmssize" TYPE="int" LENGTH="9" NOTNULL="true" DEFAULT="1048576" SEQUENCE="false"
+               COMMENT="Maximum submission file size in bytes for one submitted file. Zero for no limit."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

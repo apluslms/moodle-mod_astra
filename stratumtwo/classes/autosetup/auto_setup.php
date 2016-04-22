@@ -433,6 +433,12 @@ class auto_setup {
                 }
                 if (!isset($lobjectRecord->pointstopass))
                     $lobjectRecord->pointstopass = 0;
+                
+                if (isset($o->submission_file_max_size)) { // A+ does not have this setting
+                    $sbmsMaxSize = $this->parseInt($o->submission_file_max_size, $errors);
+                    if ($sbmsMaxSize !== null)
+                        $lobjectRecord->maxsbmssize = $sbmsMaxSize;
+                }
             } else {
                 // chapter
                 if (isset($lobjectRecord->id)) { // the chapter exists in Moodle, read old field values

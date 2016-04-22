@@ -50,6 +50,15 @@ class edit_exercise_form extends \mod_stratumtwo\form\edit_learning_object_form 
                 '', null, array(0, 1));
         $mform->addHelpButton('allowastgrading', 'allowastgrading', \mod_stratumtwo_exercise_round::MODNAME);
         
+        // submission file size limit
+        $mform->addElement('text', 'maxsbmssize', \get_string('sbmsfilemaxsize', \mod_stratumtwo_exercise_round::MODNAME));
+        $mform->setType('maxsbmssize', PARAM_INT);
+        $mform->addHelpButton('maxsbmssize', 'sbmsfilemaxsize', \mod_stratumtwo_exercise_round::MODNAME);
+        $mform->addRule('maxsbmssize', null, 'numeric', null, 'client');
+        $mform->addRule('maxsbmssize', null, 'required', null, 'client');
+        $mform->addRule('maxsbmssize', null, 'maxlength', 9, 'client');
+        $mform->setDefault('maxsbmssize', 1048576); // 1 MiB
+        
         $this->add_action_buttons(true);
     }
     

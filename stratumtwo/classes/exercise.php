@@ -29,7 +29,30 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         return $this->record->gradeitemnumber;
     }
     
+    public function getSubmissionFileMaxSize() {
+        return (int) $this->record->maxsbmssize;
+    }
+    
     public function isSubmittable() {
+        return true;
+    }
+    
+    /**
+     * Check whether the uploaded files obey the submission file size constraint.
+     * @param array $uploadedFiles supply the $_FILES superglobal or an array that
+     * has the same structure and includes the file sizes.
+     * @return boolean true if all files obey the limit, false otherwise
+     */
+    public function checkSubmissionFileSizes(array $uploadedFiles) {
+        $maxSize = $this->getSubmissionFileMaxSize();
+        if ($maxSize == 0) {
+            return true; // no limit
+        }
+        foreach ($uploadedFiles as $formInputName => $farray) {
+            if ($farray['size'] > $maxSize) {
+                return false;
+            }
+        }
         return true;
     }
     

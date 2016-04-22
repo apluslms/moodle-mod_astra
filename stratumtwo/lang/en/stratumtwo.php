@@ -194,6 +194,8 @@ $string['back'] = 'Back';
 $string['adddeviationsubmitternote'] = 'You can enter students either in the text input or in the multiselect box (hold ctrl down and left-click). If you use the text input, enter student ids or usernames separated by commas.';
 $string['generatetoc'] = 'Generate table of contents';
 $string['generatetoc_help'] = 'If checked, a table of contents of the exercise round is automatically added to the start of the chapter page.';
+$string['sbmsfilemaxsize'] = 'Submission max file size (B)';
+$string['sbmsfilemaxsize_help'] = 'Maximum allowed file size of a submission file in bytes. For example, 1048576 means 1 MB. Use zero for no limit.';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';
@@ -271,11 +273,9 @@ $string['idsnotfound'] = 'The following identifiers could not be found in the da
 $string['exercisecommerror'] = 'Communication error with the exercise.';
 $string['gradingtakeslonger'] = 'Unfortunately grading takes longer than expected. Return later to see the result.';
 $string['exerciselobjectexpected'] = 'Exercise expected, but the id matches a learning object of other type.';
+$string['toolargesbmsfile'] = 'One of the uploaded files is too large and the submission was not saved! The file size limit is {$a} bytes.';
 
 /*
-$string['stratumsbmsmaxbytes'] = 'Submission file max size in bytes';
-$string['stratumsbmsmaxbytes_help'] = 'Maximum allowed file size for the submission. For example, 1048576 means 1 MB. Use zero or leave empty for no limit.';
-
 $string['submissionsleft'] = 'You have {$a->left} submission(s) left (out of {$a->total}).';
 $string['requiredpoints'] = 'You need {$a->minpass} points out of {$a->max} to pass.';
 $string['requiredbonuslimit'] = '{$a->bonuslimit} points needed to gain bonus.';

@@ -23,9 +23,9 @@ $context = context_module::instance($cm->id);
 require_capability('mod/stratumtwo:view', $context);
 if ((!$cm->visible || $exround->isHidden() || $learningObject->isHidden()) &&
         !has_capability('moodle/course:manageactivities', $context)) {
-            // show hidden exercise only to teachers
-            throw new required_capability_exception($context,
-                    'moodle/course:manageactivities', 'nopermissions', '');
+    // show hidden exercise only to teachers
+    throw new required_capability_exception($context,
+            'moodle/course:manageactivities', 'nopermissions', '');
 }
 
 $errorMsg = null;
@@ -35,7 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $learningObject->isSubmittable()) {
     
     // user submitted a new solution, create a database record
     // check if submission is allowed (deadline, submit limit)
-    if ($learningObject->isSubmissionAllowed($USER)) {
+    if (!$learningObject->isSubmissionAllowed($USER)) {
+        $errorMsg = get_string('youmaynotsubmit', mod_stratumtwo_exercise_round::MODNAME);
+    } else if (!$learningObject->checkSubmissionFileSizes($_FILES)) {
+        $errorMsg = get_string('toolargesbmsfile', mod_stratumtwo_exercise_round::MODNAME, $learningObject->getSubmissionFileMaxSize());
+    } else {
         $sbmsId = mod_stratumtwo_submission::createNewSubmission($learningObject, $USER->id, $_POST);
         if ($sbmsId == 0) {
             // error: the new submission was not stored in the database
@@ -87,8 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $learningObject->isSubmittable()) {
                 exit(0);
             }
         }
-    } else {
-        $errorMsg = get_string('youmaynotsubmit', mod_stratumtwo_exercise_round::MODNAME);
     }
 }
 
