@@ -9,10 +9,6 @@ defined('MOODLE_INTERNAL') || die();
 class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
     const TABLE = 'stratumtwo_exercises'; // database table name
     
-    public function isAssistantGradingAllowed() {
-        return (bool) $this->record->allowastgrading;
-    }
-    
     public function getMaxSubmissions() {
         return $this->record->maxsubmissions;
     }

@@ -41,15 +41,6 @@ class edit_exercise_form extends \mod_stratumtwo\form\edit_learning_object_form 
         $mform->addRule('maxsubmissions', null, 'maxlength', 4, 'client');
         $mform->setDefault('maxsubmissions', 10);
         
-        // Allow assistant grading?
-        // 4th argument is the label displayed after checkbox, 5th arg: HTML attributes,
-        // 6th: unchecked/checked values
-        //TODO remove if only Moodle access control is used, teacher must promote other users, this setting does not fit into Moodle access control
-        $mform->addElement('advcheckbox', 'allowastgrading',
-                \get_string('allowastgrading', \mod_stratumtwo_exercise_round::MODNAME),
-                '', null, array(0, 1));
-        $mform->addHelpButton('allowastgrading', 'allowastgrading', \mod_stratumtwo_exercise_round::MODNAME);
-        
         // submission file size limit
         $mform->addElement('text', 'maxsbmssize', \get_string('sbmsfilemaxsize', \mod_stratumtwo_exercise_round::MODNAME));
         $mform->setType('maxsbmssize', PARAM_INT);

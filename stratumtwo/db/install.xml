@@ -97,8 +97,6 @@
                COMMENT="Primary key required by Moodle, otherwise unnecessary since lobjectid functions as a unique key."/>
         <FIELD NAME="lobjectid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"
                COMMENT="Foreign key to learning object id."/>
-        <FIELD NAME="allowastgrading" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
-               COMMENT="Allow assistant grading: 0 = no, 1 = yes. If yes, non-editing teachers in Moodle can modify submission points and assistant feedback."/>
         <FIELD NAME="maxsubmissions" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="10" SEQUENCE="false" 
                COMMENT="Max number of submissions allowed. Zero for no limit."/>
         <FIELD NAME="pointstopass" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
