@@ -396,7 +396,6 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         if ($includeTotalSubmitterCount) {
             $ctx->total_submitter_count = $this->getTotalSubmitterCount(); // heavy DB query
         }
-        $ctx->allow_assistant_grading = $this->isAssistantGradingAllowed();
         
         return $ctx;
     }
