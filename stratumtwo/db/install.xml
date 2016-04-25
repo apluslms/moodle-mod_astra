@@ -107,6 +107,10 @@
                COMMENT="Moodle gradebook item number. 0 is reserved for the exercise round and each exercise needs a unique item number within the round."/>
         <FIELD NAME="maxsbmssize" TYPE="int" LENGTH="9" NOTNULL="true" DEFAULT="1048576" SEQUENCE="false"
                COMMENT="Maximum submission file size in bytes for one submitted file. Zero for no limit."/>
+        <FIELD NAME="allowastviewing" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"
+               COMMENT="Is an assistant (non-editing teacher) allowed to inspect submissions in this exercise? 1 = yes, 0 = no."/>
+        <FIELD NAME="allowastgrading" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"
+               COMMENT="Is an assistant (non-editing teacher) allowed to edit feedback and points for submissions in this exercise? 1 = yes, 0 = no."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

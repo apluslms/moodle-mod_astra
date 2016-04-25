@@ -19,6 +19,11 @@ $course = get_course($exround->getCourse()->courseid);
 require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/stratumtwo:viewallsubmissions', $context);
+if (!$exercise->isAssistantViewingAllowed() && !has_capability('mod/stratumtwo:addinstance', $context)) {
+    // assistant viewing not allowed and the user is not an editing teacher
+    throw new moodle_exception('assistviewingnotallowed', mod_stratumtwo_exercise_round::MODNAME,
+            \mod_stratumtwo\urls\urls::exercise($exercise));
+}
 
 
 // add CSS and JS

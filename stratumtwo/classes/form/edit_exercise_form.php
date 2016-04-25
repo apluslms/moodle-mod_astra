@@ -50,6 +50,20 @@ class edit_exercise_form extends \mod_stratumtwo\form\edit_learning_object_form 
         $mform->addRule('maxsbmssize', null, 'maxlength', 9, 'client');
         $mform->setDefault('maxsbmssize', 1048576); // 1 MiB
         
+        // Allow assistant viewing?
+        $mform->addElement('advcheckbox', 'allowastviewing',
+                \get_string('allowastviewing', \mod_stratumtwo_exercise_round::MODNAME),
+                '', null, array(0, 1));
+        $mform->addHelpButton('allowastviewing', 'allowastviewing', \mod_stratumtwo_exercise_round::MODNAME);
+        
+        // Allow assistant grading?
+        // 4th argument is the label displayed after checkbox, 5th arg: HTML attributes,
+        // 6th: unchecked/checked values
+        $mform->addElement('advcheckbox', 'allowastgrading',
+                \get_string('allowastgrading', \mod_stratumtwo_exercise_round::MODNAME),
+                '', null, array(0, 1));
+        $mform->addHelpButton('allowastgrading', 'allowastgrading', \mod_stratumtwo_exercise_round::MODNAME);
+        
         $this->add_action_buttons(true);
     }
     

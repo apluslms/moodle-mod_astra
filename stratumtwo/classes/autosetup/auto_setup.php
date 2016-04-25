@@ -463,11 +463,12 @@ class auto_setup {
                     }
                 }
                 
-                /*if (isset($o->allow_assistant_grading)) {
-                    // Moodle has a different access control model than A+, thus
-                    // this setting is not stored in the exercise.
-                    //$lobjectRecord->allowastgrading = $this->parseBool($o->allow_assistant_grading, $errors);
-                }*/
+                if (isset($o->allow_assistant_grading)) {
+                    $lobjectRecord->allowastgrading = $this->parseBool($o->allow_assistant_grading, $errors);
+                }
+                if (isset($o->allow_assistant_viewing)) {
+                    $lobjectRecord->allowastviewing = $this->parseBool($o->allow_assistant_viewing, $errors);
+                }
                 
                 $maxsbms = $this->parseInt($o->max_submissions, $errors);
                 if ($maxsbms !== null)
