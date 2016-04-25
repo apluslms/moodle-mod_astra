@@ -20,7 +20,9 @@ class inspect_page implements \renderable, \templatable {
         $context = \context_module::instance($this->submission->getExercise()->getExerciseRound()->getCourseModule()->id);
         $ctx->manual_grading_url = \mod_stratumtwo\urls\urls::assessSubmissionManually($this->submission);
         $ctx->resubmit_grading_url = \mod_stratumtwo\urls\urls::resubmitToService($this->submission);
-        $ctx->allow_manual_grading = \has_capability('mod/stratumtwo:grademanually', $context);
+        $ctx->allow_manual_grading = (\has_capability('mod/stratumtwo:grademanually', $context) &&
+                $this->submission->getExercise()->isAssistantGradingAllowed()) ||
+                \has_capability('mod/stratumtwo:addinstance', $context);
         
         $ctx->toDateStr = new \mod_stratumtwo\output\date_to_string();
         $ctx->fileSizeFormatter = new \mod_stratumtwo\output\file_size_formatter();

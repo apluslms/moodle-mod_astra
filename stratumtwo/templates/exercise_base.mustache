@@ -11,6 +11,7 @@ Context variables:
 * is_course_staff (bool)
 * is_editing_teacher (bool) can user edit exercises?
 * is_manual_grader (bool) can user grade submissions manually?
+* can_inspect (bool) can user inspect submission?
 * toDateStr callable Function that converts a Unix timestamp to a date string
 * submission (stdClass), set if viewing one specific submission, with fields
     inspecturl (string)
@@ -59,12 +60,14 @@ Blocks that child templates should override:
       {{# is_course_staff }}
       <li>
           <p class="navbar-text navbar-btn">
+              {{# can_inspect }}
               {{# submission }}
               <a href="{{{ submission.inspecturl }}}" class="btn btn-default btn-xs">
                   <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
                   {{#str}} inspectsubmission, mod_stratumtwo {{/str}}
               </a>
               {{/ submission }}
+              {{/ can_inspect }}
               {{# is_editing_teacher }}
               <a href="{{{ exercise.editurl }}}" class="btn btn-default btn-xs">
                   <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>

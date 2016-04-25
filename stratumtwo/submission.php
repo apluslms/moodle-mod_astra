@@ -24,14 +24,15 @@ $context = context_module::instance($cm->id);
 require_capability('mod/stratumtwo:view', $context);
 if ((!$cm->visible || $exround->isHidden() || $exercise->isHidden()) &&
         !has_capability('moodle/course:manageactivities', $context)) {
-            // show hidden exercise only to teachers
-            throw new required_capability_exception($context,
-                    'moodle/course:manageactivities', 'nopermissions', '');
+    // show hidden exercise only to teachers
+    throw new required_capability_exception($context,
+            'moodle/course:manageactivities', 'nopermissions', '');
 }
 
 // check that the user is allowed to see the submission (students see only their own submissions)
 if ($USER->id != $submission->getSubmitter()->id && 
-        !has_capability('mod/stratumtwo:viewallsubmissions', $context)) {
+        !((has_capability('mod/stratumtwo:viewallsubmissions', $context) && $exercise->isAssistantViewingAllowed()) ||
+                has_capability('mod/stratumtwo:addinstance', $context))) {
     throw new required_capability_exception($context,
             'mod/stratumtwo:viewallsubmissions', 'nopermissions', '');
 }

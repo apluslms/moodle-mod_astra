@@ -8,6 +8,7 @@ Context variables:
     - max_submissions_for_user (int) max number of submissions the user may submit
     - points_to_pass (int)
     - submissionlisturl (string) URL to the list of all submissions
+    - can_view_submissions (bool) true if the user can see the submission list
 * summary (object) exercise summary with fields 
     - fields required by _points_badge.mustache
     - best_submission_url (string) URL to view the best submission
@@ -74,7 +75,7 @@ Context variables:
                         </small>
                     </p>
                 </li>
-                {{# is_course_staff }}
+                {{# exercise.can_view_submissions }}
                 <li>
                     <p class="navbar-text navbar-btn">
                         <a class="btn btn-default btn-xs" href="{{{ exercise.submissionlisturl }}}">
@@ -83,7 +84,7 @@ Context variables:
                         </a>
                     </p>
                 </li>
-                {{/ is_course_staff }}
+                {{/ exercise.can_view_submissions }}
             </ul>
       {{/ exercise.is_submittable }}
 

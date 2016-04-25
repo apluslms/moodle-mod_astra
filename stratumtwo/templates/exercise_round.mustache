@@ -14,10 +14,11 @@ Context variables:
 * categories array of arrays. The outer array must have numeric indexes and the inner arrays must
         have keys id (category ID), name (category name),
         exercise_summaries (array of arrays), the inner arrays have keys
-            exercise (object with keys url, name, submissionlisturl, status_unlisted (bool), parenturl),
+            exercise (object with keys url, name, submissionlisturl, status_unlisted (bool), parenturl, can_view_submissions),
             exercise_summary (object with keys that are required by _points_badge.mustache)
 
 * is_course_staff bool
+* can_view_submissions (bool) if true, the link to submissions list is shown
 }}
 <div class="panel panel-primary module-panel{{# course_module.expired }} module-expired{{/ course_module.expired }}">
   <a class="panel-heading{{^ course_module.open }} collapsed{{/ course_module.open }}"
@@ -110,10 +111,12 @@ Context variables:
             {{#str}} earlyaccess, mod_stratumtwo {{/str}}
           </a>
           {{/ course_module.not_started }}
+          {{# exercise.can_view_submissions }}
           <a class="btn btn-default btn-xs" href="{{{ exercise.submissionlisturl }}}">
             <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
             {{#str}} viewsubmissions, mod_stratumtwo {{/str}}
           </a>
+          {{/ exercise.can_view_submissions }}
         </td>
         {{/ is_course_staff }}
         <td>

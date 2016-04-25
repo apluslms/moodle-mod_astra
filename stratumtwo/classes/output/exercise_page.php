@@ -64,7 +64,16 @@ class exercise_page implements \renderable, \templatable {
         $ctx = \context_module::instance($this->exround->getCourseModule()->id);
         $data->is_course_staff = \has_capability('mod/stratumtwo:viewallsubmissions', $ctx);
         $data->is_editing_teacher = \has_capability('mod/stratumtwo:addinstance', $ctx);
-        $data->is_manual_grader = \has_capability('mod/stratumtwo:grademanually', $ctx);
+        if ($this->learningObject->isSubmittable()) {
+            $data->is_manual_grader = 
+                ($this->learningObject->isAssistantGradingAllowed() && \has_capability('mod/stratumtwo:grademanually', $ctx)) ||
+                $data->is_editing_teacher;
+            $data->can_inspect = ($this->learningObject->isAssistantViewingAllowed() && $data->is_course_staff) ||
+                $data->is_editing_teacher;
+        } else {
+            $data->is_manual_grader = \has_capability('mod/stratumtwo:grademanually', $ctx);
+            $data->can_inspect = $data->is_course_staff;
+        }
         
         $data->status_maintenance = ($this->exround->isUnderMaintenance() || $this->learningObject->isUnderMaintenance());
         $data->not_started = !$this->exround->hasStarted();

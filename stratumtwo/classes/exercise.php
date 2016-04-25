@@ -406,6 +406,10 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         }
         $ctx->allow_assistant_grading = $this->isAssistantGradingAllowed();
         $ctx->allow_assistant_viewing = $this->isAssistantViewingAllowed();
+        $context = context_module::instance($this->getExerciseRound()->getCourseModule()->id);
+        $ctx->can_view_submissions = ($ctx->allow_assistant_viewing && 
+                has_capability('mod/stratumtwo:viewallsubmissions', $context)) || 
+            has_capability('mod/stratumtwo:addinstance', $context); // editing teacher can always view
         
         return $ctx;
     }
