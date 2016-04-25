@@ -90,6 +90,26 @@ class auto_setup {
             $must_sort = true;
         }
         
+        // check whether the config defines course assistants and whether we can promote them
+        // with the non-editing teacher role in Moodle
+        if (isset($conf->assistants)) {
+            $assistant_users = $this->parseStudentIdList($conf->assistants, $errors);
+        } else {
+            $assistant_users = array();
+        }
+        $course_ctx = \context_course::instance($courseid);
+        $teacher_role_id = $DB->get_field('role', 'id', array('shortname' => 'teacher')); // non-editing teacher role
+        if ($teacher_role_id === false) {
+            $assistant_users = array();
+        } else {
+            if (!\has_capability('moodle/role:assign', $course_ctx) ||
+                    !\array_key_exists($teacher_role_id, \get_assignable_roles($course_ctx))) {
+                // ensure that the current user (teacher) is allowed to modify user roles in the course
+                $errors[] = \get_string('configuserrolesdisallowed', \mod_stratumtwo_exercise_round::MODNAME);
+                $assistant_users = array();
+            }
+        }
+        
         // parse course modules (exercise rounds)
         $seen_modules = array();
         $seen_exercises = array();
@@ -99,7 +119,7 @@ class auto_setup {
             try {
                 list($module_order, $exercise_order) = $this->configure_exercise_round(
                         $courseid, $sectionNumber, $module, $module_order, $exercise_order, $categories,
-                        $seen_modules, $seen_exercises, $errors);
+                        $seen_modules, $seen_exercises, $errors, $assistant_users, $teacher_role_id);
             } catch (\Exception $e) {
                 $errors[] = $e->getMessage();
             }
@@ -154,10 +174,15 @@ class auto_setup {
      * @param array $seen_modules exercise round IDs that have been seen in the config JSON
      * @param array $seen_exercises exercise IDs that have been seen in the config JSON
      * @param array $errors
+     * @param array $assistant_users user records (stdClass) of the users
+     * that should be promoted to non-editing teachers in the exercise round if any exercise
+     * has the "allow assistant grading" setting.
+     * @param int Moodle role ID of the role that assistants are given (usually non-editing teacher).
      */
     protected function configure_exercise_round($courseid, $sectionNumber, \stdClass $module,
             $module_order, $exercise_order, array &$categories,
-            array &$seen_modules, array &$seen_exercises, array &$errors) {
+            array &$seen_modules, array &$seen_exercises, array &$errors,
+            array $assistant_users, $teacher_role_id) {
         global $DB;
         
         if (!isset($module->key)) {
@@ -300,6 +325,34 @@ class auto_setup {
         
         // update round max points after configuring the exercises of the round
         $exround->updateMaxPoints();
+        
+        // Add course assistants automatically to the Moodle course.
+        // In Moodle, we can promote a user's role within an activity. Only exercise rounds
+        // are represented as activities in this plugin, hence a user gains non-editing teacher
+        // privileges in the whole exercise round if one exercise has the "allow assistant grading"
+        // setting.
+        $auto_setup = $this;
+        $unused_errors = array();
+        $hasAllowAssistantGrading = function($children) use ($auto_setup, &$unused_errors, &$hasAllowAssistantGrading) {
+            foreach ($children as $child) {
+                if (isset($child->allow_assistant_grading) && 
+                        $auto_setup->parseBool($child->allow_assistant_grading, $unused_errors)) {
+                    return true;
+                }
+                if (isset($child->children) && $hasAllowAssistantGrading($child->children)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        if ($hasAllowAssistantGrading($module->children)) {
+            // if some exercise in the round has allow_assistant_grading, promote the user's role in the whole round
+            foreach ($assistant_users as $ast_user) {
+                \role_assign($teacher_role_id, $ast_user->id, \context_module::instance($exround->getCourseModule()->id));
+                // this role assigned in the course module level does not provide any access to the course
+                // itself, but we do not want to automatically promote users to non-editing teachers in the whole course
+            }
+        }
         
         return array($module_order, $exercise_order);
     }
@@ -639,5 +692,38 @@ class auto_setup {
         }
         $errors[] = \get_string('configbadduration', \mod_stratumtwo_exercise_round::MODNAME, $duration);
         return null;
+    }
+    
+    /**
+     * Return an array of Moodle user records corresponding to the given student ids.
+     * @param array $student_ids student ids (user idnumber in Moodle)
+     * @param array $errors
+     * @return \stdClass[]
+     */
+    protected function parseStudentIdList($student_ids, &$errors) {
+        global $DB;
+        
+        $users = array();
+        $not_found_ids = array();
+        
+        if (!\is_array($student_ids)) {
+            $errors[] = \get_string('configassistantsnotarray', \mod_stratumtwo_exercise_round::MODNAME);
+            return $users;
+        }
+        
+        foreach ($student_ids as $student_id) {
+            $user = $DB->get_record('user', array('idnumber' => $student_id));
+            if ($user === false) { // not found
+                $not_found_ids[] = $student_id;
+            } else {
+                $users[] = $user;
+            }
+        }
+        
+        if (!empty($not_found_ids)) {
+            $errors[] = \get_string('configassistantnotfound', \mod_stratumtwo_exercise_round::MODNAME,
+                    \implode(', ', $not_found_ids));
+        }
+        return $users;
     }
 }
