@@ -7,7 +7,8 @@ Context variables:
         show_late_submission_point_worth (bool), late_submission_point_worth (0-100),
         status_ready (bool), status_maintenance (bool), introduction (HTML string)
         show_required_points (bool, status ready and points to pass > 0), points_to_pass,
-        expired (bool, has been closed), open (bool), not_started (bool, has not been opened yet)
+        expired (bool, has been closed), open (bool), not_started (bool, has not been opened yet),
+        is_course_staff (bool)
 * module_summary stdClass (summary of the student's status in the exercise round)
         fields that are required by _points_badge.mustache
 * toDateStr callable Function that converts a Unix timestamp to a date string
@@ -17,8 +18,6 @@ Context variables:
             exercise (object with keys url, name, submissionlisturl, status_unlisted (bool), parenturl, can_view_submissions),
             exercise_summary (object with keys that are required by _points_badge.mustache)
 
-* is_course_staff bool
-* can_view_submissions (bool) if true, the link to submissions list is shown
 }}
 <div class="panel panel-primary module-panel{{# course_module.expired }} module-expired{{/ course_module.expired }}">
   <a class="panel-heading{{^ course_module.open }} collapsed{{/ course_module.open }}"
@@ -83,9 +82,9 @@ Context variables:
       {{# categories }}
       <tr class="category-row" data-category="{{ id }}">
         <td>{{ name }}</td>
-        {{# is_course_staff }}
+        {{# course_module.is_course_staff }}
         <td>{{#str}} coursestaff, mod_stratumtwo {{/str}}</td>
-        {{/ is_course_staff }}
+        {{/ course_module.is_course_staff }}
         <td class="col-md-2">{{#str}} points, mod_stratumtwo {{/str}}</td>
       </tr>
       {{# exercise_summaries }}
@@ -103,7 +102,7 @@ Context variables:
             {{ exercise.name }}
           {{/ course_module.not_started }}
         </td>
-        {{# is_course_staff }}
+        {{# course_module.is_course_staff }}
         <td>
           {{# course_module.not_started }}
           <a class="btn btn-default btn-xs" href="{{{ exercise.url }}}">
@@ -118,7 +117,7 @@ Context variables:
           </a>
           {{/ exercise.can_view_submissions }}
         </td>
-        {{/ is_course_staff }}
+        {{/ course_module.is_course_staff }}
         <td>
           {{# exercise_summary }}
             {{> mod_stratumtwo/_points_badge }}

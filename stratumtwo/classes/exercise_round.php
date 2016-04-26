@@ -945,6 +945,8 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $ctx->url = \mod_stratumtwo\urls\urls::exerciseRound($this);
         $ctx->addnewexerciseurl = \mod_stratumtwo\urls\urls::createExercise($this);
         $ctx->addnewchapterurl = \mod_stratumtwo\urls\urls::createChapter($this);
+        $context = context_module::instance($this->getCourseModule()->id);
+        $ctx->is_course_staff = \has_capability('mod/stratumtwo:viewallsubmissions', $context);
         
         return $ctx;
     }
