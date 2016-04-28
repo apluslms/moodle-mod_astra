@@ -140,3 +140,182 @@ function stratumtwo_send_assistant_feedback_notification(mod_stratumtwo_submissi
     
     return message_send($message);
 }
+
+/**
+ * Return data of exercise results so that it can be encoded to JSON.
+ * @param int $courseId Moodle course ID
+ * @param array|null $exerciseIds exercise learning object IDs that should be included,
+ * null to include all exercises in the course (category totals also include only these exercises)
+ * @param array|null $studentUserIds Moodle user IDs of the users that should be included,
+ * null for all users that have submitted
+ * @param int $submittedBefore Unix timestamp. Take only submissions submitted at or before
+ * this time into account.
+ * @param bool $includeAllSubmissions if true, a list of all submissions with their grades is
+ * included for each student and exercise in addition to the best grades. If false, only best
+ * grades are included for each student and exercise.
+ * @return array exported data that can be encoded to JSON.
+ */
+function stratumtwo_export_results($courseId, array $exerciseIds = null, array $studentUserIds = null,
+        $submittedBefore = 0, $includeAllSubmissions = true) {
+    global $DB;
+    
+    $categories = mod_stratumtwo_category::getCategoriesInCourse($courseId, true);
+    $catIds = array_keys($categories);
+    
+    if (empty($exerciseIds)) {
+        // all exercises in the course
+        $exerciseRecords = $DB->get_records_sql(
+                mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE, 'lob.id, lob.categoryid, lob.remotekey') .
+                ' WHERE categoryid IN ('. implode(',', $catIds) .')');
+        $exerciseIds = array_keys($exerciseRecords);
+    } else {
+        $exerciseRecords = $DB->get_records_sql(
+                mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE, 'lob.id, lob.categoryid, lob.remotekey') .
+                ' WHERE lob.id IN ('. implode(',', $exerciseIds) .')');
+    }
+    
+    $categoriesByExRemoteKey = array(); // used later to look up categories
+    foreach ($exerciseRecords as $ex) {
+        foreach ($categories as $cat) {
+            if ($cat->getId() == $ex->categoryid) {
+                $categoriesByExRemoteKey[$ex->remotekey] = $cat;
+                break;
+            }
+        }
+    }
+    
+    // submission status to non-localized string for JSON
+    $sbmsStatusToString = function($status) {
+        switch ($status) {
+            case mod_stratumtwo_submission::STATUS_INITIALIZED:
+                return 'initialized';
+            case mod_stratumtwo_submission::STATUS_WAITING:
+                return 'waiting';
+            case mod_stratumtwo_submission::STATUS_READY:
+                return 'ready';
+            case mod_stratumtwo_submission::STATUS_ERROR:
+                return 'error';
+            default:
+                return 'undefined'; // should not happen
+        }
+    };
+    
+    // build SQL query for fetching all submissions to all exercises
+    // (all exercises in the course or all from $exerciseIds)
+    // (from all students or defined by $studentUserIds)
+    $where = 's.exerciseid IN ('. implode(',', $exerciseIds) .')';
+    $params = array();
+    if (!empty($studentUserIds)) {
+        $where .= ' AND s.submitter IN ('. implode(',', $studentUserIds) .')';
+    }
+    if (!empty($submittedBefore)) {
+        // only count submissions submitted before the given time
+        $where .= ' AND s.submissiontime <= ?';
+        $params[] = $submittedBefore;
+    }
+    // one large DB query instead of repeating multiple small queries for each student and exercise
+    $allSubmissions = $DB->get_recordset_sql(
+            'SELECT s.id, s.status, s.submissiontime, s.exerciseid, s.submitter, s.grade, u.idnumber, u.username, lob.remotekey 
+               FROM {'. mod_stratumtwo_submission::TABLE .'} s 
+               JOIN {user} u ON s.submitter = u.id 
+               JOIN {'. mod_stratumtwo_learning_object::TABLE .'} lob ON s.exerciseid = lob.id 
+              WHERE '. $where .
+             'ORDER BY s.submissiontime ASC',
+            $params);
+    
+    $json = array('students' => array());
+    foreach ($allSubmissions as $sbmsRecord) {
+        // use student id or username as an identifier for the student
+        if (empty($sbmsRecord->idnumber) || $sbmsRecord->idnumber === '(null)') {
+            $studentId = $sbmsRecord->username;
+        } else {
+            $studentId = $sbmsRecord->idnumber;
+        }
+        
+        if (!isset($json['students'][$studentId])) {
+            $json['students'][$studentId] = array(
+                    'exercises' => array(),
+                    'categories' => array(),
+            );
+        }
+        
+        // the exercise is completely missing for the student in the JSON if there are
+        // no submissions
+        if (!isset($json['students'][$studentId]['exercises'][$sbmsRecord->remotekey])) {
+            // initialize
+            $json['students'][$studentId]['exercises'][$sbmsRecord->remotekey] = array(
+                    'points' => -1, // replaced by any submission below (if best part) since 0 > -1
+                    'submissiontime' => -1,
+                    'nth' => 0,
+                    'numberofsubmissions' => 0,
+            );
+            if ($includeAllSubmissions) {
+                $json['students'][$studentId]['exercises'][$sbmsRecord->remotekey]['submissions'] = array();
+            }
+        }
+        $best = &$json['students'][$studentId]['exercises'][$sbmsRecord->remotekey];
+        if ($sbmsRecord->grade > $best['points']) {
+            $best['points'] = (int) $sbmsRecord->grade;
+            $best['submissiontime'] = (int) $sbmsRecord->submissiontime;
+            $best['nth'] = $best['numberofsubmissions'] + 1; // $allSubmissions is ordered by submission time
+        }
+        $best['numberofsubmissions'] += 1;
+        unset($best);
+        if ($includeAllSubmissions) {
+            // list of points from all submissions to the exercise by this student
+            $json['students'][$studentId]['exercises'][$sbmsRecord->remotekey]['submissions'][] = array(
+                    'points' => (int) $sbmsRecord->grade,
+                    'submissiontime' => (int) $sbmsRecord->submissiontime,
+                    'status' => $sbmsStatusToString($sbmsRecord->status),
+            );
+        }
+    }
+    $allSubmissions->close();
+    
+    foreach ($json['students'] as $studentId => $catsAndExercises) {
+        $categoriesTotal = array('coursetotal' => 0);
+        foreach ($catsAndExercises['exercises'] as $exRemoteKey => $results) {
+            $categoriesTotal['coursetotal'] += $results['points'];
+            $catName = $categoriesByExRemoteKey[$exRemoteKey]->getName();
+            if (isset($categoriesTotal[$catName])) {
+                $categoriesTotal[$catName] += $results['points'];
+            } else {
+                $categoriesTotal[$catName] = $results['points'];
+            }
+        }
+        $json['students'][$studentId]['categories'] = $categoriesTotal;
+    }
+    
+    $json['numberofstudents'] = count($json['students']);
+    
+    return $json;
+    
+    /* JSON structure: 
+    {
+    "students": {
+        "<student_id>" (idnumber or username): {
+            "exercises": {
+                "<remotekey>" (each exercise): {
+                    "points": 10, (points of the best submission)
+                    "submissiontime": Unix timestamp,
+                    "nth": 1, (best submission was the first submission)
+                    "numberofsubmissions": 5,
+                    "submissions": [ (each submission listed if all submissions are included)
+                        {
+                            "points": 5,
+                            "submissiontime": timestamp,
+                            "status": "Ready"
+                        }
+                    ]
+                },
+            },
+            "categories": {
+                "<category1 name>": 50,
+                "coursetotal" (all categories summed): 100
+            }
+         }
+    },
+    "numberofstudents": 5
+    }
+    */
+}

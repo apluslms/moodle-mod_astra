@@ -198,6 +198,21 @@ $string['allowastgrading'] = 'Allow assistant grading';
 $string['allowastgrading_help'] = 'If checked, assistants (non-editing teachers) may write feedback and change points for any submission in the exercise.';
 $string['allowastviewing'] = 'Allow assistant viewing';
 $string['allowastviewing_help'] = 'If checked, assistants (non-editing teachers) may inspect any submission in the exercise.';
+$string['exportresults'] = 'Export results';
+$string['exportinclallexercises'] = 'Include all exercises';
+$string['exportinclallexercises_help'] = 'Tick to include all exercises, or select only some exercises below.';
+$string['exportselectexercises'] = 'OR include these exercises';
+$string['exportselectcats'] = 'OR include all exercises from these categories';
+$string['exportselectrounds'] = 'OR include all exercises from these exercise rounds';
+$string['exportselectstudents'] = 'Include only these students';
+$string['exportselectstudents_help'] = 'Include only these students or leave empty to include all students in the course.';
+$string['exportsubmittedbefore'] = 'Take into account only submissions that were submitted before';
+$string['exportsubmittedbefore_help'] = 'Only take into account submissions that were submitted at or before the given date. Disable the date to include all submissions.';
+$string['exportinclallsubmissions'] = 'Include a list of results of all submissions';
+$string['exportinclallsubmissions_help'] = 'Tick this in order to include results for all submissions in the exported data as an additional field. This obeys the submitted before date.';
+$string['exportmustdefineexercises'] = 'You must define which exercises are included. Select all by ticking the checkbox, untick if you select only some.';
+$string['exportuseonemethodtoselectexercises'] = 'You can only use one of the four methods to select exercises that are included.';
+$string['exportdescription'] = 'Export exercise points of the course students to a JSON file.';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';
