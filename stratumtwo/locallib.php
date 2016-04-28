@@ -85,7 +85,7 @@ function stratumtwo_navbar_add_one_exercise(navigation_node $previousNode, mod_s
 }
 
 function stratumtwo_navbar_add_submission(navigation_node $prevNode, mod_stratumtwo_submission $submission) {
-    $submissionNav = $prevNode->add(get_string('submissionnumber', mod_stratumtwo_exercise_round::MODNAME, $submission->getId()),
+    $submissionNav = $prevNode->add(get_string('submissionnumber', mod_stratumtwo_exercise_round::MODNAME, $submission->getCounter()),
             \mod_stratumtwo\urls\urls::submission($submission, true),
             navigation_node::TYPE_CUSTOM, null, 'sub'.$submission->getId());
     return $submissionNav;
@@ -97,7 +97,7 @@ function stratumtwo_navbar_add_inspect_submission(navigation_node $prevNode, mod
             \mod_stratumtwo\urls\urls::submissionList($exercise, true),
             navigation_node::TYPE_CUSTOM,
             null, 'allsubmissions');
-    $submissionNav = $allSbmsNav->add(get_string('submissionnumber', mod_stratumtwo_exercise_round::MODNAME, $submission->getId()),
+    $submissionNav = $allSbmsNav->add(get_string('submissionnumber', mod_stratumtwo_exercise_round::MODNAME, $submission->getCounter()),
             \mod_stratumtwo\urls\urls::submission($submission, true),
             navigation_node::TYPE_CUSTOM,
             null, 'sub'.$submission->getId());

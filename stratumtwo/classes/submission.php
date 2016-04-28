@@ -116,6 +116,22 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     }
     
     /**
+     * Return the ordinal number of this submission (amongst the submissions
+     * the student has submitted to the exercise).
+     */
+    public function getCounter() {
+        global $DB;
+        
+        return $DB->count_records_select(self::TABLE,
+                'exerciseid = ? AND submitter = ? AND submissiontime <= ?',
+                array(
+                        $this->record->exerciseid,
+                        $this->record->submitter,
+                        $this->record->submissiontime,
+                ), 'COUNT(id)');
+    }
+    
+    /**
      * Try to decode string $data as JSON.
      * @param string $data
      * @return string|mixed decoded JSON, or string if decoding fails, or
