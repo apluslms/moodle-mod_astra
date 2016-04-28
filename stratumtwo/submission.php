@@ -55,7 +55,7 @@ $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
 
 echo $output->header();
 
-$renderable = new \mod_stratumtwo\output\submission_page($exround, $exercise, $submission, $USER);
+$renderable = new \mod_stratumtwo\output\submission_page($exround, $exercise, $submission);
 echo $output->render($renderable);
 
 echo $output->footer();

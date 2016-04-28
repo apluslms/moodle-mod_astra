@@ -13,13 +13,12 @@ class submission_page implements \renderable, \templatable {
     
     public function __construct(\mod_stratumtwo_exercise_round $exround,
             \mod_stratumtwo_exercise $exercise,
-            \mod_stratumtwo_submission $submission,
-            \stdClass $user) {
+            \mod_stratumtwo_submission $submission) {
         $this->exround = $exround;
         $this->exercise = $exercise;
         $this->submission = $submission;
-        $this->user = $user;
-        $this->exerciseSummary = new \mod_stratumtwo\summary\user_exercise_summary($exercise, $user);
+        $this->user = $submission->getSubmitter();
+        $this->exerciseSummary = new \mod_stratumtwo\summary\user_exercise_summary($exercise, $this->user);
     }
     
     /**
