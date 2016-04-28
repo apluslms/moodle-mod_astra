@@ -35,7 +35,7 @@ class export_results_form extends \moodleform {
         $exerciseOptions = array();
         $roundOptions = array();
         foreach ($allExerciseRounds as $exround) {
-            foreach ($exround->getExercises() as $ex) {
+            foreach ($exround->getExercises(true) as $ex) {
                 $exerciseOptions[$ex->getId()] = $ex->getName();
             }
             $roundOptions[$exround->getId()] = $exround->getName();
