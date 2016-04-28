@@ -399,7 +399,23 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         $ctx->max_submissions = $this->getMaxSubmissions();
         if ($user !== null) {
             $ctx->max_submissions_for_user = $this->getMaxSubmissionsForStudent($user);
+            if ($ctx->max_submissions_for_user > 0) {
+                // number of extra submissions given to the student
+                $ctx->submit_limit_deviation = $ctx->max_submissions_for_user - $ctx->max_submissions;
+            } else {
+                $ctx->submit_limit_deviation = 0;
+            }
+            
+            $dl_deviation = mod_stratumtwo_deadline_deviation::findDeviation($this->getId(), $user->id);
+            if ($dl_deviation !== null) {
+                $ctx->deadline = $dl_deviation->getNewDeadline();
+                $ctx->dl_extended_minutes = $dl_deviation->getExtraTime();
+            } else {
+                $ctx->deadline = $this->getExerciseRound()->getClosingTime();
+                $ctx->dl_extended_minutes = 0;
+            }
         }
+        
         $ctx->points_to_pass = $this->getPointsToPass();
         if ($includeTotalSubmitterCount) {
             $ctx->total_submitter_count = $this->getTotalSubmitterCount(); // heavy DB query

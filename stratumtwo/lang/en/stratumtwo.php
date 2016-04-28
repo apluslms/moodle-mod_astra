@@ -122,6 +122,8 @@ $string['postingsubmission'] = 'Posting submission...';
 $string['loadingexercise'] = 'Loading exercise...';
 $string['exerciseresults'] = 'Exercise results';
 $string['toc'] = 'Table of contents';
+$string['youhaveextrasubmissions'] = 'You have {$a} extra submissions';
+$string['withyourextension'] = 'with your personal extension';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';

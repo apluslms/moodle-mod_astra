@@ -10,6 +10,9 @@ Context variables:
     max_points, max_submissions (0 if no limit),
     max_submissions_for_user (submission limit with personal deviation, may be the same as max_submissions),
     points_to_pass (0 if no limit), total_submitter_count,
+    submit_limit_deviation (int, number of extra submissions for the user),
+    deadline (int, Unix timestamp, normal round deadline or the extended deadline for the user),
+    dl_extended_minutes (int, number of minutes the deadline is extended for the user),
     course_module (stdClass) with keys 
         closingtime
 * toDateStr callable Function that converts a Unix timestamp to a date string
@@ -44,6 +47,9 @@ Context variables:
                 {{ summary.submission_count }}
                 {{# exercise.max_submissions }}
                 / {{ exercise.max_submissions_for_user }}
+                {{# exercise.submit_limit_deviation }}
+                  <small>{{#str}} youhaveextrasubmissions, mod_stratumtwo, {{ exercise.submit_limit_deviation }} {{/str}}</small>
+                {{/ exercise.submit_limit_deviation }}
                 {{/ exercise.max_submissions }}
             </dd>
 
@@ -53,7 +59,11 @@ Context variables:
             {{/ exercise.points_to_pass }}
 
             <dt>{{#str}} deadline, mod_stratumtwo {{/str}}</dt>
-            <dd>{{# toDateStr }}{{ exercise.course_module.closingtime }}{{/ toDateStr }}</dd>
+            <dd>{{# toDateStr }}{{ exercise.deadline }}{{/ toDateStr }}
+            {{# exercise.dl_extended_minutes }}
+              <small>{{#str}} withyourextension, mod_stratumtwo {{/str}}</small>
+            {{/ exercise.dl_extended_minutes }}
+            </dd>
 
             <dt>{{#str}} totalnumberofsubmitters, mod_stratumtwo {{/str}}</dt>
             <dd>{{ exercise.total_submitter_count }}</dd>
