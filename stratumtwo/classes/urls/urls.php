@@ -187,4 +187,9 @@ class urls {
         $query = array('course' => $courseid);
         return self::buildUrl('/teachers/export_results.php', $query, $asMdlUrl);
     }
+    
+    public static function exportPassedList($courseid, $asMdlUrl = false) {
+        $query = array('course' => $courseid);
+        return self::buildUrl('/teachers/export_passed_list.php', $query, $asMdlUrl);
+    }
 }

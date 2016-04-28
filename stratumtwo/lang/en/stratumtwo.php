@@ -213,6 +213,7 @@ $string['exportinclallsubmissions_help'] = 'Tick this in order to include result
 $string['exportmustdefineexercises'] = 'You must define which exercises are included. Select all by ticking the checkbox, untick if you select only some.';
 $string['exportuseonemethodtoselectexercises'] = 'You can only use one of the four methods to select exercises that are included.';
 $string['exportdescription'] = 'Export exercise points of the course students to a JSON file.';
+$string['exportpassedlist'] = '<a href="{$a}">Download</a> a list of students who have passed the course exercise requirements (gained at least minimum required points in all exercises, rounds and categories).';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';

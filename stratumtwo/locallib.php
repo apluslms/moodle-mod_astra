@@ -161,6 +161,9 @@ function stratumtwo_export_results($courseId, array $exerciseIds = null, array $
     
     $categories = mod_stratumtwo_category::getCategoriesInCourse($courseId, true);
     $catIds = array_keys($categories);
+    if (empty($catIds)) {
+        return array(); // no exercises, no results
+    }
     
     if (empty($exerciseIds)) {
         // all exercises in the course
@@ -318,4 +321,94 @@ function stratumtwo_export_results($courseId, array $exerciseIds = null, array $
     "numberofstudents": 5
     }
     */
+}
+
+/**
+ * Return a list of students that have passed the course exercises (gained at least
+ * minimum required points in all exercises, rounds and categories).
+ * @param int $courseId Moodle course ID
+ * @return string[] array of student ids (Moodle user idnumber if it exists or username otherwise)
+ */
+function stratumtwo_course_passed_list($courseId) {
+    global $DB;
+    
+    // compute best points for each student in each exercise with minimal number of DB queries
+    $results = stratumtwo_export_results($courseId, null, null, 0, false);
+    
+    $categories = mod_stratumtwo_category::getCategoriesInCourse($courseId);
+    if (empty($categories)) {
+        return array(); // no exercises, no results
+    }
+    
+    $visibleExrounds = mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseId);
+    $exrounds = array(); // organize by round id
+    foreach ($visibleExrounds as $exround) {
+        $exrounds[$exround->getId()] = $exround;
+    }
+    
+    // all non-hidden exercises in the course
+    $exerciseRecords = $DB->get_records_sql(
+            mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE) .
+            ' WHERE categoryid IN ('. implode(',', array_keys($categories)) .') AND status != ?',
+            array(mod_stratumtwo_learning_object::STATUS_HIDDEN));
+    $exercises = array();
+    foreach ($exerciseRecords as $ex) {
+        // check that the category and round are not hidden
+        if (isset($categories[$ex->categoryid]) && isset($exrounds[$ex->roundid])) {
+            $exercises[$ex->lobjectid] = new mod_stratumtwo_exercise($ex);
+        }
+    }
+    
+    $passedAllExercisesAndRounds = function($studentResults) use ($exercises, $exrounds) {
+        $roundTotals = array();
+        foreach ($exercises as $ex) {
+            if (isset($studentResults[$ex->getRemoteKey()])) {
+                // student's best points in the exercise
+                $points = $studentResults[$ex->getRemoteKey()]['points'];
+            } else {
+                $points = 0;
+            }
+            if ($points < $ex->getPointsToPass()) {
+                return false; // one exercise failed
+            }
+            
+            // add exercise points to round total
+            $roundId = $ex->getRecord()->roundid;
+            if (isset($roundTotals[$roundId])) {
+                $roundTotals[$roundId] += $points;
+            } else {
+                $roundTotals[$roundId] = $points;
+            }
+        }
+        
+        foreach ($exrounds as $exround) {
+            if ($roundTotals[$exround->getId()] < $exround->getPointsToPass()) {
+                return false; // one round failed
+            }
+        }
+        return true;
+    };
+    $passedAllCategories = function($studentResults) use ($categories) {
+        foreach ($categories as $cat) {
+            if (isset($studentResults[$cat->getName()])) {
+                // student's best total points in the category
+                $points = $studentResults[$cat->getName()];
+            } else {
+                $points = 0;
+            }
+            if ($points < $cat->getPointsToPass()) {
+                return false; // one category failed (category total points requirement failed)
+            }
+        }
+        return true;
+    };
+    
+    $passedStudents = array();
+    foreach ($results['students'] as $studentId => $catsAndExercises) {
+        if ($passedAllExercisesAndRounds($catsAndExercises['exercises']) && $passedAllCategories(['categories'])) {
+            $passedStudents[] = $studentId; // student id or username if no id exists
+        }
+    }
+    
+    return $passedStudents;
 }

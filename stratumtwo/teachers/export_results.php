@@ -101,6 +101,10 @@ if ($fromform = $form->get_data()) {
     $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
     echo $output->header();
     echo $output->heading($title);
+    echo '<p>'. get_string('exportpassedlist', mod_stratumtwo_exercise_round::MODNAME,
+            \mod_stratumtwo\urls\urls::exportPassedList($cid)) .
+    '</p>';
+    echo '<hr>';
     echo '<p>'. get_string('exportdescription', mod_stratumtwo_exercise_round::MODNAME) .'</p>';
     
     $form->display();
