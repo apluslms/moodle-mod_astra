@@ -261,6 +261,7 @@ function stratumtwo_export_results($courseId, array $exerciseIds = null, array $
             $best['points'] = (int) $sbmsRecord->grade;
             $best['submissiontime'] = (int) $sbmsRecord->submissiontime;
             $best['nth'] = $best['numberofsubmissions'] + 1; // $allSubmissions is ordered by submission time
+            $best['id'] = (int) $sbmsRecord->id;
         }
         $best['numberofsubmissions'] += 1;
         unset($best);
@@ -270,6 +271,7 @@ function stratumtwo_export_results($courseId, array $exerciseIds = null, array $
                     'points' => (int) $sbmsRecord->grade,
                     'submissiontime' => (int) $sbmsRecord->submissiontime,
                     'status' => $sbmsStatusToString($sbmsRecord->status),
+                    'id' => (int) $sbmsRecord->id,
             );
         }
     }
@@ -303,11 +305,13 @@ function stratumtwo_export_results($courseId, array $exerciseIds = null, array $
                     "submissiontime": Unix timestamp,
                     "nth": 1, (best submission was the first submission)
                     "numberofsubmissions": 5,
+                    "id": 1, (database ID of the submission)
                     "submissions": [ (each submission listed if all submissions are included)
                         {
                             "points": 5,
                             "submissiontime": timestamp,
-                            "status": "Ready"
+                            "status": "Ready",
+                            "id": 1 (database ID of the submission)
                         }
                     ]
                 },
