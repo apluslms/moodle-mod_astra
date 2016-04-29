@@ -216,6 +216,10 @@ $string['exportmustdefineexercises'] = 'You must define which exercises are incl
 $string['exportuseonemethodtoselectexercises'] = 'You can only use one of the four methods to select exercises that are included.';
 $string['exportdescription'] = 'Export exercise points of the course students to a JSON file.';
 $string['exportpassedlist'] = '<a href="{$a}">Download</a> a list of students who have passed the course exercise requirements (gained at least minimum required points in all exercises, rounds and categories).';
+$string['exportsubmittedfiles'] = 'Export submitted files';
+$string['exportsubmittedfilesdesc'] = 'Export submitted files to a zip archive.';
+$string['exportfilesinclallsubmissions'] = 'Include all submissions';
+$string['exportfilesinclallsubmissions_help'] = 'Tick this in order to include all submissions. Otherwise, only the best submission for each student and exercise in included. This obeys the submitted before date.';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';
@@ -298,6 +302,7 @@ $string['exerciselobjectexpected'] = 'Exercise expected, but the id matches a le
 $string['toolargesbmsfile'] = 'One of the uploaded files is too large and the submission was not saved! The file size limit is {$a} bytes.';
 $string['assistgradingnotallowed'] = 'Assistant grading is not allowed in this exercise.';
 $string['assistviewingnotallowed'] = 'Assistant viewing is not allowed in this exercise.';
+$string['exportfilesziperror'] = 'Error in creating the zip archive';
 
 // Events / logging
 $string['eventsubmitted'] = 'Student submitted a new solution';

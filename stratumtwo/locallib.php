@@ -412,3 +412,134 @@ function stratumtwo_course_passed_list($courseId) {
     
     return $passedStudents;
 }
+
+/**
+ * Create a zip archive file of the submitted files in the course.
+ * @param int $courseId Moodle course ID
+ * @param array|null $exerciseIds exercise learning object IDs that should be included,
+ * null to include all exercises in the course
+ * @param array|null $studentUserIds Moodle user IDs of the users that should be included,
+ * null for all users that have submitted
+ * @param int $submittedBefore Unix timestamp. Take only submissions submitted at or before
+ * this time into account.
+ * @param bool $includeAllSubmissions if true, files from all submissions are included.
+ * If false, only files from the best submission for each student and exercise are included.
+ * @return path of a temp file (the zip archive) - note this returned file does
+ *         not have a .zip extension - it is a temp file.
+ */
+function stratumtwo_export_submitted_files($courseId, array $exerciseIds = null, array $studentUserIds = null,
+        $submittedBefore = 0, $includeAllSubmissions = false) {
+    global $DB, $CFG;
+    require_once($CFG->libdir .'/filestorage/zip_packer.php');
+    
+    $categories = mod_stratumtwo_category::getCategoriesInCourse($courseId, true);
+    $catIds = array_keys($categories);
+    if (empty($catIds)) {
+        return false; // no exercises, no results
+    }
+    
+    if (empty($exerciseIds)) {
+        // all exercises in the course
+        $exerciseRecords = $DB->get_records_sql(
+                mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE, 'lob.id, lob.categoryid, lob.remotekey') .
+                ' WHERE categoryid IN ('. implode(',', $catIds) .')');
+        $exerciseIds = array_keys($exerciseRecords);
+    } else {
+        $exerciseRecords = $DB->get_records_sql(
+                mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE, 'lob.id, lob.categoryid, lob.remotekey') .
+                ' WHERE lob.id IN ('. implode(',', $exerciseIds) .')');
+    }
+    
+    
+    // build SQL query for fetching all submissions to all exercises
+    // (all exercises in the course or all from $exerciseIds)
+    // (from all students or defined by $studentUserIds)
+    $where = 's.exerciseid IN ('. implode(',', $exerciseIds) .')';
+    $params = array();
+    if (!empty($studentUserIds)) {
+        $where .= ' AND s.submitter IN ('. implode(',', $studentUserIds) .')';
+    }
+    if (!empty($submittedBefore)) {
+        // only count submissions submitted before the given time
+        $where .= ' AND s.submissiontime <= ?';
+        $params[] = $submittedBefore;
+    }
+    // one large DB query instead of repeating multiple small queries for each student and exercise
+    $allSubmissions = $DB->get_recordset_sql(
+            'SELECT s.id, s.status, s.submissiontime, s.exerciseid, s.submitter, s.grade, u.idnumber, u.username, lob.remotekey
+               FROM {'. mod_stratumtwo_submission::TABLE .'} s
+               JOIN {user} u ON s.submitter = u.id
+               JOIN {'. mod_stratumtwo_learning_object::TABLE .'} lob ON s.exerciseid = lob.id
+              WHERE '. $where .
+            'ORDER BY s.submissiontime ASC',
+            $params);
+    
+    $submissionsByExercise = array(); // organize submissions
+    foreach ($allSubmissions as $sbmsRecord) {
+        if (empty($sbmsRecord->idnumber) || $sbmsRecord->idnumber === '(null)') {
+            $studentId = $sbmsRecord->username;
+        } else {
+            $studentId = $sbmsRecord->idnumber;
+        }
+        
+        if (!isset($submissionsByExercise[$sbmsRecord->remotekey])) {
+            $submissionsByExercise[$sbmsRecord->remotekey] = array();
+        }
+        if (!isset($submissionsByExercise[$sbmsRecord->remotekey][$studentId])) {
+            $submissionsByExercise[$sbmsRecord->remotekey][$studentId] = array();
+        }
+        
+        $sbms = new mod_stratumtwo_submission($sbmsRecord);
+        if ($includeAllSubmissions) {
+            $submissionsByExercise[$sbmsRecord->remotekey][$studentId][] = $sbms;
+        } else if (empty($submissionsByExercise[$sbmsRecord->remotekey][$studentId])) { // only keep the best submission
+            $submissionsByExercise[$sbmsRecord->remotekey][$studentId][] = $sbms;
+        } else if ($submissionsByExercise[$sbmsRecord->remotekey][$studentId][0]->getGrade() < $sbms->getGrade()) {
+            $submissionsByExercise[$sbmsRecord->remotekey][$studentId][0] = $sbms;
+        }
+    }
+    $allSubmissions->close();
+    
+    // fetch and organize submitted files that are included in the zip archive
+    $filesForZipping = array();
+    // gather all submitted files to the array
+    // (key = file path inside archive, value = Moodle stored_file instance)
+    foreach ($exerciseRecords as $ex) {
+        $exRemoteKey = $ex->remotekey;
+        if (isset($submissionsByExercise[$exRemoteKey])) {
+            foreach ($submissionsByExercise[$exRemoteKey] as $studentId => $submissions) {
+                foreach ($submissions as $sbms) {
+                    $sbmsId = $sbms->getId();
+                    $submittedFiles = $sbms->getSubmittedFiles();
+                    foreach ($submittedFiles as $file) {
+                        $pathInArchive = "submitted_files/$exRemoteKey/$studentId/sbms$sbmsId/". $file->get_filename();
+                        if (isset($filesForZipping[$pathInArchive])) {
+                            // if multiple files with the same name were submitted in the submission
+                            $pathInArchive = "submitted_files/$exRemoteKey/$studentId/sbms$sbmsId/". 
+                                trim($file->get_filepath(), '/') .'_'. $file->get_filename();
+                        }
+                        $filesForZipping[$pathInArchive] = $file; // Moodle stored_file
+                    }
+                }
+            }
+        }
+    }
+    
+    // Create path for new zip file.
+    $tempzip = tempnam($CFG->tempdir, 'stsbms');
+    // Zip files.
+    $zipper = new zip_packer();
+    if ($zipper->archive_to_pathname($filesForZipping, $tempzip)) {
+        return $tempzip;
+    }
+    @unlink($tempzip);
+    return false;
+    
+    /* Directory structure: (varying parts in < >)
+    submitted_files/
+        <exercise_remote_key>/
+            <student_id>/
+                sbms<ID>/
+                    <file1>, <file2>
+    */
+}

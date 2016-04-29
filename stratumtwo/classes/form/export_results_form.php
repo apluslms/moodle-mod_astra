@@ -13,9 +13,14 @@ use get_string;
 class export_results_form extends \moodleform {
     
     protected $courseid;
+    protected $inclAllSubmissionsKey;
+    protected $submitButtonLabel;
     
-    public function __construct($courseid, $action = null) {
+    public function __construct($courseid, $inclAllSubmissionsKey, $submitButtonLabel, $action = null) {
         $this->courseid = $courseid;
+        // string key for label/help of the include all submissions checkbox
+        $this->inclAllSubmissionsKey = $inclAllSubmissionsKey;
+        $this->submitButtonLabel = $submitButtonLabel; // string key for the submit button
         parent::__construct($action);
     }
     
@@ -88,12 +93,12 @@ class export_results_form extends \moodleform {
         
         // include all submissions
         $mform->addElement('advcheckbox', 'inclallsubmissions',
-                get_string('exportinclallsubmissions', $mod),
+                get_string($this->inclAllSubmissionsKey, $mod),
                 '', null, array(0, 1));
-        $mform->addHelpButton('inclallsubmissions', 'exportinclallsubmissions', $mod);
-        $mform->setDefault('inclallsubmissions', 1);
+        $mform->addHelpButton('inclallsubmissions', $this->inclAllSubmissionsKey, $mod);
+        $mform->setDefault('inclallsubmissions', 0);
         
-        $this->add_action_buttons(true, get_string('exportresults', $mod));
+        $this->add_action_buttons(true, get_string($this->submitButtonLabel, $mod));
     }
     
     public function validation($data, $files) {
