@@ -23,23 +23,23 @@ class mass_regrading_task extends \core\task\adhoc_task {
         global $DB;
         
         $params = $this->get_custom_data();
-        $exerciseIds       = $params['exercise_ids'];
-        $userIds           = $params['student_user_ids'];
-        $selectSubmissions = $params['submissions'];
-        $courseId          = $params['course_id'];
+        $exerciseIds       = $params->exercise_ids;
+        $userIds           = $params->student_user_ids;
+        $selectSubmissions = $params->submissions;
+        $courseId          = $params->course_id;
         
         if (empty($exerciseIds)) {
             // all exercises in the course
-            $categories = mod_stratumtwo_category::getCategoriesInCourse($courseId, true);
+            $categories = \mod_stratumtwo_category::getCategoriesInCourse($courseId, true);
             if (empty($categories)) {
                 return; // no exercises, no submissions
             }
             $exerciseRecords = $DB->get_records_sql(
-                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE) .
+                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE) .
                     ' WHERE categoryid IN ('. \implode(',', \array_keys($categories)) .')');
         } else {
             $exerciseRecords = $DB->get_records_sql(
-                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE) .
+                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE) .
                     ' WHERE lob.id IN ('. \implode(',', $exerciseIds) .')');
         }
         $exercises = \array_map(function($exRecord) {
