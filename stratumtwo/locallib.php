@@ -120,7 +120,8 @@ function stratumtwo_send_assistant_feedback_notification(mod_stratumtwo_submissi
     $str->exname = $submission->getExercise()->getName();
     $str->exurl = \mod_stratumtwo\urls\urls::exercise($submission->getExercise());
     $str->sbmsurl = \mod_stratumtwo\urls\urls::submission($submission);
-    $str->sbmsid = $submission->getId();
+    $sbmsCounter = $submission->getCounter();
+    $str->sbmscounter = $sbmsCounter;
     $msg_start = get_string('youhavenewfeedback', \mod_stratumtwo_exercise_round::MODNAME, $str);
     $full_msg = "<p>$msg_start</p>". $submission->getAssistantFeedback();
     
@@ -136,7 +137,7 @@ function stratumtwo_send_assistant_feedback_notification(mod_stratumtwo_submissi
     $message->smallmessage = $msg_start;
     $message->notification = 1;
     $message->contexturl = \mod_stratumtwo\urls\urls::submission($submission);
-    $message->contexturlname = get_string('submissionnumber', \mod_stratumtwo_exercise_round::MODNAME, $submission->getId());
+    $message->contexturlname = get_string('submissionnumber', \mod_stratumtwo_exercise_round::MODNAME, $sbmsCounter);
     
     return message_send($message);
 }
