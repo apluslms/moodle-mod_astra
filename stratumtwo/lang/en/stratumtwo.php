@@ -220,6 +220,16 @@ $string['exportsubmittedfiles'] = 'Export submitted files';
 $string['exportsubmittedfilesdesc'] = 'Export submitted files to a zip archive.';
 $string['exportfilesinclallsubmissions'] = 'Include all submissions';
 $string['exportfilesinclallsubmissions_help'] = 'Tick this in order to include all submissions. Otherwise, only the best submission for each student and exercise in included. This obeys the submitted before date.';
+$string['massregrading'] = 'Mass regrading';
+$string['massregradingdesc'] = 'Mass upload existing submissions to the exercise service for regrading.';
+$string['regradesubmissions'] = 'Regrade submissions';
+$string['massregrinclsbms'] = 'Include submissions';
+$string['massregrsbmserror'] = 'Only submissions with status error';
+$string['massregrsbmsall'] = 'All submissions';
+$string['massregrsbmslatest'] = 'Only the latest submission of each student';
+$string['massregrsbmsbest'] = 'Only the currently best submission (highest points) of each student';
+$string['massregrtasksuccess'] = 'The submissions are uploaded to the exercise service for regrading as soon as possible.';
+$string['massregrtaskerror'] = 'Error: the regrading task could not be stored in the database. No submissions are uploaded to the exercise service.';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';
