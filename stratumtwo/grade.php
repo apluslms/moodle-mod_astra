@@ -9,13 +9,30 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(__DIR__ . "../../../config.php");
+require_once(__DIR__ . '../../../config.php');
 
-$id = required_param('id', PARAM_INT);// Course module ID.
-// Item number may be != 0 for activities that allow more than one grade per user.
+$id = required_param('id', PARAM_INT); // Course module ID.
+// item number separates the grade items of the round and its exercises
 $itemnumber = optional_param('itemnumber', 0, PARAM_INT);
 $userid = optional_param('userid', 0, PARAM_INT); // Graded user ID (optional).
 
-// In the simplest case just redirect to the view page.
-redirect('view.php?id='.$id);
-//TODO round or exercise page, teachers to inspect page
+list($course, $cm) = get_course_and_cm_from_cmid($id, mod_stratumtwo_exercise_round::TABLE);
+$exround = mod_stratumtwo_exercise_round::createFromId($cm->instance);
+
+if ($itemnumber == 0) {
+    // exercise round
+    redirect(\mod_stratumtwo\urls\urls::exerciseRound($exround, true));
+} else {
+    $exerciseRecord = $DB->get_record_sql(
+            mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE) .
+            ' WHERE lob.roundid = ? AND ex.gradeitemnumber = ?',
+            array($exround->getId(), $itemnumber), MUST_EXIST);
+    $exercise = new mod_stratumtwo_exercise($exerciseRecord);
+    $context = context_module::instance($id);
+    if ((has_capability('mod/stratumtwo:viewallsubmissions', $context) && $exercise->isAssistantViewingAllowed()) ||
+            has_capability('mod/stratumtwo:addinstance', $context)) {
+        redirect(\mod_stratumtwo\urls\urls::submissionList($exercise, true));
+    } else {
+        redirect(\mod_stratumtwo\urls\urls::exercise($exercise, true));
+    }
+}
