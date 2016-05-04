@@ -128,4 +128,29 @@ class export_results_form extends \moodleform {
         
         return $errors;
     }
+    
+    /**
+     * Parse exercises from the form input.
+     * @param \stdClass $fromform submitted form data
+     * @return NULL|array array of exercise learning object IDs, or null if all exercises should be included
+     */
+    public static function parse_exercises(\stdClass $fromform) {
+        global $DB;
+    
+        if (isset($fromform->inclallexercises) && $fromform->inclallexercises) {
+            $exerciseIds = null; // all exercises
+        } else if (!empty($fromform->selectexercises)) {
+            // only these exercises
+            $exerciseIds = $fromform->selectexercises;
+        } else if (!empty($fromform->selectcategories)) {
+            // all exercises in these categories
+            $exerciseIds = \array_keys(
+                    $DB->get_records_list(\mod_stratumtwo_learning_object::TABLE, 'categoryid', $fromform->selectcategories, '', 'id'));
+        } else { // (!empty($fromform['selectrounds']))
+            // all exercises in these rounds
+            $exerciseIds = \array_keys(
+                    $DB->get_records_list(\mod_stratumtwo_learning_object::TABLE, 'roundid', $fromform->selectrounds, '', 'id'));
+        }
+        return $exerciseIds;
+    }
 }

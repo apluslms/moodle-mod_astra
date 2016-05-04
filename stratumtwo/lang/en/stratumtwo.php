@@ -219,7 +219,9 @@ $string['exportpassedlist'] = '<a href="{$a}">Download</a> a list of students wh
 $string['exportsubmittedfiles'] = 'Export submitted files';
 $string['exportsubmittedfilesdesc'] = 'Export submitted files to a zip archive.';
 $string['exportfilesinclallsubmissions'] = 'Include all submissions';
-$string['exportfilesinclallsubmissions_help'] = 'Tick this in order to include all submissions. Otherwise, only the best submission for each student and exercise in included. This obeys the submitted before date.';
+$string['exportfilesinclallsubmissions_help'] = 'Tick this in order to include all submissions. Otherwise, only the best submission for each student and exercise is included. This obeys the submitted before date.';
+$string['exportsubmittedform'] = 'Export submitted form input';
+$string['exportsubmittedformdesc'] = 'Export submitted form input to a JSON file. Uploaded files are not included.';
 $string['massregrading'] = 'Mass regrading';
 $string['massregradingdesc'] = 'Mass upload existing submissions to the exercise service for regrading.';
 $string['regradesubmissions'] = 'Regrade submissions';

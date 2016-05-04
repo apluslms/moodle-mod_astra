@@ -198,6 +198,11 @@ class urls {
         return self::buildUrl('/teachers/export_passed_list.php', $query, $asMdlUrl);
     }
     
+    public static function exportSubmittedFormInput($courseid, $asMdlUrl = false) {
+        $query = array('course' => $courseid);
+        return self::buildUrl('/teachers/export_sbms_forms.php', $query, $asMdlUrl);
+    }
+    
     public static function massRegrading($courseid, $asMdlUrl = false) {
         $query = array('course' => $courseid);
         return self::buildUrl('/teachers/mass_regrading.php', $query, $asMdlUrl);
