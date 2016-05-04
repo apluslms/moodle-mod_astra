@@ -5,6 +5,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/course/lib.php');
 require_once(dirname(dirname(dirname(__FILE__))) .'/teachers/editcourse_lib.php');
+require_once($CFG->dirroot .'/enrol/locallib.php');
 
 /**
  * Automatic configuration of course content based on the configuration
@@ -99,6 +100,9 @@ class auto_setup {
         }
         $course_ctx = \context_course::instance($courseid);
         $teacher_role_id = $DB->get_field('role', 'id', array('shortname' => 'teacher')); // non-editing teacher role
+        // assume that the default Moodle role "non-editing teacher" exists in the Moodle site where
+        // this plugin is installed and that it is a suitable role for course assistants
+        // (other alternative would be to ask the user for the correct role)
         if ($teacher_role_id === false) {
             $assistant_users = array();
         } else {
@@ -109,6 +113,13 @@ class auto_setup {
                 $assistant_users = array();
             }
         }
+        // Enrol assistants to the course as non-editing teachers. Enrolment is needed so
+        // that they may access the course page. They also gain non-editing teacher privileges
+        // in the course. configure_exercise_round() will also give them the non-editing teacher
+        // role in the course module contexts (exercise rounds), which is unnecessary if the
+        // assistant has the role in the course level, but we may want to remove the course level
+        // teacher role from the assistants.
+        self::enrolUsersToCourse($assistant_users, $courseid, $teacher_role_id, $errors);
         
         // parse course modules (exercise rounds)
         $seen_modules = array();
@@ -159,6 +170,55 @@ class auto_setup {
         }
         
         return $errors;
+    }
+    
+    /**
+     * Enrol users to the course, which allows them to access the course page.
+     * Users can be enrolled with student or teacher roles.
+     * @param array $users array of Moodle user records (stdClass)
+     * @param int $courseid Moodle course ID
+     * @param int $roleid ID of the role that is assigned to users in the enrolment.
+     * If null, no role is assigned but the user is still enrolled.
+     * @param array $errors error messages are appended to this array
+     */
+    protected static function enrolUsersToCourse(array $users, $courseid, $roleid, array &$errors) {
+        global $DB, $PAGE;
+        
+        if (empty($users)) {
+            return;
+        }
+        
+        $enrolid = $DB->get_field('enrol', 'id', array(
+                'enrol' => 'manual',
+                'courseid' => $courseid,
+        ), \IGNORE_MISSING);
+        // if manual enrolment is not supported, no users are enrolled
+        if ($enrolid === false) {
+            $errors[] = \get_string('confignomanualenrol', \mod_stratumtwo_exercise_round::MODNAME);
+            return;
+        }
+        
+        $enrol_manager = new \course_enrolment_manager($PAGE, \get_course($courseid));
+        $instances = $enrol_manager->get_enrolment_instances();
+        $plugins = $enrol_manager->get_enrolment_plugins(true); // Do not allow actions on disabled plugins.
+        if (!\array_key_exists($enrolid, $instances)) {
+            $errors[] = \get_string('invalidenrolinstance', 'enrol');
+            return;
+        }
+        $instance = $instances[$enrolid];
+        if (!isset($plugins[$instance->enrol])) {
+            $errors[] = \get_string('enrolnotpermitted', 'enrol');
+            return;
+        }
+        $plugin = $plugins[$instance->enrol];
+        $course_ctx = \context_course::instance($courseid);
+        if ($plugin->allow_enrol($instance) && \has_capability('enrol/'.$plugin->get_name().':enrol', $course_ctx)) {
+            foreach ($users as $user) {
+                $plugin->enrol_user($instance, $user->id, $roleid);
+            }
+        } else {
+            $errors[] = \get_string('enrolnotpermitted', 'enrol');
+        }
     }
     
     /**
@@ -330,27 +390,34 @@ class auto_setup {
         // In Moodle, we can promote a user's role within an activity. Only exercise rounds
         // are represented as activities in this plugin, hence a user gains non-editing teacher
         // privileges in the whole exercise round if one exercise has the "allow assistant grading"
-        // setting.
+        // setting. Exercises have their own "allow assistant grading" and "allow assistant viewing"
+        // settings that are used as additional access restrictions in addition to the Moodle capabilities.
+        // This teacher role assignment in the course module level may be completely unnecessary if the
+        // teacher role is also assigned in the course level, but we keep it here as a precaution
+        // (e.g., if the responsible teacher does not want to give teacher role in the course level to
+        // assistants, but only in the course module level).
         $auto_setup = $this;
         $unused_errors = array();
-        $hasAllowAssistantGrading = function($children) use ($auto_setup, &$unused_errors, &$hasAllowAssistantGrading) {
+        $hasAllowAssistantSetting = function($children) use ($auto_setup, &$unused_errors, &$hasAllowAssistantSetting) {
             foreach ($children as $child) {
-                if (isset($child->allow_assistant_grading) && 
-                        $auto_setup->parseBool($child->allow_assistant_grading, $unused_errors)) {
+                if ((isset($child->allow_assistant_grading) && 
+                        $auto_setup->parseBool($child->allow_assistant_grading, $unused_errors)) ||
+                    (isset($child->allow_assistant_viewing) && 
+                        $auto_setup->parseBool($child->allow_assistant_viewing, $unused_errors))) {
                     return true;
                 }
-                if (isset($child->children) && $hasAllowAssistantGrading($child->children)) {
+                if (isset($child->children) && $hasAllowAssistantSetting($child->children)) {
                     return true;
                 }
             }
             return false;
         };
-        if ($hasAllowAssistantGrading($module->children)) {
-            // if some exercise in the round has allow_assistant_grading, promote the user's role in the whole round
+        if ($hasAllowAssistantSetting($module->children)) {
+            // if some exercise in the round has allow_assistant_grading/viewing, promote the user's role in the whole round
             foreach ($assistant_users as $ast_user) {
                 \role_assign($teacher_role_id, $ast_user->id, \context_module::instance($exround->getCourseModule()->id));
                 // this role assigned in the course module level does not provide any access to the course
-                // itself, but we do not want to automatically promote users to non-editing teachers in the whole course
+                // itself (course home web page)
             }
         }
         

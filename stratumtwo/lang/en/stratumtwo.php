@@ -284,6 +284,7 @@ $string['configexerciseunknowncat'] = 'Exercise has an unknown category: {$a}.';
 $string['configassistantnotfound'] = '(Assistants) Users with the following student ids were not found: {$a}';
 $string['configuserrolesdisallowed'] = 'You are not allowed to modify user roles in the course: assistants were not automatically promoted to non-editing teachers.';
 $string['configassistantsnotarray'] = 'Assistants must be given as student ID array.';
+$string['confignomanualenrol'] = 'Manual enrolment is not supported in the course and thus assistants can not be enrolled to the course (they gain no access to the course, even if they are given non-editing teacher role in the course modules (exercise rounds)).';
 
 // plugin file area descriptions
 $string['submittedfilesareadescription'] = 'Submitted files in exercises with file uploads';
