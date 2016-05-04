@@ -314,6 +314,7 @@ $string['toolargesbmsfile'] = 'One of the uploaded files is too large and the su
 $string['assistgradingnotallowed'] = 'Assistant grading is not allowed in this exercise.';
 $string['assistviewingnotallowed'] = 'Assistant viewing is not allowed in this exercise.';
 $string['exportfilesziperror'] = 'Error in creating the zip archive';
+$string['notenrollednosubmit'] = 'You are not enrolled in the course, hence you may not submit new solutions to exercises.';
 
 // Events / logging
 $string['eventsubmitted'] = 'Student submitted a new solution';

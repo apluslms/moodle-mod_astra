@@ -18,6 +18,7 @@ $exround = $learningObject->getExerciseRound();
 list($course, $cm) = get_course_and_cm_from_instance($exround->getId(), mod_stratumtwo_exercise_round::TABLE);
 
 require_login($course, false, $cm);
+// checks additionally that the user is enrolled in the course
 $context = context_module::instance($cm->id);
 // this should prevent guest access
 require_capability('mod/stratumtwo:view', $context);
@@ -33,13 +34,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $learningObject->isSubmittable()) {
     // new submission, can only submit to exercises
     require_capability('mod/stratumtwo:submit', $context);
     
-    // user submitted a new solution, create a database record
-    // check if submission is allowed (deadline, submit limit)
+    /*if (!is_enrolled($context)) {
+        // check that the user is enrolled in the course (require_login seems to take care of it)
+        $errorMsg = get_string('notenrollednosubmit', mod_stratumtwo_exercise_round::MODNAME);
+    */
     if (!$learningObject->isSubmissionAllowed($USER)) {
+        // check if submission is allowed (deadline, submit limit)
         $errorMsg = get_string('youmaynotsubmit', mod_stratumtwo_exercise_round::MODNAME);
     } else if (!$learningObject->checkSubmissionFileSizes($_FILES)) {
         $errorMsg = get_string('toolargesbmsfile', mod_stratumtwo_exercise_round::MODNAME, $learningObject->getSubmissionFileMaxSize());
     } else {
+        // user submitted a new solution, create a database record
         $sbmsId = mod_stratumtwo_submission::createNewSubmission($learningObject, $USER->id, $_POST);
         if ($sbmsId == 0) {
             // error: the new submission was not stored in the database
