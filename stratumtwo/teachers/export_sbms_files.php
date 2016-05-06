@@ -2,7 +2,6 @@
 /** Page that lets the user export submitted files in the course to a zip archive.
  */
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // defines MOODLE_INTERNAL for libraries
-require_once(dirname(dirname(__FILE__)) .'/locallib.php');
 require_once($CFG->libdir .'/filelib.php');
 
 $cid = required_param('course', PARAM_INT); // Course ID
@@ -38,20 +37,7 @@ if ($form->is_cancelled()) {
 
 if ($fromform = $form->get_data()) {
     // form submitted, prepare parameters for the export function
-    if (isset($fromform->inclallexercises) && $fromform->inclallexercises) {
-        $exerciseIds = null; // all exercises
-    } else if (!empty($fromform->selectexercises)) {
-        // only these exercises
-        $exerciseIds = $fromform->selectexercises;
-    } else if (!empty($fromform->selectcategories)) {
-        // all exercises in these categories
-        $exerciseIds = array_keys(
-                $DB->get_records_list(mod_stratumtwo_learning_object::TABLE, 'categoryid', $fromform->selectcategories, '', 'id'));
-    } else { // (!empty($fromform['selectrounds']))
-        // all exercises in these rounds
-        $exerciseIds = array_keys(
-                $DB->get_records_list(mod_stratumtwo_learning_object::TABLE, 'roundid', $fromform->selectrounds, '', 'id'));
-    }
+    $exerciseIds = \mod_stratumtwo\form\export_results_form::parse_exercises($fromform);
 
     if (empty($fromform->selectstudents)) {
         $studentUserIds = null;
@@ -65,7 +51,8 @@ if ($fromform = $form->get_data()) {
         $submittedBefore = 0;
     }
 
-    $zip_path = stratumtwo_export_submitted_files($cid, $exerciseIds, $studentUserIds, $submittedBefore, $fromform->inclallsubmissions);
+    $zip_path = \mod_stratumtwo\export\export_data::export_submitted_files($cid, $exerciseIds,
+            $studentUserIds, $submittedBefore, $fromform->inclallsubmissions);
     if ($zip_path == false) {
         // error in creating the archive
         throw new moodle_exception('exportfilesziperror', mod_stratumtwo_exercise_round::MODNAME);

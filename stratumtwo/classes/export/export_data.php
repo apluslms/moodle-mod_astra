@@ -435,7 +435,7 @@ class export_data {
         // Create path for new zip file.
         $tempzip = \tempnam($CFG->tempdir, 'stsbms');
         // Zip files.
-        $zipper = new zip_packer();
+        $zipper = new \zip_packer();
         if ($zipper->archive_to_pathname($filesForZipping, $tempzip)) {
             return $tempzip;
         }

@@ -2,7 +2,6 @@
 /** Page that lets the user export course results (points) to a JSON file.
  */
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // defines MOODLE_INTERNAL for libraries
-require_once(dirname(dirname(__FILE__)) .'/locallib.php');
 require_once($CFG->libdir .'/filelib.php');
 
 $cid = required_param('course', PARAM_INT); // Course ID
@@ -27,23 +26,6 @@ $exportNav = $courseNav->add($title,
 $exportNav->make_active();
 
 
-if (!function_exists('json_last_error_msg')) { // added in PHP 5.5
-    function json_last_error_msg() {
-        // Source: http://php.net/manual/en/function.json-last-error-msg.php#117393
-        static $ERRORS = array(
-                JSON_ERROR_NONE => 'No error',
-                JSON_ERROR_DEPTH => 'Maximum stack depth exceeded',
-                JSON_ERROR_STATE_MISMATCH => 'State mismatch (invalid or malformed JSON)',
-                JSON_ERROR_CTRL_CHAR => 'Control character error, possibly incorrectly encoded',
-                JSON_ERROR_SYNTAX => 'Syntax error',
-                JSON_ERROR_UTF8 => 'Malformed UTF-8 characters, possibly incorrectly encoded'
-        );
-
-        $error = json_last_error();
-        return isset($ERRORS[$error]) ? $ERRORS[$error] : 'Unknown error';
-    }
-}
-
 // output starts
 $form = new \mod_stratumtwo\form\export_results_form($cid, 'exportinclallsubmissions',
         'exportresults', 'export_results.php?course='. $cid);
@@ -56,20 +38,7 @@ if ($form->is_cancelled()) {
 
 if ($fromform = $form->get_data()) {
     // form submitted, prepare parameters for the export function
-    if (isset($fromform->inclallexercises) && $fromform->inclallexercises) {
-        $exerciseIds = null; // all exercises
-    } else if (!empty($fromform->selectexercises)) {
-        // only these exercises
-        $exerciseIds = $fromform->selectexercises;
-    } else if (!empty($fromform->selectcategories)) {
-        // all exercises in these categories
-        $exerciseIds = array_keys(
-                $DB->get_records_list(mod_stratumtwo_learning_object::TABLE, 'categoryid', $fromform->selectcategories, '', 'id'));
-    } else { // (!empty($fromform['selectrounds']))
-        // all exercises in these rounds
-        $exerciseIds = array_keys(
-                $DB->get_records_list(mod_stratumtwo_learning_object::TABLE, 'roundid', $fromform->selectrounds, '', 'id'));
-    }
+    $exerciseIds = \mod_stratumtwo\form\export_results_form::parse_exercises($fromform);
     
     if (empty($fromform->selectstudents)) {
         $studentUserIds = null;
@@ -83,11 +52,12 @@ if ($fromform = $form->get_data()) {
         $submittedBefore = 0;
     }
     
-    $json = stratumtwo_export_results($cid, $exerciseIds, $studentUserIds, $submittedBefore, $fromform->inclallsubmissions);
+    $json = \mod_stratumtwo\export\export_data::export_results($cid, $exerciseIds, $studentUserIds,
+            $submittedBefore, $fromform->inclallsubmissions);
     $json_str = json_encode($json);
     if ($json_str == false) {
         // JSON encoding error, probably a bug
-        throw new coding_exception('JSON encoding error: '. json_last_error_msg());
+        throw new coding_exception('JSON encoding error: '. \mod_stratumtwo\export\export_data::json_last_error_msg());
     } else {
         // force the user to download the file
         $date_now = date('d-m-Y\TH-i-s');
