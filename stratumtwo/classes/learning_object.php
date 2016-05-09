@@ -18,7 +18,7 @@ abstract class mod_stratumtwo_learning_object extends mod_stratumtwo_database_ob
     // self::TABLE constant cannot be used in this definition since old PHP versions
     // only support literal constants
     // Usage of this constant: sprintf(mod_stratumtwo_learning_object::SQL_SUBTYPE_JOIN, fields, SUBTYPE_TABLE)
-    const SQL_SUBTYPE_JOIN = 'SELECT %s FROM {stratumtwo_lobjects} lob INNER JOIN {%s} ex ON lob.id = ex.lobjectid';
+    const SQL_SUBTYPE_JOIN = 'SELECT %s FROM {stratumtwo_lobjects} lob JOIN {%s} ex ON lob.id = ex.lobjectid';
     // SQL fragment for selecting all fields in the subtype join query: this avoids the conflict of
     // id columns in both the base table and the subtype table. Id is taken from the subtype and
     // the subtype table should have a column lobjectid which is the id in the base table.
