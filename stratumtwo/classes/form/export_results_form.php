@@ -13,13 +13,10 @@ use get_string;
 class export_results_form extends \moodleform {
     
     protected $courseid;
-    protected $inclAllSubmissionsKey;
     protected $submitButtonLabel;
     
-    public function __construct($courseid, $inclAllSubmissionsKey, $submitButtonLabel, $action = null) {
+    public function __construct($courseid, $submitButtonLabel, $action = null) {
         $this->courseid = $courseid;
-        // string key for label/help of the include all submissions checkbox
-        $this->inclAllSubmissionsKey = $inclAllSubmissionsKey;
         $this->submitButtonLabel = $submitButtonLabel; // string key for the submit button
         parent::__construct($action);
     }
@@ -91,12 +88,20 @@ class export_results_form extends \moodleform {
         $mform->addHelpButton('submittedbefore', 'exportsubmittedbefore', $mod);
         $mform->setDefault('submittedbefore', array()); // disable by default -> not set
         
-        // include all submissions
-        $mform->addElement('advcheckbox', 'inclallsubmissions',
-                get_string($this->inclAllSubmissionsKey, $mod),
-                '', null, array(0, 1));
-        $mform->addHelpButton('inclallsubmissions', $this->inclAllSubmissionsKey, $mod);
-        $mform->setDefault('inclallsubmissions', 0);
+        // select which submissions are included in the regrading
+        $submissionOptions = array(
+                \mod_stratumtwo\export\all_students_course_summary::SUBMISSIONS_BEST =>
+                    get_string('massregrsbmsbest', $mod),
+                \mod_stratumtwo\export\all_students_course_summary::SUBMISSIONS_LATEST =>
+                    get_string('massregrsbmslatest', $mod),
+                \mod_stratumtwo\export\all_students_course_summary::SUBMISSIONS_ALL =>
+                    get_string('massregrsbmsall', $mod),
+                \mod_stratumtwo\export\all_students_course_summary::SUBMISSIONS_ONLY_ERROR =>
+                    get_string('massregrsbmserror', $mod),
+        );
+        $mform->addElement('select', 'selectsubmissions',
+                get_string('massregrinclsbms', $mod), $submissionOptions);
+        $mform->addHelpButton('selectsubmissions', 'massregrinclsbms', $mod);
         
         $this->add_action_buttons(true, get_string($this->submitButtonLabel, $mod));
     }

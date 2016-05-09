@@ -33,7 +33,7 @@ abstract class mod_stratumtwo_database_object {
     }
     
     public function getId() {
-        return $this->record->id;
+        return (int) $this->record->id;
     }
     
     /**

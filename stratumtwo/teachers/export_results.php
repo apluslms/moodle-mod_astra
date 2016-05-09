@@ -27,7 +27,7 @@ $exportNav->make_active();
 
 
 // output starts
-$form = new \mod_stratumtwo\form\export_results_form($cid, 'exportinclallsubmissions',
+$form = new \mod_stratumtwo\form\export_results_form($cid,
         'exportresults', 'export_results.php?course='. $cid);
 if ($form->is_cancelled()) {
     // Handle form cancel operation, if cancel button is present on form
@@ -52,8 +52,9 @@ if ($fromform = $form->get_data()) {
         $submittedBefore = 0;
     }
     
-    $json = \mod_stratumtwo\export\export_data::export_results($cid, $exerciseIds, $studentUserIds,
-            $submittedBefore, $fromform->inclallsubmissions);
+    $export = new \mod_stratumtwo\export\export_data($cid, $exerciseIds, $studentUserIds,
+            $submittedBefore, $fromform->selectsubmissions);
+    $json = $export->export_results();
     $json_str = json_encode($json);
     if ($json_str == false) {
         // JSON encoding error, probably a bug

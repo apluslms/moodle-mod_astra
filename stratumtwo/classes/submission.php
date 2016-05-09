@@ -41,7 +41,7 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     }
     
     public function getSubmissionTime() {
-        return $this->record->submissiontime; // int, Unix timestamp
+        return (int) $this->record->submissiontime; // int, Unix timestamp
     }
     
     public function getHash() {
@@ -94,7 +94,7 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     }
     
     public function getGrade() {
-        return $this->record->grade; // points given to the submission
+        return (int) $this->record->grade; // points given to the submission
     }
     
     public function getGradingTime() {
@@ -108,11 +108,11 @@ class mod_stratumtwo_submission extends mod_stratumtwo_database_object {
     }
     
     public function getServicePoints() {
-        return $this->record->servicepoints;
+        return (int) $this->record->servicepoints;
     }
     
     public function getServiceMaxPoints() {
-        return $this->record->servicemaxpoints;
+        return (int) $this->record->servicemaxpoints;
     }
     
     /**

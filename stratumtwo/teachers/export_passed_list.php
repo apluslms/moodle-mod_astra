@@ -16,7 +16,8 @@ $PAGE->set_url(\mod_stratumtwo\urls\urls::exportPassedList($cid, true));
 //$PAGE->set_title('Download course passed list');
 //$PAGE->set_heading(format_string($course->fullname));
 
-$passed_list = \mod_stratumtwo\export\export_data::course_passed_list($cid);
+$export = new \mod_stratumtwo\export\export_data($cid);
+$passed_list = $export->course_passed_list();
 $passed_str = '';
 foreach ($passed_list as $student) {
     $passed_str .= $student ."\n";

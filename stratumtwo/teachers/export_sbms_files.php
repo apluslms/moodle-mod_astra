@@ -26,7 +26,7 @@ $exportNav = $courseNav->add($title,
 $exportNav->make_active();
 
 // output starts
-$form = new \mod_stratumtwo\form\export_results_form($cid, 'exportfilesinclallsubmissions',
+$form = new \mod_stratumtwo\form\export_results_form($cid,
         'exportsubmittedfiles', 'export_sbms_files.php?course='. $cid);
 if ($form->is_cancelled()) {
     // Handle form cancel operation, if cancel button is present on form
@@ -51,8 +51,9 @@ if ($fromform = $form->get_data()) {
         $submittedBefore = 0;
     }
 
-    $zip_path = \mod_stratumtwo\export\export_data::export_submitted_files($cid, $exerciseIds,
-            $studentUserIds, $submittedBefore, $fromform->inclallsubmissions);
+    $export = new \mod_stratumtwo\export\export_data($cid, $exerciseIds, $studentUserIds,
+            $submittedBefore, $fromform->selectsubmissions);
+    $zip_path = $export->export_submitted_files();
     if ($zip_path == false) {
         // error in creating the archive
         throw new moodle_exception('exportfilesziperror', mod_stratumtwo_exercise_round::MODNAME);

@@ -4,16 +4,22 @@ namespace mod_stratumtwo\export;
 
 defined('MOODLE_INTERNAL') || die();
 
-use \array_keys;
-use \implode;
-
 /** Functions for exporting course data (results/points, submitted files,
  * submitted form input, list of passed students).
  */
 class export_data {
+    
+    protected $courseId;
+    protected $exerciseIds;
+    protected $studentUserIds;
+    protected $submittedBefore;
+    protected $includeSubmissions;
+    
+    protected $courseSummary; // all_students_course_summary object
+    
     /**
-     * Return data of exercise results so that it can be encoded to JSON.
-     * 
+     * Construct object for exporting course data with the given filters.
+     *
      * @param int $courseId
      *            Moodle course ID
      * @param array|null $exerciseIds
@@ -25,45 +31,29 @@ class export_data {
      * @param int $submittedBefore
      *            Unix timestamp. Take only submissions submitted at or before
      *            this time into account.
-     * @param bool $includeAllSubmissions
-     *            if true, a list of all submissions with their grades is
-     *            included for each student and exercise in addition to the best grades. If false, only best
-     *            grades are included for each student and exercise.
+     * @param bool $includeSubmissions
+     *            one of the SUBMISSIONS_* constants in all_students_course_summary class
+     */
+    public function __construct($courseId, array $exerciseIds = null, array $studentUserIds = null,
+            $submittedBefore = 0, $includeSubmissions = all_students_course_summary::SUBMISSIONS_BEST) {
+        $this->courseId = $courseId;
+        $this->exerciseIds = $exerciseIds;
+        $this->studentUserIds = $studentUserIds;
+        $this->submittedBefore = $submittedBefore;
+        $this->includeSubmissions = $includeSubmissions;
+    }
+    
+    /**
+     * Return data of exercise results so that it can be encoded to JSON.
+     * @param bool $includeHiddenExercises if true and $exerciseIds in the constructor is null,
+     * hidden exercises are included in the results
      * @return array exported data that can be encoded to JSON.
      */
-    public static function export_results($courseId, array $exerciseIds = null, array $studentUserIds = null,
-            $submittedBefore = 0, $includeAllSubmissions = true) {
-        global $DB;
+    public function export_results($includeHiddenExercises = false) {
         
-        $categories = \mod_stratumtwo_category::getCategoriesInCourse($courseId, true);
-        $catIds = array_keys($categories);
-        if (empty($catIds)) {
-            return array(); // no exercises, no results
-        }
-        
-        if (empty($exerciseIds)) {
-            // all exercises in the course
-            $exerciseRecords = $DB->get_records_sql(
-                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(
-                            \mod_stratumtwo_exercise::TABLE, 'lob.id, lob.categoryid, lob.remotekey') .
-                    ' WHERE categoryid IN ('. implode(',', $catIds) .')');
-            $exerciseIds = array_keys($exerciseRecords);
-        } else {
-            $exerciseRecords = $DB->get_records_sql(
-                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(
-                            \mod_stratumtwo_exercise::TABLE, 'lob.id, lob.categoryid, lob.remotekey') .
-                    ' WHERE lob.id IN ('. implode(',', $exerciseIds) .')');
-        }
-        
-        $categoriesByExRemoteKey = array(); // used later to look up categories
-        foreach ($exerciseRecords as $ex) {
-            foreach ($categories as $cat) {
-                if ($cat->getId() == $ex->categoryid) {
-                    $categoriesByExRemoteKey[$ex->remotekey] = $cat;
-                    break;
-                }
-            }
-        }
+        $this->courseSummary = new all_students_course_summary($this->courseId, $this->exerciseIds,
+                $this->studentUserIds, $this->submittedBefore, $this->includeSubmissions,
+                $includeHiddenExercises, false);
         
         // submission status to non-localized string for JSON
         $sbmsStatusToString = function ($status) {
@@ -81,95 +71,55 @@ class export_data {
             }
         };
         
-        // build SQL query for fetching all submissions to all exercises
-        // (all exercises in the course or all from $exerciseIds)
-        // (from all students or defined by $studentUserIds)
-        $where = 's.exerciseid IN ('. implode(',', $exerciseIds) .')';
-        $params = array();
-        if (!empty($studentUserIds)) {
-            $where .= ' AND s.submitter IN ('. implode(',', $studentUserIds) .')';
-        }
-        if (!empty($submittedBefore)) {
-            // only count submissions submitted before the given time
-            $where .= ' AND s.submissiontime <= ?';
-            $params[] = $submittedBefore;
-        }
-        // one large DB query instead of repeating multiple small queries for each student and exercise
-        $allSubmissions = $DB->get_recordset_sql(
-            'SELECT s.id, s.status, s.submissiontime, s.exerciseid, s.submitter, s.grade, u.idnumber, u.username, lob.remotekey
-               FROM {'. \mod_stratumtwo_submission::TABLE .'} s
-               JOIN {user} u ON s.submitter = u.id
-               JOIN {'. \mod_stratumtwo_learning_object::TABLE .'} lob ON s.exerciseid = lob.id
-              WHERE ' . $where . 'ORDER BY s.submissiontime ASC',
-                $params);
-        
         $json = array(
                 'students' => array(), 
         );
-        foreach ($allSubmissions as $sbmsRecord) {
-            // use student id or username as an identifier for the student
-            if (empty($sbmsRecord->idnumber) || $sbmsRecord->idnumber === '(null)') {
-                $studentId = $sbmsRecord->username;
-            } else {
-                $studentId = $sbmsRecord->idnumber;
-            }
-            
-            if (!isset($json['students'][$studentId])) {
-                $json['students'][$studentId] = array(
-                        'exercises' => array(),
-                        'categories' => array(), 
-                );
-            }
-            
-            // the exercise is completely missing for the student in the JSON if there are
-            // no submissions
-            if (!isset($json['students'][$studentId]['exercises'][$sbmsRecord->remotekey])) {
-                // initialize
-                $json['students'][$studentId]['exercises'][$sbmsRecord->remotekey] = array(
-                        'points' => - 1, // replaced by any submission below (if best part) since 0 > -1
-                        'submissiontime' => - 1,
-                        'nth' => 0,
-                        'numberofsubmissions' => 0 
-                );
-                if ($includeAllSubmissions) {
-                    $json['students'][$studentId]['exercises'][$sbmsRecord->remotekey]['submissions'] = array();
+        foreach ($this->courseSummary->getSubmissionsByExercise() as $exRemoteKey => $students) {
+            foreach ($students as $userId => $results) {
+                $studentId = $results['student_id'];
+                if (!isset($json['students'][$studentId])) {
+                    $json['students'][$studentId] = array(
+                            'exercises' => array(),
+                            'categories' => array(),
+                    );
                 }
-            }
-            $best = &$json['students'][$studentId]['exercises'][$sbmsRecord->remotekey];
-            if ($sbmsRecord->grade > $best['points']) {
-                $best['points'] = (int) $sbmsRecord->grade;
-                $best['submissiontime'] = (int) $sbmsRecord->submissiontime;
-                $best['nth'] = $best['numberofsubmissions'] + 1; // $allSubmissions is ordered by submission time
-                $best['id'] = (int) $sbmsRecord->id;
-            }
-            $best['numberofsubmissions'] += 1;
-            unset($best);
-            if ($includeAllSubmissions) {
-                // list of points from all submissions to the exercise by this student
-                $json['students'][$studentId]['exercises'][$sbmsRecord->remotekey]['submissions'][] = array(
-                        'points' => (int) $sbmsRecord->grade,
-                        'submissiontime' => (int) $sbmsRecord->submissiontime,
-                        'status' => $sbmsStatusToString($sbmsRecord->status),
-                        'id' => (int) $sbmsRecord->id,
+                // the exercise is completely missing for the student in the JSON if there are
+                // no submissions
+                
+                $numSubmissions = \count($results['submissions']);
+                if ($this->includeSubmissions == all_students_course_summary::SUBMISSIONS_LATEST) {
+                    $bestSbms = $results['submissions'][$numSubmissions - 1];
+                } else {
+                    $bestSbms = $results['best'];
+                }
+                
+                $json['students'][$studentId]['exercises'][$exRemoteKey] = array(
+                        'points' => $bestSbms->getGrade(),
+                        'submissiontime' => $bestSbms->getSubmissionTime(),
+                        'id' => $bestSbms->getId(),
+                        'numberofsubmissions' => $numSubmissions,
                 );
+                // include a list of all submissions in JSON
+                if ($this->includeSubmissions == all_students_course_summary::SUBMISSIONS_ALL ||
+                        $this->includeSubmissions == all_students_course_summary::SUBMISSIONS_ONLY_ERROR) {
+                    $json['students'][$studentId]['exercises'][$exRemoteKey]['submissions'] = array();
+                    foreach ($results['submissions'] as $sbms) {
+                        $json['students'][$studentId]['exercises'][$exRemoteKey]['submissions'][] = array(
+                                'points' => $sbms->getGrade(),
+                                'submissiontime' => $sbms->getSubmissionTime(),
+                                'status' => $sbmsStatusToString($sbms->getStatus()),
+                                'id' => $sbms->getId(),
+                        );
+                    }
+                }
             }
         }
-        $allSubmissions->close();
         
-        foreach ($json['students'] as $studentId => $catsAndExercises) {
-            $categoriesTotal = array(
-                    'coursetotal' => 0,
-            );
-            foreach ($catsAndExercises['exercises'] as $exRemoteKey => $results) {
-                $categoriesTotal['coursetotal'] += $results['points'];
-                $catName = $categoriesByExRemoteKey[$exRemoteKey]->getName();
-                if (isset($categoriesTotal[$catName])) {
-                    $categoriesTotal[$catName] += $results['points'];
-                } else {
-                    $categoriesTotal[$catName] = $results['points'];
-                }
+        foreach ($this->courseSummary->getCategoryTotalsByStudent() as $studentId => $categoryPoints) {
+            foreach ($categoryPoints as $catName => $points) {
+                // includes cat name "coursetotal" = sum of all real categories
+                $json['students'][$studentId]['categories'][$catName] = $points;
             }
-            $json['students'][$studentId]['categories'] = $categoriesTotal;
         }
         
         $json['numberofstudents'] = \count($json['students']);
@@ -184,7 +134,6 @@ class export_data {
                         "<remotekey>" (each exercise): {
                             "points": 10, (points of the best submission)
                             "submissiontime": Unix timestamp,
-                            "nth": 1, (best submission was the first submission)
                             "numberofsubmissions": 5,
                             "id": 1, (database ID of the submission)
                             "submissions": [ (each submission listed if all submissions are included)
@@ -212,41 +161,27 @@ class export_data {
      * Return a list of students that have passed the course exercises (gained at least
      * minimum required points in all exercises, rounds and categories).
      * 
-     * @param int $courseId
-     *            Moodle course ID
      * @return string[] array of student ids (Moodle user idnumber if it exists or username otherwise)
      */
-    public static function course_passed_list($courseId) {
-        global $DB;
-        
+    public function course_passed_list() {
         // compute best points for each student in each exercise with minimal number of DB queries
-        $results = self::export_results($courseId, null, null, 0, false);
+        $results = $this->export_results();
         
-        $categories = \mod_stratumtwo_category::getCategoriesInCourse($courseId);
+        $categories = $this->courseSummary->getCategories();
         if (empty($categories)) {
             return array(); // no exercises, no results
         }
         
-        $visibleExrounds = \mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseId);
+        $visibleExrounds = \mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->courseId);
         $exrounds = array(); // organize by round id
         foreach ($visibleExrounds as $exround) {
             $exrounds[$exround->getId()] = $exround;
         }
         
-        // all non-hidden exercises in the course
-        $exerciseRecords = $DB->get_records_sql(\mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE) .
-                ' WHERE categoryid IN ('. implode(',', array_keys($categories)) .') AND status != ?', array(
-                \mod_stratumtwo_learning_object::STATUS_HIDDEN,
-        ));
-        $exercises = array();
-        foreach ($exerciseRecords as $ex) {
-            // check that the category and round are not hidden
-            if (isset($categories[$ex->categoryid]) && isset($exrounds[$ex->roundid])) {
-                $exercises[$ex->lobjectid] = new \mod_stratumtwo_exercise($ex);
-            }
-        }
+        // all non-hidden exercises in the course (assuming $this->exerciseIds is null)
+        $exercises = $this->courseSummary->getExercises();
         
-        $passedAllExercisesAndRounds = function ($studentResults) use($exercises, $exrounds) {
+        $passedAllExercisesAndRounds = function ($studentResults) use ($exercises, $exrounds) {
             $roundTotals = array();
             foreach ($exercises as $ex) {
                 if (isset($studentResults[$ex->getRemoteKey()])) {
@@ -275,7 +210,7 @@ class export_data {
             }
             return true;
         };
-        $passedAllCategories = function ($studentResults) use($categories) {
+        $passedAllCategories = function ($studentResults) use ($categories) {
             foreach ($categories as $cat) {
                 if (isset($studentResults[$cat->getName()])) {
                     // student's best total points in the category
@@ -301,120 +236,42 @@ class export_data {
         return $passedStudents;
     }
     
-    protected static function get_all_submissions_by_exercise($courseId, $exerciseIds,
-            $studentUserIds, $submittedBefore, $includeAllSubmissions, $includeSubmissionData = false) {
-        global $DB;
-        
-        $categories = \mod_stratumtwo_category::getCategoriesInCourse($courseId, true);
-        $catIds = array_keys($categories);
-        if (empty($catIds)) {
-            return false; // no exercises, no results
-        }
-        
-        if (empty($exerciseIds)) {
-            // all exercises in the course
-            $exerciseRecords = $DB->get_records_sql(
-                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE,
-                            'lob.id, lob.categoryid, lob.remotekey') .
-                    ' WHERE categoryid IN ('. implode (',', $catIds) .')');
-            $exerciseIds = array_keys($exerciseRecords);
-        } else {
-            $exerciseRecords = $DB->get_records_sql(
-                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE,
-                            'lob.id, lob.categoryid, lob.remotekey') .
-                    ' WHERE lob.id IN ('. implode(',', $exerciseIds) .')');
-        }
-        
-        // build SQL query for fetching all submissions to all exercises
-        // (all exercises in the course or all from $exerciseIds)
-        // (from all students or defined by $studentUserIds)
-        $where = 's.exerciseid IN ('. implode(',', $exerciseIds) .')';
-        $params = array();
-        if (!empty($studentUserIds)) {
-            $where .= ' AND s.submitter IN ('. implode(',', $studentUserIds) .')';
-        }
-        if (!empty($submittedBefore)) {
-            // only count submissions submitted before the given time
-            $where .= ' AND s.submissiontime <= ?';
-            $params[] = $submittedBefore;
-        }
-        $submissionDataColumn = '';
-        if ($includeSubmissionData) {
-            $submissionDataColumn = ',s.submissiondata';
-        }
-        // one large DB query instead of repeating multiple small queries for each student and exercise
-        $allSubmissions = $DB->get_recordset_sql(
-            "SELECT s.id, s.status, s.submissiontime, s.exerciseid, s.submitter, s.grade, u.idnumber, u.username, lob.remotekey $submissionDataColumn 
-               FROM {". \mod_stratumtwo_submission::TABLE .'} s
-               JOIN {user} u ON s.submitter = u.id
-               JOIN {'. \mod_stratumtwo_learning_object::TABLE .'} lob ON s.exerciseid = lob.id
-              WHERE '. $where .'ORDER BY s.submissiontime ASC', $params);
-        
-        $submissionsByExercise = array(); // organize submissions
-        foreach ($allSubmissions as $sbmsRecord) {
-            if (empty($sbmsRecord->idnumber) || $sbmsRecord->idnumber === '(null)') {
-                $studentId = $sbmsRecord->username;
-            } else {
-                $studentId = $sbmsRecord->idnumber;
-            }
-        
-            if (!isset($submissionsByExercise[$sbmsRecord->remotekey])) {
-                $submissionsByExercise[$sbmsRecord->remotekey] = array();
-            }
-            if (!isset($submissionsByExercise[$sbmsRecord->remotekey][$studentId])) {
-                $submissionsByExercise[$sbmsRecord->remotekey][$studentId] = array();
-            }
-        
-            $sbms = new \mod_stratumtwo_submission($sbmsRecord);
-            if ($includeAllSubmissions) {
-                $submissionsByExercise[$sbmsRecord->remotekey][$studentId][] = $sbms;
-            } else if (empty($submissionsByExercise[$sbmsRecord->remotekey][$studentId])) { // only keep the best submission
-                $submissionsByExercise[$sbmsRecord->remotekey][$studentId][] = $sbms;
-            } else if ($submissionsByExercise[$sbmsRecord->remotekey][$studentId][0]->getGrade() < $sbms->getGrade()) {
-                $submissionsByExercise[$sbmsRecord->remotekey][$studentId][0] = $sbms;
-            }
-        }
-        $allSubmissions->close();
-        
-        return array($submissionsByExercise, $exerciseRecords);
-    }
-    
     /**
      * Create a zip archive file of the submitted files in the course.
      * 
-     * @param int $courseId
-     *            Moodle course ID
-     * @param array|null $exerciseIds
-     *            exercise learning object IDs that should be included,
-     *            null to include all exercises in the course
-     * @param array|null $studentUserIds
-     *            Moodle user IDs of the users that should be included,
-     *            null for all users that have submitted
-     * @param int $submittedBefore
-     *            Unix timestamp. Take only submissions submitted at or before
-     *            this time into account.
-     * @param bool $includeAllSubmissions
-     *            if true, files from all submissions are included.
-     *            If false, only files from the best submission for each student and exercise are included.
+     * @param bool $includeHiddenExercises if true and $exerciseIds in the constructor is null,
+     * hidden exercises are included in the archive
      * @return path of a temp file (the zip archive) - note this returned file does
      *         not have a .zip extension - it is a temp file.
      */
-    public static function export_submitted_files($courseId, array $exerciseIds = null,
-            array $studentUserIds = null, $submittedBefore = 0, $includeAllSubmissions = false) {
+    public function export_submitted_files($includeHiddenExercises = false) {
         global $CFG;
         require_once ($CFG->libdir . '/filestorage/zip_packer.php');
         
-        list($submissionsByExercise, $exerciseRecords) = self::get_all_submissions_by_exercise(
-                $courseId, $exerciseIds, $studentUserIds, $submittedBefore, $includeAllSubmissions);
+        $this->courseSummary = new all_students_course_summary($this->courseId, $this->exerciseIds,
+                $this->studentUserIds, $this->submittedBefore, $this->includeSubmissions,
+                $includeHiddenExercises, false);
+        
+        $submissionsByExercise = $this->courseSummary->getSubmissionsByExercise();
+        $exercises = $this->courseSummary->getExercises();
         
         // fetch and organize submitted files that are included in the zip archive
         $filesForZipping = array();
         // gather all submitted files to the array
         // (key = file path inside archive, value = Moodle stored_file instance)
-        foreach ($exerciseRecords as $ex) {
-            $exRemoteKey = $ex->remotekey;
+        foreach ($exercises as $ex) {
+            $exRemoteKey = $ex->getRemoteKey();
             if (isset($submissionsByExercise[$exRemoteKey])) {
-                foreach ($submissionsByExercise[$exRemoteKey] as $studentId => $submissions) {
+                foreach ($submissionsByExercise[$exRemoteKey] as $userId => $results) {
+                    if ($this->includeSubmissions == all_students_course_summary::SUBMISSIONS_BEST) {
+                        $submissions = array($results['best']);
+                    } else if ($this->includeSubmissions == all_students_course_summary::SUBMISSIONS_LATEST) {
+                        $submissions = array($results['submissions'][ \count($results['submissions']) - 1 ]);
+                    } else {
+                        $submissions = $results['submissions'];
+                    }
+                    $studentId = $results['student_id'];
+                    
                     foreach ($submissions as $sbms) {
                         $sbmsId = $sbms->getId();
                         $submittedFiles = $sbms->getSubmittedFiles();
@@ -455,34 +312,34 @@ class export_data {
     /**
      * Create a JSON object of the submitted form input in the course.
      *
-     * @param int $courseId
-     *            Moodle course ID
-     * @param array|null $exerciseIds
-     *            exercise learning object IDs that should be included,
-     *            null to include all exercises in the course
-     * @param array|null $studentUserIds
-     *            Moodle user IDs of the users that should be included,
-     *            null for all users that have submitted
-     * @param int $submittedBefore
-     *            Unix timestamp. Take only submissions submitted at or before
-     *            this time into account.
-     * @param bool $includeAllSubmissions
-     *            if true, files from all submissions are included.
-     *            If false, only files from the best submission for each student and exercise are included.
+     * @param bool $includeHiddenExercises if true and $exerciseIds in the constructor is null,
+     * hidden exercises are included in the archive
      * @return array exported data that can be encoded as JSON
      */
-    public static function export_submitted_form_input($courseId, array $exerciseIds = null,
-            array $studentUserIds = null, $submittedBefore = 0, $includeAllSubmissions = false) {
+    public function export_submitted_form_input($includeHiddenExercises = false) {
         
-        list($submissionsByExercise, $exerciseRecords) = self::get_all_submissions_by_exercise(
-                $courseId, $exerciseIds, $studentUserIds, $submittedBefore, $includeAllSubmissions, true);
+        $this->courseSummary = new all_students_course_summary($this->courseId, $this->exerciseIds,
+                $this->studentUserIds, $this->submittedBefore, $this->includeSubmissions,
+                $includeHiddenExercises, true);
+        
+        $submissionsByExercise = $this->courseSummary->getSubmissionsByExercise();
+        $exercises = $this->courseSummary->getExercises();
         
         $submittedFormInput = array();
         
         foreach ($submissionsByExercise as $exRemoteKey => $submissionsByStudent) {
             $submittedFormInput[$exRemoteKey] = array();
-            foreach ($submissionsByStudent as $studentId => $submissions) {
+            foreach ($submissionsByStudent as $userId => $results) {
+                $studentId = $results['student_id'];
                 $submittedFormInput[$exRemoteKey][$studentId] = array();
+                
+                if ($this->includeSubmissions == all_students_course_summary::SUBMISSIONS_BEST) {
+                    $submissions = array($results['best']);
+                } else if ($this->includeSubmissions == all_students_course_summary::SUBMISSIONS_LATEST) {
+                    $submissions = array($results['submissions'][ \count($results['submissions']) - 1 ]);
+                } else {
+                    $submissions = $results['submissions'];
+                }
                 foreach ($submissions as $sbms) {
                     $submittedFormInput[$exRemoteKey][$studentId]['sbms'. $sbms->getId()] =
                             $sbms->getSubmissionData();
