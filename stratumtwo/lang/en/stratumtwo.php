@@ -200,6 +200,7 @@ $string['allowastgrading'] = 'Allow assistant grading';
 $string['allowastgrading_help'] = 'If checked, assistants (non-editing teachers) may write feedback and change points for any submission in the exercise.';
 $string['allowastviewing'] = 'Allow assistant viewing';
 $string['allowastviewing_help'] = 'If checked, assistants (non-editing teachers) may inspect any submission in the exercise.';
+$string['exportdata'] = 'Export course data';
 $string['exportresults'] = 'Export results';
 $string['exportinclallexercises'] = 'Include all exercises';
 $string['exportinclallexercises_help'] = 'Tick to include all exercises, or select only some exercises below.';
@@ -229,6 +230,9 @@ $string['massregrsbmslatest'] = 'Only the latest submission of each student';
 $string['massregrsbmsbest'] = 'Only the currently best submission (highest points) of each student';
 $string['massregrtasksuccess'] = 'The submissions are uploaded to the exercise service for regrading as soon as possible.';
 $string['massregrtaskerror'] = 'Error: the regrading task could not be stored in the database. No submissions are uploaded to the exercise service.';
+$string['exportindexresultsdesc'] = 'Export exercise results (points) of the students or download a list of students that have passed required exercises.';
+$string['exportindexsubmittedfilesdesc'] = 'Export files that students have submitted to exercises as their solutions.';
+$string['exportindexsubmittedformsdesc'] = 'Export values students have submitted in exercise forms. This includes, for example, text written in text fields or the selected checkboxes. Uploaded files are not included.';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';

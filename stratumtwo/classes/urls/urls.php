@@ -183,6 +183,11 @@ class urls {
         return self::buildUrl('/teachers/deviations.php', $query, $asMdlUrl);
     }
     
+    public static function exportIndex($courseid, $asMdlUrl = false) {
+        $query = array('course' => $courseid);
+        return self::buildUrl('/teachers/export_index.php', $query, $asMdlUrl);
+    }
+    
     public static function exportResults($courseid, $asMdlUrl = false) {
         $query = array('course' => $courseid);
         return self::buildUrl('/teachers/export_results.php', $query, $asMdlUrl);
