@@ -37,8 +37,8 @@ function stratumtwo_supports($feature) {
         case FEATURE_GRADE_HAS_GRADE:
             return true;
         case FEATURE_BACKUP_MOODLE2:
-            // backup is not implemented and not needed with the auto-setup block plugin
-            return false;
+            // backup experiment
+            return true; //TODO false if not fully implemented
         default:
             return null;
     }
