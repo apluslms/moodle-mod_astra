@@ -21,9 +21,6 @@ function stratumtwo_page_require($page) {
     $page->requires->css(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/styles/default.min.css'));
     // Highligh.js Javascript is included only as an AMD module, not here
     //$page->requires->js(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js'));
-    
-    // custom JS, use the AMD module version
-    //$page->requires->js(new moodle_url('/mod/'. mod_stratumtwo_exercise_round::TABLE .'/assets/js/stratum2.js'));
 }
 
 /**
