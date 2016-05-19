@@ -314,7 +314,8 @@ if (typeof jQuery === 'undefined') {
 
     clearMenus()
 
-    if (!isActive) {
+    //if (!isActive) {
+    if (isActive) { // HACK, modified from original
       if ('ontouchstart' in document.documentElement && !$parent.closest('.navbar-nav').length) {
         // if mobile we use a backdrop because click events don't delegate
         $(document.createElement('div'))
