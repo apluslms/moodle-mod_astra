@@ -237,14 +237,26 @@ table.results-table .category-row {
     font-weight: bold;
 }
 
+/* unselectable areas for, e.g., source code modal dialogs */
+.unselectable {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 /* New additions for Moodle */
 h3.panel-title {
     line-height: 1.1; /* Moodle makes h3 too high for Bootstrap panel headings */
 }
-/* Moodle core CSS conflicts with Bootstrap modal dialogs */
+/* Moodle core Bootstrap 2 theme CSS conflicts with Bootstrap 3 modal dialogs */
 .modal {
     width: unset;
     margin-left: unset;
+    background-color: unset;
+}
+.modal-dialog {
+	margin-top: 50px; /* so that modal does not overlap with the bar at the top of the page */
 }
 /* Moodle uses class hidden in forms but it is not supposed hide everything like
    in Bootstrap CSS. Overwrite the Bootstrap rule here, !important is required since

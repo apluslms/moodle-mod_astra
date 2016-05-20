@@ -46,7 +46,7 @@ define(['jquery', 'mod_stratumtwo/highlight', 'mod_stratumtwo/twbootstrap'], fun
                     var lines = text.html().split(/\r\n|\r|\n/g);
                     var list = $("<table/>").addClass("src");
                     for (var i = 1; i <= lines.length; i++) {
-                        list.append('<tr><td class="num">' + i + '</td><td class="src">' + lines[i - 1] + '</td></tr>');
+                        list.append('<tr><td class="num unselectable">' + i + '</td><td class="src">' + lines[i - 1] + '</td></tr>');
                     }
                     text.html(list);
 
