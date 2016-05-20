@@ -1,0 +1,90 @@
+{{!
+Template for submission feedback that can be shown in modal dialogs in chapter pages.
+Derived from A+ (a-plus/exercise/templates/exercise/submission_plain.html).
+
+Context variables:
+* submission (object) with fields 
+    - is_graded (bool) true if graded
+    - has_files (bool)
+    - files (array of stdClass objects), each object has fields 
+        that are required by _file_link.mustache
+    - submission_time (int, Unix timestamp)
+    - late_penalty_applied (float)
+    - late_penalty_applied_percent (int, 0-100)
+    - assistant_feedback (string)
+    - feedback (string)
+    - fields required by _points_badge.mustache
+* exercise (object) with fields
+    - allow_assistant_grading (bool)
+* is_course_staff (bool) true if the user can inspect submissions
+* toDateStr callable Function that converts a Unix timestamp to a date string
+* fileSizeFormatter (callable) function to convert bytes (int) to a human-readable string (e.g. "10.2 KB")
+}}
+
+<table class="submission-info table table-bordered table-condensed">
+        <tr>
+            <th>{{#str}} date, mod_stratumtwo {{/str}}</th>
+            <th>{{# submission.is_graded }}{{#str}} points, mod_stratumtwo {{/str}}{{/ submission.is_graded }}
+                {{^ submission.is_graded }}{{#str}} status, mod_stratumtwo {{/str}}{{/ submission.is_graded }}</th>
+            {{# submission.has_files }}
+            <th>{{#str}} files, mod_stratumtwo {{/str}}</th>
+            {{/ submission.has_files }}
+            {{# is_course_staff }}
+            <th>{{#str}} coursestaff, mod_stratumtwo {{/str}}</th>
+            {{/ is_course_staff }}
+        </tr>
+        <tr>
+            <td>
+                {{#toDateStr}}{{ submission.submission_time }}{{/toDateStr}}
+                {{# submission.late_penalty_applied }}
+                <span class="label label-warning">
+                    {{#str}} late, mod_stratumtwo {{/str}} <small>-{{ submission.late_penalty_applied_percent }}%</small>
+                </span>
+                {{/ submission.late_penalty_applied }}
+            </td>
+            <td>{{#submission}}{{> mod_stratumtwo/_points_badge }}{{/submission}}</td>
+            {{# submission.has_files }}
+            <td>
+                <ul class="list-unstyled">
+                {{# submission.files }}
+                    <li>
+                        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                        {{> mod_stratumtwo/_file_link }}
+                    </li>
+                {{/ submission.files }}
+                </ul>
+            </td>
+            {{/ submission.has_files }}
+            {{# is_course_staff }}
+            <td>
+                <a href="{{{ submission.inspecturl }}}" class="btn btn-default btn-xs">
+                    <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+                    {{#str}} inspect, mod_stratumtwo {{/str}}
+                </a>
+            </td>
+            {{/ is_course_staff }}
+        </tr>
+</table>
+
+{{# submission.assistant_feedback }}
+    <h4>{{#str}} assistantfeedback, mod_stratumtwo {{/str}}</h4>
+    <blockquote>{{{ submission.assistant_feedback }}}</blockquote>
+{{/ submission.assistant_feedback }}
+{{^ submission.assistant_feedback }}
+    {{# exercise.allow_assistant_grading }}
+    <div class="alert alert-info">
+        {{#str}} noassistantfeedback, mod_stratumtwo {{/str}}
+    </div>
+    {{/ exercise.allow_assistant_grading }}
+{{/ submission.assistant_feedback }}
+
+{{# submission.feedback }}
+<div id="exercise">
+    {{{ submission.feedback }}}
+</div>
+{{/ submission.feedback }}
+{{^ submission.feedback }}
+<div class="alert alert-info">
+    {{#str}} nofeedback, mod_stratumtwo {{/str}}
+</div>
+{{/ submission.feedback }}

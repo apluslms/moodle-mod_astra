@@ -84,4 +84,9 @@ class renderer extends \plugin_renderer_base {
         $data = $page->export_for_template($this);
         return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/export_index_page', $data);
     }
+    
+    protected function render_submission_plain_page(\mod_stratumtwo\output\submission_plain_page $page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template(\mod_stratumtwo_exercise_round::MODNAME .'/submission_plain', $data);
+    }
 }

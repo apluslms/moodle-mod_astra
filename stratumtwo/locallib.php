@@ -132,3 +132,11 @@ function stratumtwo_send_assistant_feedback_notification(mod_stratumtwo_submissi
     
     return message_send($message);
 }
+
+/**
+ * Return true if the current HTTP request was AJAX.
+ * (Depends on the HTTP request header X-Requested-With.)
+ */
+function stratumtwo_is_ajax() {
+    return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+}

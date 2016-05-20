@@ -53,7 +53,7 @@ class urls {
     }
     
     // plain exercise for embedding into chapters (AJAX)
-    public static function plainExercise(\mod_stratumtwo_learning_object $ex, $asMdlUrl = false) {
+    public static function plainExercise(\mod_stratumtwo_learning_object $ex, $asMdlUrl = false) { //TODO remove?
         $query = array('id' => $ex->getId());
         return self::buildUrl('/exercise_plain.php', $query, $asMdlUrl);
     }

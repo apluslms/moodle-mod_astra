@@ -29,6 +29,7 @@ if ((!$cm->visible || $exround->isHidden() || $learningObject->isHidden()) &&
             'moodle/course:manageactivities', 'nopermissions', '');
 }
 
+$sbms = null;
 $errorMsg = null;
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && $learningObject->isSubmittable()) {
     // new submission, can only submit to exercises
@@ -89,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $learningObject->isSubmittable()) {
                 unlink($f->filepath);
             }
             
-            if (empty($errorMsg)) {
+            if (empty($errorMsg) && !stratumtwo_is_ajax()) {
                 // Redirect the client to the submission page: 
                 // there must be no output before this (echo HTML, whitespace outside php tags)
                 header('Location: '. \mod_stratumtwo\urls\urls::submission($sbms));
@@ -106,30 +107,42 @@ $event = \mod_stratumtwo\event\exercise_viewed::create(array(
 ));
 $event->trigger();
 
-// Print the page header.
-// add CSS and JS
-stratumtwo_page_require($PAGE);
+if (stratumtwo_is_ajax()) {
+    // render page content
+    $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
+    
+    $renderable = new \mod_stratumtwo\output\exercise_plain_page($exround, $learningObject,
+            $USER, $errorMsg, $sbms);
+    header('Content-Type: text/html');
+    echo $output->render($renderable);
+    // no Moodle header/footer in the output
+} else {
 
-// add Moodle navbar item for the exercise, round is already there
-$exerciseNav = stratumtwo_navbar_add_exercise($PAGE, $cm->id, $learningObject);
-$exerciseNav->make_active();
-
-$PAGE->set_url(\mod_stratumtwo\urls\urls::exercise($learningObject, true));
-$PAGE->set_title(format_string($learningObject->getName()));
-$PAGE->set_heading(format_string($course->fullname));
-
-// render page content
-$output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
-
-$renderable = new \mod_stratumtwo\output\exercise_page($exround, $learningObject,
-        $USER, $PAGE->requires, $errorMsg);
-// must call render before outputting any page content (header), since the
-// exercise page must add page requirements (CSS, JS) based on the remote page
-// downloaded from the exercise service
-$page_content = $output->render($renderable);
-
-echo $output->header();
-
-echo $page_content;
-
-echo $output->footer();
+    // Print the page header.
+    // add CSS and JS
+    stratumtwo_page_require($PAGE);
+    
+    // add Moodle navbar item for the exercise, round is already there
+    $exerciseNav = stratumtwo_navbar_add_exercise($PAGE, $cm->id, $learningObject);
+    $exerciseNav->make_active();
+    
+    $PAGE->set_url(\mod_stratumtwo\urls\urls::exercise($learningObject, true));
+    $PAGE->set_title(format_string($learningObject->getName()));
+    $PAGE->set_heading(format_string($course->fullname));
+    
+    // render page content
+    $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
+    
+    $renderable = new \mod_stratumtwo\output\exercise_page($exround, $learningObject,
+            $USER, $PAGE->requires, $errorMsg);
+    // must call render before outputting any page content (header), since the
+    // exercise page must add page requirements (CSS, JS) based on the remote page
+    // downloaded from the exercise service
+    $page_content = $output->render($renderable);
+    
+    echo $output->header();
+    
+    echo $page_content;
+    
+    echo $output->footer();
+}

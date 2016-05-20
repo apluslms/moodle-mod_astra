@@ -124,6 +124,9 @@ $string['exerciseresults'] = 'Exercise results';
 $string['toc'] = 'Table of contents';
 $string['youhaveextrasubmissions'] = 'You have {$a} extra submissions';
 $string['withyourextension'] = 'with your personal extension';
+$string['close'] = 'Close';
+$string['date'] = 'Date';
+$string['files'] = 'Files';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';

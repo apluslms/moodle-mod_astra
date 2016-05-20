@@ -37,25 +37,36 @@ if ($USER->id != $submission->getSubmitter()->id &&
             'mod/stratumtwo:viewallsubmissions', 'nopermissions', '');
 }
 
-// Print the page header.
-// add CSS and JS
-stratumtwo_page_require($PAGE);
+if (stratumtwo_is_ajax()) {
+    // render page content
+    $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
+    
+    $renderable = new \mod_stratumtwo\output\submission_plain_page($exround, $exercise, $submission);
+    header('Content-Type: text/html');
+    echo $output->render($renderable);
+    // no Moodle header/footer in the output
+} else {
 
-// add Moodle navbar item for the exercise and the submission, round is already there
-$exerciseNav = stratumtwo_navbar_add_exercise($PAGE, $cm->id, $exercise);
-$submissionNav = stratumtwo_navbar_add_submission($exerciseNav, $submission);
-$submissionNav->make_active();
-
-$PAGE->set_url(\mod_stratumtwo\urls\urls::submission($submission, true));
-$PAGE->set_title(format_string($exercise->getName()));
-$PAGE->set_heading(format_string($course->fullname));
-
-// render page content
-$output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
-
-echo $output->header();
-
-$renderable = new \mod_stratumtwo\output\submission_page($exround, $exercise, $submission);
-echo $output->render($renderable);
-
-echo $output->footer();
+    // Print the page header.
+    // add CSS and JS
+    stratumtwo_page_require($PAGE);
+    
+    // add Moodle navbar item for the exercise and the submission, round is already there
+    $exerciseNav = stratumtwo_navbar_add_exercise($PAGE, $cm->id, $exercise);
+    $submissionNav = stratumtwo_navbar_add_submission($exerciseNav, $submission);
+    $submissionNav->make_active();
+    
+    $PAGE->set_url(\mod_stratumtwo\urls\urls::submission($submission, true));
+    $PAGE->set_title(format_string($exercise->getName()));
+    $PAGE->set_heading(format_string($course->fullname));
+    
+    // render page content
+    $output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
+    
+    echo $output->header();
+    
+    $renderable = new \mod_stratumtwo\output\submission_page($exround, $exercise, $submission);
+    echo $output->render($renderable);
+    
+    echo $output->footer();
+}

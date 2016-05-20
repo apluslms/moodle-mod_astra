@@ -188,7 +188,6 @@ define(['jquery', 'mod_stratumtwo/twbootstrap'], function(jQuery) {
 		},
 
 		bindNavEvents: function() {
-			return; //changed: disabled
 			var chapter = this.chapter;
 			this.element.find(this.settings.navigation_selector)
 				.on("click", function(event) {
@@ -199,7 +198,6 @@ define(['jquery', 'mod_stratumtwo/twbootstrap'], function(jQuery) {
 		},
 
 		bindFormEvents: function(content) {
-			return; //changed: disabled
 			if (!this.ajax) {
 				var forms = content.find("form").attr("action", this.url);
 				var exercise = this;
@@ -264,7 +262,6 @@ define(['jquery', 'mod_stratumtwo/twbootstrap'], function(jQuery) {
 		},
 
 		loadLastSubmission: function(input) {
-			return; //changed: disabled
 			var link = input.find(this.settings.last_submission_selector);
 			if (link.size() > 0) {
 				var url = link.attr("href");

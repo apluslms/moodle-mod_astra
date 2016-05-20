@@ -13,11 +13,13 @@ class exercise_plain_page implements \renderable, \templatable {
     protected $exerciseSummary; // if the learning object is an exercise
     protected $user;
     protected $errorMsg;
+    protected $submission;
     
     public function __construct(\mod_stratumtwo_exercise_round $exround,
             \mod_stratumtwo_learning_object $learningObject,
             \stdClass $user,
-            $errorMsg = null) {
+            $errorMsg = null,
+            $submission = null) {
         $this->exround = $exround;
         $this->learningObject = $learningObject;
         $this->user = $user;
@@ -27,6 +29,7 @@ class exercise_plain_page implements \renderable, \templatable {
             $this->exerciseSummary = null;
         }
         $this->errorMsg = $errorMsg;
+        $this->submission = $submission; // if set, the page includes the feedback instead of the exercise description
     }
     
     /**
@@ -42,7 +45,13 @@ class exercise_plain_page implements \renderable, \templatable {
         $status_maintenance = ($this->exround->isUnderMaintenance() || $this->learningObject->isUnderMaintenance());
         $not_started = !$this->exround->hasStarted();
 
-        if (!($status_maintenance || $not_started) || $data->is_course_staff) {
+        if ($this->submission !== null) {
+            // show feedback
+            $data->page = new \stdClass();
+            $data->page->content = $this->submission->getFeedback();
+            
+        } else if (!($status_maintenance || $not_started) || $data->is_course_staff) {
+            // download exercise description from the exercise service
             try {
                 $remotePage = $this->learningObject->loadPage($this->user->id);
                 unset($remotePage->remote_page);

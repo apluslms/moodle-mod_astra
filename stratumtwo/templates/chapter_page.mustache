@@ -49,6 +49,19 @@ Context variables:
 
 {{/ mod_stratumtwo/exercise_base }}
 
+<div id="embed-modal" class="modal" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          {{#str}} close, mod_stratumtwo {{/str}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {{#js}}
 require(['jquery', 'mod_stratumtwo/aplus_chapter'], function($) {
   // Construct the page chapter element.

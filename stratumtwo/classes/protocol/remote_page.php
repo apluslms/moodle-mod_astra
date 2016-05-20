@@ -216,7 +216,7 @@ class remote_page {
             foreach ($lobj->getChildren() as $childEx) {
                 $replaceValues[$childEx->getOrder()] = array(
                         'data-aplus-order' => $childEx->getOrder(),
-                        'data-aplus-exercise' => \mod_stratumtwo\urls\urls::plainExercise($childEx),
+                        'data-aplus-exercise' => \mod_stratumtwo\urls\urls::exercise($childEx),
                 );
             }
             $this->findAndReplaceElementAttributes('div', 'data-aplus-exercise', $replaceValues);
