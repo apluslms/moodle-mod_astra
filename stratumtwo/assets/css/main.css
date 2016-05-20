@@ -264,3 +264,7 @@ h3.panel-title {
 fieldset.hidden {
     display: inherit !important;
 }
+/* Moodle sets a height on text inputs but it makes them too low */
+input[type="text"] {
+	height: unset;
+}
