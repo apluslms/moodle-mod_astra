@@ -66,6 +66,7 @@ Context variables:
         </tr>
 </table>
 
+<div id="exercise">
 {{# submission.assistant_feedback }}
     <h4>{{#str}} assistantfeedback, mod_stratumtwo {{/str}}</h4>
     <blockquote>{{{ submission.assistant_feedback }}}</blockquote>
@@ -79,12 +80,11 @@ Context variables:
 {{/ submission.assistant_feedback }}
 
 {{# submission.feedback }}
-<div id="exercise">
     {{{ submission.feedback }}}
-</div>
 {{/ submission.feedback }}
 {{^ submission.feedback }}
 <div class="alert alert-info">
     {{#str}} nofeedback, mod_stratumtwo {{/str}}
 </div>
 {{/ submission.feedback }}
+</div>

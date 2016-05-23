@@ -7,7 +7,6 @@
  * $("#exercise").aplusChapter();
  * 
  * Source: A+ (a-plus/exercise/static/exercise/chapter.js)
- * Some parts have been disabled since Bootstrap modal dialogues do not work in Moodle.
  * License: GNU GPL v3
  * 
  * @module mod_stratumtwo/aplus_chapter
