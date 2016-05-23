@@ -62,6 +62,13 @@ class exercise_plain_page implements \renderable, \templatable {
                 $page->content = '';
                 $data->page = $page;
             }
+        } else if ($status_maintenance) {
+            $data->page = new \stdClass();
+            $data->page->content = '<p>'. \get_string('undermaintenance', \mod_stratumtwo_exercise_round::MODNAME) .'</p>';
+        } else {
+            // not started
+            $data->page = new \stdClass();
+            $data->page->content = '<p>'. \get_string('notopenedyet', \mod_stratumtwo_exercise_round::MODNAME) .'</p>';
         }
         
         if (!is_null($this->errorMsg)) {
