@@ -268,3 +268,39 @@ fieldset.hidden {
 input[type="text"] {
 	height: unset;
 }
+
+/* Moodle makes buttons gray with a gradient, but they should use the Bootstrap
+primary color (blue) (or other contextual colors). */
+input.btn-primary[type="submit"]:hover {
+	color: #fff;
+    background-color: #286090;
+    border-color: #204d74;
+    background-image: none;
+    background-repeat: no-repeat;
+    text-shadow: unset;
+}
+input.btn-primary[type="submit"] {
+	color: #fff;
+    background-color: #337ab7;
+    border-color: #2e6da4;
+    background-image: none;
+    background-repeat: no-repeat;
+    text-shadow: unset;
+}
+
+input.btn-danger[type="submit"]:hover {
+    color: #fff;
+    background-color: #c9302c;
+    border-color: #ac2925;
+    background-image: none;
+    background-repeat: no-repeat;
+    text-shadow: unset;
+}
+input.btn-danger[type="submit"] {
+    color: #fff;
+    background-color: #d9534f;
+    border-color: #d43f3a;
+    background-image: none;
+    background-repeat: no-repeat;
+    text-shadow: unset;
+}
