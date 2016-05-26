@@ -87,11 +87,7 @@ class backup_stratumtwo_activity_structure_step extends backup_activity_structur
         $learningObject->set_source_table(mod_stratumtwo_learning_object::TABLE,
                 array('roundid' => backup::VAR_ACTIVITYID, 'categoryid' => backup::VAR_PARENTID),
                 '(CASE WHEN parentid IS NULL THEN 1 ELSE 2 END), id ASC');
-        // We can only restore learning object parent id references if parent objects are defined before
-        // child objects in the XML. This is a bit more complicated when the parentid foreign key
-        // refers to the same table. We define top-level objects first (parent null) and hope that
-        // other parent nodes have smaller ids than their children.
-        // We can sort the XML node siblings only with a simple SQL ORDERBY statement.
+        // sort top-level learning objects first (parentid null)
         $exercise->set_source_table(mod_stratumtwo_exercise::TABLE, array('lobjectid' => backup::VAR_PARENTID));
         $chapter->set_source_table(mod_stratumtwo_chapter::TABLE, array('lobjectid' => backup::VAR_PARENTID));
         $courseSetting->set_source_table(mod_stratumtwo_course_config::TABLE, array('course' => backup::VAR_COURSEID));

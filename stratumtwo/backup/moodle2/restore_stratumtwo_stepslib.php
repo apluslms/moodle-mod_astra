@@ -5,6 +5,11 @@
  */
 class restore_stratumtwo_activity_structure_step extends restore_activity_structure_step {
 
+    // gather learnig objects that have non-null parentid fields -> parentid is updated
+    // in after_execute method after all learning objects have been restored and their new
+    // IDs are known
+    private $learningObjectsWithParents = array();
+    
     protected function define_structure() {
 
         $paths = array();
@@ -93,14 +98,18 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
         $oldid = $data->id;
         $data->categoryid = $this->get_new_parentid('category');
         $data->roundid = $this->get_new_parentid('stratumtwo');
+        
         if ($data->parentid !== null) {
+            $oldParentId = $data->parentid;
             $data->parentid = $this->get_mappingid('learningobject', $data->parentid, null);
             if ($data->parentid === null) {
                 // mapping not found because the parent was not defined before the child in the XML
-                $this->get_logger()->process(
-                    "Parent id of a learning object (name={$data->name}) could not be recovered, setting the object to top level.",
-                    backup::LOG_ERROR);
-                //TODO parentids in some other XML tree to get correct mapping?
+                // update this parentid later
+                $lobject = array(
+                        'id' => $oldid,
+                        'parentid' => $oldParentId,
+                );
+                $this->learningObjectsWithParents[] = (object) $lobject;
             }
         }
         
@@ -180,8 +189,24 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
     }
 
     protected function after_execute() {
+        global $DB;
+        
         // Restore submitted files
         $this->add_related_files(mod_stratumtwo_exercise_round::MODNAME,
                 mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA, 'submission');
+        
+        // fix learning object parentids
+        foreach ($this->learningObjectsWithParents as $old_lobject) {
+            $new_lobject = new stdClass();
+            $new_lobject->parentid = $this->get_mappingid('learningobject', $old_lobject->parentid);
+            $new_lobject->id = $this->get_mappingid('learningobject', $old_lobject->id);
+            
+            if (!$new_lobject->id || !$new_lobject->parentid) {
+                // mapping not found even though all learning objects have been restored
+                debugging('restore_stratumtwo_activity_structure_step::after_execute: learning object mapping not found while fixing parentids');
+            } else {
+                $DB->update_record(mod_stratumtwo_learning_object::TABLE, $new_lobject);
+            }
+        }
     }
 }
