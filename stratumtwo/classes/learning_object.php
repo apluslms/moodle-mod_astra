@@ -328,8 +328,8 @@ abstract class mod_stratumtwo_learning_object extends mod_stratumtwo_database_ob
                     'other' => array(
                             'error' => $e->getMessage(),
                             'url' => $serviceUrl,
-                            'objtable' => static::TABLE,
-                            'objid' => $this->getSubtypeId(),
+                            'objtable' => self::TABLE,
+                            'objid' => $this->getId(),
                     )
             ));
             $event->trigger();
@@ -340,8 +340,8 @@ abstract class mod_stratumtwo_learning_object extends mod_stratumtwo_database_ob
                     'other' => array(
                             'error' => $e->getMessage(),
                             'url' => $serviceUrl,
-                            'objtable' => static::TABLE,
-                            'objid' => $this->getSubtypeId(),
+                            'objtable' => self::TABLE,
+                            'objid' => $this->getId(),
                     )
             ));
             $event->trigger();

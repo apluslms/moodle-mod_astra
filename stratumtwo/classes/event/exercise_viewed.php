@@ -9,7 +9,7 @@ defined('MOODLE_INTERNAL') || die();
 An event is created like this:
 $event = \mod_stratumtwo\event\exercise_viewed::create(array(
     'context' => context_module::instance($cm->id),
-    'objectid' => $exercise->id,
+    'objectid' => $exercise->id, // learning object ID
     'relateduserid' => $user->id, // if needed
 ));
 $event->trigger();
@@ -19,7 +19,7 @@ class exercise_viewed extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'r'; // c(reate), r(ead), u(pdate), d(elete)
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        $this->data['objecttable'] = \mod_stratumtwo_exercise::TABLE; // DB table
+        $this->data['objecttable'] = \mod_stratumtwo_learning_object::TABLE; // DB table
     }
 
     /* Return localised name of the event, it is the same for all instances.
@@ -40,5 +40,9 @@ class exercise_viewed extends \core\event\base {
     public function get_url() {
         return new \moodle_url('/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/exercise.php',
             array('id' => $this->objectid));
+    }
+    
+    public static function get_objectid_mapping() {
+        return array('db' => \mod_stratumtwo_learning_object::TABLE, 'restore' => 'learningobject');
     }
 }

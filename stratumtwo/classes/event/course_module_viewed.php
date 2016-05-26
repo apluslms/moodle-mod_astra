@@ -23,4 +23,8 @@ class course_module_viewed extends \core\event\course_module_viewed {
         $this->data['objecttable'] = \mod_stratumtwo_exercise_round::TABLE;
         parent::init();
     }
+    
+    public static function get_objectid_mapping() {
+        return array('db' => \mod_stratumtwo_exercise_round::TABLE, 'restore' => 'stratumtwo');
+    }
 }

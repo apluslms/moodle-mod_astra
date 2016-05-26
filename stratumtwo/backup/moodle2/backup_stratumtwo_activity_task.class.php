@@ -28,8 +28,23 @@ class backup_stratumtwo_activity_task extends backup_activity_task {
      * Code the transformations to perform in the activity in
      * order to get transportable (encoded) links
      */
-    static public function encode_content_links($content) {
-        //TODO
+    public static function encode_content_links($content) {
+        global $CFG;
+        
+        $base = preg_quote($CFG->wwwroot, "/");
+        
+        // Link to the list of exercise rounds
+        $search = "/(". $base ."\/mod\/". mod_stratumtwo_exercise_round::TABLE ."\/index.php\?id\=)([0-9]+)/";
+        $content = preg_replace($search, '$@STRATUMTWOINDEX*$2@$', $content);
+        
+        // Link to round view by moduleid
+        $search = "/(". $base ."\/mod\/". mod_stratumtwo_exercise_round::TABLE ."\/view.php\?id\=)([0-9]+)/";
+        $content = preg_replace($search, '$@STRATUMTWOVIEWBYID*$2@$', $content);
+        
+        // Link to round view by stratumtwo id
+        $search = "/(". $base ."\/mod\/". mod_stratumtwo_exercise_round::TABLE ."\/view.php\?s\=)([0-9]+)/";
+        $content = preg_replace($search, '$@STRATUMTWOVIEWBYS*$2@$', $content);
+        
         return $content;
     }
 }

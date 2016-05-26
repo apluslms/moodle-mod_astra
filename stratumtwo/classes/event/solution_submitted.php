@@ -42,4 +42,8 @@ class solution_submitted extends \core\event\base {
         return new \moodle_url('/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/submission.php',
             array('id' => $this->objectid));
     }
+    
+    public static function get_objectid_mapping() {
+        return array('db' => \mod_stratumtwo_submission::TABLE, 'restore' => 'submission');
+    }
 }

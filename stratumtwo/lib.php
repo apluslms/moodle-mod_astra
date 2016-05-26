@@ -37,8 +37,7 @@ function stratumtwo_supports($feature) {
         case FEATURE_GRADE_HAS_GRADE:
             return true;
         case FEATURE_BACKUP_MOODLE2:
-            // backup experiment
-            return true; //TODO false if not fully implemented
+            return true;
         default:
             return null;
     }

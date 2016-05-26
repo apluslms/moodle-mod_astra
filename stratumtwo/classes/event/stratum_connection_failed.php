@@ -16,7 +16,7 @@ $event = \mod_stratumtwo\event\stratum_connection_failed::create(array(
     'other' => array(
         'error' => curl_error($ch),
         'url' => 'https://tried.to.connect.here.com',
-        'objtable' => 'stratumtwo_exercises', // or 'stratumtwo_submissions', used if relevant
+        'objtable' => 'stratumtwo_lobjects', // or 'stratumtwo_submissions', used if relevant
         'objid' => 1, // id of the module instance (DB row), zero means none
     )
 ));
@@ -53,14 +53,20 @@ class stratum_connection_failed extends \core\event\base {
                 $this->other['objid'] == 0) {
             return null;
         }
-        if ($this->other['objtable'] == \mod_stratumtwo_exercise::TABLE) {
+        if ($this->other['objtable'] == \mod_stratumtwo_learning_object::TABLE) {
             return new \moodle_url('/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/exercise.php',
-                    array('id' => $this->other['objid'])); // stratum2 exercise ID
+                    array('id' => $this->other['objid'])); // stratum2 learning object ID
         }
         if ($this->other['objtable'] == \mod_stratumtwo_submission::TABLE) {
             return new \moodle_url('/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/submission.php',
                     array('id' => $this->other['objid'])); // stratum2 submission ID
         }
         return null;
+    }
+    
+    public static function get_other_mapping() {
+        // can not map objid in other data for backup/restore since this method is static
+        // and the objtable varies
+        return false;
     }
 }
