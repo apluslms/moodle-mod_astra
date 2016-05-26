@@ -190,8 +190,13 @@ define(['jquery', 'mod_stratumtwo/twbootstrap'], function(jQuery) {
 			var chapter = this.chapter;
 			this.element.find(this.settings.navigation_selector)
 				.on("click", function(event) {
-					event.preventDefault();
-					chapter.openModalURL($(this).attr("href"));
+					// Changed from A+: do not open a link in a modal dialog if
+					// the element has class no-open-modal ->
+					// instead use it as a normal link to the target page
+					if (!$(this).hasClass("no-open-modal")) {
+						event.preventDefault();
+						chapter.openModalURL($(this).attr("href"));
+					}
 				});
 			this.element.find(this.settings.dropdown_selector).dropdown();
 		},
