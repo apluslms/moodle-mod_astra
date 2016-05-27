@@ -317,9 +317,13 @@ abstract class mod_stratumtwo_learning_object extends mod_stratumtwo_database_ob
      * @return stdClass with field content
      */
     public function loadPage($userid) {
+        $courseConfig = mod_stratumtwo_course_config::getForCourseId(
+                $this->getExerciseRound()->getCourse()->courseid);
+        $api_key = ($courseConfig ? $courseConfig->getApiKey() : null);
+        
         $serviceUrl = $this->getLoadUrl($userid);
         try {
-            $remotePage = new \mod_stratumtwo\protocol\remote_page($serviceUrl);
+            $remotePage = new \mod_stratumtwo\protocol\remote_page($serviceUrl, false, null, null, $api_key);
             return $remotePage->loadExercisePage($this);
         } catch (\mod_stratumtwo\protocol\stratum_connection_exception $e) {
             // error logging

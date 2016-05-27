@@ -34,11 +34,12 @@ class remote_page {
      * @param array $files array of files to upload. Keys are used as POST data keys and
      * values are objects with fields filename (original base name), filepath (full path)
      * and mimetype.
+     * @param string $api_key API key for authorization, null if not used
      * @throws \mod_stratumtwo\protocol\remote_page_exception if there are errors
      * in connecting to the server
      */
-    public function __construct($url, $post = false, $data = null, $files = null) {
-        $this->response = self::request($url, $post, $data, $files);
+    public function __construct($url, $post = false, $data = null, $files = null, $api_key = null) {
+        $this->response = self::request($url, $post, $data, $files, $api_key);
         $this->DOMdoc = new \DOMDocument();
         if ($this->DOMdoc->loadHTML($this->response) === false)
             throw new \mod_stratumtwo\protocol\remote_page_exception('DOMDocument::loadHTML could not load the response');
@@ -69,8 +70,8 @@ class remote_page {
                 
                 CURLOPT_SSL_VERIFYPEER => true, // HTTPS certificate and security
                 CURLOPT_SSL_VERIFYHOST => 2,
-                //CURLOPT_CAPATH => self::CAPATH,
-                //CURLOPT_CAINFO => self::stratum_CA_file_path(), //TODO
+                //CURLOPT_CAPATH => self::CAPATH, // a directory that holds multiple CA certificates
+                CURLOPT_CAINFO => self::exercise_service_CA_path(),
         ));
         
         if (!is_null($api_key)) {
@@ -124,6 +125,15 @@ class remote_page {
             }
         }
         return $response; // response as string
+    }
+    
+    /**
+     * Return the file path to CA file that is used to verify secure HTTPS
+     * connections to the exercise service.
+     */
+    protected static function exercise_service_CA_path() {
+        global $CFG;
+        return $CFG->dirroot .'/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/exservice_CA.pem';
     }
     
     /**

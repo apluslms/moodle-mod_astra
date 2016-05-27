@@ -477,10 +477,14 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
             $files = $submission->prepareSubmissionFilesForUpload();
         }
         
+        $courseConfig = mod_stratumtwo_course_config::getForCourseId(
+                $submission->getExercise()->getExerciseRound()->getCourse()->courseid);
+        $api_key = ($courseConfig ? $courseConfig->getApiKey() : null);
+        
         $serviceUrl = $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncGradeSubmission($submission));
         try {
             $remotePage = new \mod_stratumtwo\protocol\remote_page(
-                    $serviceUrl, true, $sbmsData, $files);
+                    $serviceUrl, true, $sbmsData, $files, $api_key);
         } catch (\mod_stratumtwo\protocol\remote_page_exception $e) {
             if ($deleteFiles) {
                 foreach ($files as $f) {
