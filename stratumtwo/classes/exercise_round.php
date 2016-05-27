@@ -790,7 +790,9 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         // Delete all learning objects of the round, since their foreign key roundid would become invalid
         $learningObjects = $this->getLearningObjects(true);
         foreach ($learningObjects as $lobj) {
-            // TODO is there a problem that objects delete their child objects? Only delete top-level objects here?
+            // If some learning objects have child objects, deleting the parent should
+            // already delete the child. However, there is no harm in calling delete again
+            // here for the already deleted child objects.
             if ($lobj->isSubmittable()) { // exercise
                 $lobj->deleteInstance(false);
             } else {
