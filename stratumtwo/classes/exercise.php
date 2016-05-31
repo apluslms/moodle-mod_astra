@@ -284,7 +284,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
                 mod_stratumtwo_exercise_round::TABLE,
                 $this->getExerciseRound()->getId(),
                 $userid);
-        return $grades[$this->getGradebookItemNumber()]->grade;
+        return (int) $grades->items[$this->getGradebookItemNumber()]->grades[$userid]->grade;
     }
     
     /**
