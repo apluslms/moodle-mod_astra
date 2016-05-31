@@ -14,9 +14,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_stratumtwo';
-$plugin->version = 2016021900;
+$plugin->version = 2016053100;
 $plugin->release = 'v0.1';
 $plugin->requires =  2015111600; // Moodle 3.0
-$plugin->maturity = MATURITY_ALPHA;
+$plugin->maturity = MATURITY_BETA;
 //$plugin->cron = 0; // legacy cron API 
 $plugin->dependencies = array();
