@@ -14,6 +14,7 @@ class user_module_summary {
     protected $exround;
     protected $user;
     protected $exerciseSummaries;
+    protected $latestSubmissionTime;
     
     /**
      * Create a summary of a user's status in one exercise round.
@@ -32,6 +33,17 @@ class user_module_summary {
         $this->exround = $exround;
         $this->user = $user;
         $this->exerciseSummaries = $exerciseSummaries;
+        $this->latestSubmissionTime = 0; // time of the latest submission in the round from the user
+        foreach ($exerciseSummaries as $exsummary) {
+            // the best submissions are not necessarily the latest, but it does not matter
+            // since the latest submission time is only used when the round summary is generated
+            // here and this loop is then not used
+            $best = $exsummary->getBestSubmission();
+            if ($best !== null && $best->getSubmissionTime() > $this->latestSubmissionTime) {
+                $this->latestSubmissionTime = $best->getSubmissionTime();
+            }
+        }
+        
         if ($generate) {
             $this->generate();
         }
@@ -70,6 +82,10 @@ class user_module_summary {
                 $exerciseBest['best'] = $sbms;
             }
             $exerciseBest['count'] += 1;
+            
+            if ($sbms->getSubmissionTime() > $this->latestSubmissionTime) {
+                $this->latestSubmissionTime = $sbms->getSubmissionTime();
+            }
         }
         
         $submissions->close();
@@ -131,6 +147,10 @@ class user_module_summary {
     
     public function isSubmitted() {
         return $this->getTotalSubmissionCount() > 0;
+    }
+    
+    public function getLatestSubmissionTime() {
+        return $this->latestSubmissionTime;
     }
     
     public function getTemplateContext() {
