@@ -45,6 +45,14 @@ Thus, the plugin files (version.php etc.) should be under the following director
 moodledir/mod/stratumtwo/
 moodledir/blocks/stratumtwo_setup/
 
+mod_stratumtwo needs a secret key defined in the source code. If the code is
+pulled from a (Git) repository, the default key is not safe to use in production
+servers. The secret key should be 50-100 characters long and consist of printable
+ASCII characters. It is defined in the PHP file `stratumtwo/stratum_settings.php`
+as a constant `STRATUMTWO_SECRET_KEY`. One way to generate a new random key using
+a Linux shell is the following command: 
+`$ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-99};echo;`
+
 After copying the files, an admin needs to visit the Moodle admin pages
 in the web browser and upgrade the database, as usual when installing plugins.
 
