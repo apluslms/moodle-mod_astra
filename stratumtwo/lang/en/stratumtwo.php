@@ -236,6 +236,8 @@ $string['massregrtaskerror'] = 'Error: the regrading task could not be stored in
 $string['exportindexresultsdesc'] = 'Export exercise results (points) of the students or download a list of students that have passed required exercises.';
 $string['exportindexsubmittedfilesdesc'] = 'Export files that students have submitted to exercises as their solutions.';
 $string['exportindexsubmittedformsdesc'] = 'Export values students have submitted in exercise forms. This includes, for example, text written in text fields or the selected checkboxes. Uploaded files are not included.';
+$string['exercisessubmitted'] = 'Exercises submitted';
+$string['submissionsreceived'] = '{$a} submissions received';
 
 // edit course page
 $string['exercisecategories'] = 'Exercise categories';

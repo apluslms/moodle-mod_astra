@@ -112,30 +112,26 @@ function stratumtwo_delete_instance($id) {
  * @return stdClass|null
  */
 function stratumtwo_user_outline($course, $user, $cm, $stratumtwo) {
-/*    global $CFG;
-    require_once($CFG->libdir .'/gradelib.php');
-
-    // get user grades
-    $gradinginfo = grade_get_grades($course->id, 'mod', stratumtwo_PLUGINNAME,
-            $stratumtwo->id, $user->id);
-    if (empty($gradinginfo->items)) {
-        return null;
-    }
-    $gradingitem = $gradinginfo->items[0]; // 0 = grade_item itemnumber
-    // the plugin only uses zero in grade item itemnumbers
-    if (!isset($gradingitem->grades[$user->id]->grade)) {
-        return null;
-    }
-    $gradebookgrade = $gradingitem->grades[$user->id];
-
+    // this callback is called from report/outline/user.php (course totals for user activity report)
+    // report is accessible from the course user profile page, site may disallow students from viewing their reports
+    
+    // return the user's best total grade in the round and nothing else as the outline
+    
+    $exround = new mod_stratumtwo_exercise_round($stratumtwo);
+    $summary = new \mod_stratumtwo\summary\user_module_summary($exround, $user);
+    
     $return = new stdClass();
-    $return->time = $gradebookgrade->dategraded;
-    $return->info = get_string('points', stratumtwo_MODNAME) .': '. $gradebookgrade->str_long_grade;
-    return $return;
-*/
-    $return = new stdClass(); //TODO update from old plugin
-    $return->time = 1446714353;
-    $return->info = 'NOT YET IMPLEMENTED';
+    $return->time = null;
+    
+    if ($summary->isSubmitted()) {
+        $maxPoints = $summary->getMaxPoints();
+        $points = $summary->getTotalPoints();
+        $return->info = get_string('grade', mod_stratumtwo_exercise_round::MODNAME) ." $points/$maxPoints";
+        $return->time = $summary->getLatestSubmissionTime();
+    } else {
+        $return->info = get_string('nosubmissions', mod_stratumtwo_exercise_round::MODNAME);
+    }
+    
     return $return;
 }
 
@@ -151,10 +147,17 @@ function stratumtwo_user_outline($course, $user, $cm, $stratumtwo) {
  * @param stdClass $stratumtwo the module instance record
  */
 function stratumtwo_user_complete($course, $user, $cm, $stratumtwo) {
-    // TODO should this print all submissions and their points?
-    // for now, let's keep this short and simple
-    $outline = stratumtwo_user_outline($course, $user, $cm, $stratumtwo);
-    echo $outline->info;
+    // this callback is called from report/outline/user.php (course totals for user activity report)
+    // report is accessible from the course user profile page, site may disallow students from viewing their reports
+    
+    // reuse the other callback that gathers all submissions in a round for a user
+    $activities = array();
+    $index = 0;
+    stratumtwo_get_recent_mod_activity($activities, $index, 0, $course->id, $cm->id, $user->id);
+    $modnames = get_module_types_names();
+    foreach ($activities as $activity) {
+        stratumtwo_print_recent_mod_activity($activity, $course->id, true, $modnames, true);
+    }
 }
 
 /**
@@ -167,52 +170,92 @@ function stratumtwo_user_complete($course, $user, $cm, $stratumtwo) {
  * @return boolean True if anything was printed, otherwise false
  */
 function stratumtwo_print_recent_activity($course, $viewfullnames, $timestart) {
-/*    require_once(dirname(__FILE__) .'/recent_lib.php');
-    global $USER, $OUTPUT;
-    // Recent activity is taken from the grades in the gradebook (they have timestamps)
-    // to avoid querying the Stratum server over HTTP for all submissions in the course.
-    // Thus, the recent activity only includes submissions that have been graded.
-
+    // this callback is used by the Moodle recent activity block
+    global $USER, $DB, $OUTPUT;
+    
+    // all submissions in the course since $timestart
+    $sql =
+        'SELECT s.* 
+           FROM {'. mod_stratumtwo_submission::TABLE .'} s 
+          WHERE s.exerciseid IN (
+            SELECT id 
+              FROM {'. mod_stratumtwo_learning_object::TABLE .'} 
+             WHERE categoryid IN (
+              SELECT id 
+                FROM {'. mod_stratumtwo_category::TABLE .'} 
+               WHERE course = ?
+             )
+          ) AND s.submissiontime > ?';
+    $params = array($course->id, $timestart);
+    
     $context = context_course::instance($course->id);
-    if (has_capability('moodle/grade:viewall', $context)) {
-        // teacher can see submissions from all students
-        $userid = 0;
-    } else {
-        $userid = $USER->id;
+    $isTeacher = has_capability('mod/stratumtwo:viewallsubmissions', $context);
+    if (!$isTeacher) {
+        // student only sees her own recent activity, not from other students
+        $sql .= ' AND s.submitter = ?';
+        $params[] = $USER->id;
     }
-
-    $items_to_show = stratumtwo_print_recent_activity_helper($course->id,
-            $timestart, $userid);
-
-    if (empty($items_to_show)) {
+    
+    $submissionsByExercise = array();
+    $submissionRecords = $DB->get_recordset_sql($sql, $params);
+    // organize recent submissions by exercise
+    foreach ($submissionRecords as $sbmsRec) {
+        $sbms = new mod_stratumtwo_submission($sbmsRec);
+        if (isset($submissionsByExercise[$sbmsRec->exerciseid])) {
+            $submissionsByExercise[$sbmsRec->exerciseid][] = $sbms; 
+        } else {
+            $submissionsByExercise[$sbmsRec->exerciseid] = array($sbms);
+        }
+    }
+    $submissionRecords->close();
+    
+    if (empty($submissionsByExercise)) {
         return false;
     }
-
-    echo $OUTPUT->heading(get_string('gradedasgns', stratumtwo_MODNAME) .':', 3);
-    if ($userid === 0) {
-        // Do not show a massive list of all students to the teacher.
-        // Show just an aggregate value for each asgn/subasgn.
-        foreach ($items_to_show as $it) {
-            // echo similar HTML structure as function print_recent_activity_note in moodle/lib/weblib.php
+    
+    echo $OUTPUT->heading(get_string('exercisessubmitted', mod_stratumtwo_exercise_round::MODNAME) .':', 3);
+    
+    if ($isTeacher) {
+        // teacher: show the number of recent submissions in each exercise
+        foreach ($submissionsByExercise as $submissions) {
+            $exercise = $submissions[0]->getExercise();
+            $numSubmissions = count($submissions);
+            $text = $exercise->getName();
+            
+            // echo similar HTML structure as function print_recent_activity_note in moodle/lib/weblib.php,
+            // but without any specific user
             $out = '';
             $out .= '<div class="head">';
             $out .= '<div class="date">'.userdate(time(), get_string('strftimerecent')).'</div>';
             $out .= '<div class="name">'.
-                    get_string('gradedstudents', stratumtwo_MODNAME, $it->numstudents).'</div>';
+                    get_string('submissionsreceived', mod_stratumtwo_exercise_round::MODNAME, $numSubmissions).'</div>';
             $out .= '</div>';
-            $out .= '<div class="info"><a href="'. $it->link .'">'.
-                    format_string($it->text, true).'</a></div>';
+            $out .= '<div class="info"><a href="'. \mod_stratumtwo\urls\urls::submissionList($exercise) .'">'.
+                    format_string($text, true).'</a></div>';
             echo $out;
         }
     } else {
-        // a single student, show details for each asgn/subasgn
-        foreach ($items_to_show as $it) {
-            print_recent_activity_note($it->time, $it->user, $it->text, $it->link, false, $viewfullnames);
+        // student: of recent submissions, show the best one in each exercise
+        foreach ($submissionsByExercise as $submissions) {
+            $best = $submissions[0];
+            foreach ($submissions as $sbms) {
+                if ($sbms->getGrade() > $best->getGrade()) {
+                    $best = $sbms;
+                }
+            }
+            
+            $text = $best->getExercise()->getName();
+            if ($best->isGraded()) {
+                $grade = $best->getGrade();
+                $maxPoints = $best->getExercise()->getMaxPoints();
+                $text .= ' ('. get_string('grade', mod_stratumtwo_exercise_round::MODNAME) ." $grade/$maxPoints)";
+            }
+            print_recent_activity_note($best->getSubmissionTime(), $USER, $text,
+                    \mod_stratumtwo\urls\urls::submission($best), false, $viewfullnames);
         }
     }
+    
     return true;
-*/
-    return false; //TODO update from old plugin
 }
 
 /**
@@ -233,41 +276,75 @@ function stratumtwo_print_recent_activity($course, $viewfullnames, $timestart) {
  * @param int $groupid check for a particular group's activity only, defaults to 0 (all groups)
  */
 function stratumtwo_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid=0, $groupid=0) {
-/*    require_once(dirname(__FILE__) .'/recent_lib.php');
+    // this callback is called from course/recent.php, which is linked from the recent activity block
     global $USER, $DB;
-
+    
     $context = context_course::instance($courseid);
-    // a student should not see other students' grades/activity
-    if ($USER->id !== $userid && !has_capability('moodle/grade:viewall', $context)) {
-        return;
-    }
-
-    $modinfo = get_fast_modinfo($courseid);
-    $cm = $modinfo->get_cm($cmid);
-
-    if ($userid == 0) { // $userid may be a string so === should not be used
-        $items_to_show = stratumtwo_get_recent_mod_activity_all_students($courseid,
-            stratumtwo_PLUGINNAME, $cm->instance, $timestart);
-    } else {
-        $stratum = $DB->get_record(stratumtwo_PLUGINNAME, array('id' => $cm->instance), '*', MUST_EXIST);
-        $item = stratumtwo_get_recent_activity_one_instance($timestart,
-            stratumtwo_PLUGINNAME, $stratum, $userid);
-        if (is_null($item)) {
-            $items_to_show = array();
+    $isTeacher = has_capability('mod/stratumtwo:viewallsubmissions', $context);
+    if ($userid != $USER->id && !$isTeacher) {
+        if ($userid == 0) {
+            // all users requested but a student sees only herself
+            $userid = $USER->id;
         } else {
-            $items_to_show = array($item);
+            return; // only teachers see other users' activity
         }
     }
-    foreach ($items_to_show as $item) {
-        // add new fields to the objects in the array and
-        // append the objects to the $activities array (passed by reference)
-        $item->type = stratumtwo_PLUGINNAME;
-        $item->cmid = $cmid;
-
-        $activities[$index++] = $item;
+    
+    $modinfo = get_fast_modinfo($courseid);
+    $cm = $modinfo->get_cm($cmid);
+    $exround = mod_stratumtwo_exercise_round::createFromId($cm->instance);
+    
+    // all submissions in the round given by $cmid since $timestart
+    $sql =
+        'SELECT s.*
+           FROM {'. mod_stratumtwo_submission::TABLE .'} s 
+          WHERE s.exerciseid IN (
+            SELECT id
+              FROM {'. mod_stratumtwo_learning_object::TABLE .'} 
+             WHERE roundid = ? 
+          ) AND s.submissiontime > ?';
+    $params = array($exround->getId(), $timestart);
+    
+    if ($userid != 0) {
+        // only one user
+        $sql .= ' AND s.submitter = ?';
+        $params[] = $userid;
     }
-*/
-    //TODO update from old plugin
+    
+    $sql .= ' ORDER BY s.submissiontime ASC';
+    
+    $submissionsByExercise = array();
+    $submissionRecords = $DB->get_recordset_sql($sql, $params);
+    // organize recent submissions by exercise
+    foreach ($submissionRecords as $sbmsRec) {
+        $sbms = new mod_stratumtwo_submission($sbmsRec);
+        if (isset($submissionsByExercise[$sbmsRec->exerciseid])) {
+            $submissionsByExercise[$sbmsRec->exerciseid][] = $sbms;
+        } else {
+            $submissionsByExercise[$sbmsRec->exerciseid] = array($sbms);
+        }
+    }
+    $submissionRecords->close();
+    
+    foreach ($exround->getExercises(true) as $exercise) {
+        if (isset($submissionsByExercise[$exercise->getId()])) {
+            foreach ($submissionsByExercise[$exercise->getId()] as $sbms) {
+                $item = new stdClass();
+                $item->user = $sbms->getSubmitter();
+                $item->time = $sbms->getSubmissionTime();
+                $item->grade = $sbms->getGrade();
+                $item->maxpoints = $exercise->getMaxPoints();
+                $item->isgraded = $sbms->isGraded();
+                $item->name = $exercise->getName();
+                $item->submission = $sbms;
+                // the following fields are required by Moodle
+                $item->cmid = $cmid;
+                $item->type = mod_stratumtwo_exercise_round::TABLE;
+                
+                $activities[$index++] = $item;
+            }
+        }
+    }
 }
 
 /**
@@ -280,12 +357,37 @@ function stratumtwo_get_recent_mod_activity(&$activities, &$index, $timestart, $
  * @param bool $viewfullnames display users' full names
  */
 function stratumtwo_print_recent_mod_activity($activity, $courseid, $detail, $modnames, $viewfullnames) {
-/*    require_once(dirname(__FILE__) .'/recent_lib.php');
-
-    stratumtwo_print_recent_mod_activity_helper($activity, $courseid, $detail,
-        $modnames, $viewfullnames);
-*/
-    // TODO update from old plugin
+    // modified from the corresponding function in mod_assign (function assign_print_recent_mod_activity in lib.php)
+    global $CFG, $OUTPUT;
+    
+    echo '<table class="assignment-recent">';
+    
+    echo '<tr><td class="userpicture">';
+    echo $OUTPUT->user_picture($activity->user);
+    echo '</td><td>';
+    
+    $modname = $modnames[mod_stratumtwo_exercise_round::TABLE]; // localized module name
+    echo '<div class="title">';
+    echo '<img src="' . $OUTPUT->pix_url('icon', mod_stratumtwo_exercise_round::MODNAME) . '" '.
+            'class="icon" alt="' . $modname . '">';
+    echo '<a href="' . \mod_stratumtwo\urls\urls::submission($activity->submission) . '">';
+    echo $activity->name;
+    echo '</a>';
+    echo '</div>';
+    
+    if ($activity->isgraded) {
+        echo '<div class="grade">';
+        echo get_string('grade', mod_stratumtwo_exercise_round::MODNAME) .': ';
+        echo "{$activity->grade}/{$activity->maxpoints}";
+        echo '</div>';
+    }
+    
+    echo '<div class="user">';
+    echo "<a href=\"{$CFG->wwwroot}/user/view.php?id={$activity->user->id}&amp;course=$courseid\">";
+    echo fullname($activity->user) .'</a>  - ' . userdate($activity->time);
+    echo '</div>';
+    
+    echo '</td></tr></table>';
 }
 
 /**
@@ -311,10 +413,10 @@ function stratumtwo_cron () {
  * @return array
  */
 function stratumtwo_get_extra_capabilities() {
-    //TODO update
     return array(
-        'moodle/course:manageactivities', // used in view.php
-        //'moodle/grade:viewall',
+        'moodle/course:manageactivities', // used in submission.php and exercise.php
+        'moodle/role:assign', // used in auto_setup.php
+        'enrol/manual:enrol', // used in auto_setup.php
     );
 }
 
