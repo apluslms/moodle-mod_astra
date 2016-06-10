@@ -11,6 +11,7 @@ defined('MOODLE_INTERNAL') || die;
  */
 class remote_page {
     
+    protected $url;
     protected $response; // string, the whole response from the server
     protected $DOMdoc; // \DOMDocument instance
     protected $metaNodes = null; // cache \DOMNodeList
@@ -39,6 +40,7 @@ class remote_page {
      * in connecting to the server
      */
     public function __construct($url, $post = false, $data = null, $files = null, $api_key = null) {
+        $this->url = $url;
         $this->response = self::request($url, $post, $data, $files, $api_key);
         $this->DOMdoc = new \DOMDocument();
         if ($this->DOMdoc->loadHTML($this->response) === false)
@@ -231,6 +233,9 @@ class remote_page {
             }
             $this->findAndReplaceElementAttributes('div', 'data-aplus-exercise', $replaceValues);
         }
+        // fix relative URLs (make them absolute with the address of the origin server)
+        $this->fixRelativeUrls();
+        
         // find tags in <head> that have attribute data-aplus
         $this->aplusHeadElements = $this->findHeadElementsWithAttribute('data-aplus');
         
@@ -487,5 +492,61 @@ class remote_page {
             }
         }
         return $elements;
+    }
+    
+    /**
+     * Fix relative URLs so that the address points to the origin server.
+     * Otherwise, the relative URL would be interpreted as relative inside the
+     * Moodle server.
+     */
+    protected function fixRelativeUrls() {
+        // parse remote server domain and base path
+        $remoteUrlComponents = \parse_url($this->url);
+        $domain = '';
+        $path = '';
+        if (isset($remoteUrlComponents['scheme'])) {
+            $domain .= $remoteUrlComponents['scheme'] .'://';
+        }
+        if (isset($remoteUrlComponents['host'])) {
+            $domain .= $remoteUrlComponents['host'];
+        }
+        if (isset($remoteUrlComponents['port'])) {
+            $domain .= ':'. $remoteUrlComponents['port'];
+        }
+        
+        if (isset($remoteUrlComponents['path'])) {
+            $path = $remoteUrlComponents['path'];
+        }
+        
+        $this->_fixRelativeUrls($domain, $path, 'img', 'src');
+        $this->_fixRelativeUrls($domain, $path, 'script', 'src');
+        $this->_fixRelativeUrls($domain, $path, 'link', 'href');
+        $this->_fixRelativeUrls($domain, $path, 'a', 'href');
+    }
+    
+    /**
+     * Find relative URLs in the document and make them point to the origin server.
+     * @param string $domain domain of the origin server, e.g., 'https://example.com'
+     * @param string $path base path to use if original URL paths are relative
+     * @param string $tagName search the document for these elements, e.g., 'img'
+     * @param string $attrName fix URLs in this attribute of the element, e.g., 'src'
+     */
+    protected function _fixRelativeUrls($domain, $path, $tagName, $attrName) {
+        $pattern = '%^(#|.+://|//)%';
+        // recognize absolute URLs (https:// or //) or anchor URLs (#someid)
+        foreach ($this->DOMdoc->getElementsByTagName($tagName) as $elem) {
+            if ($elem->nodeType == \XML_ELEMENT_NODE && $elem->hasAttribute($attrName)) {
+                $value = $elem->getAttribute($attrName);
+                if (\preg_match($pattern, $value) === 0) {
+                    // not absolute URL
+                    if ($value[0] == '/') { // absolute path
+                        $newVal = $domain . $value;
+                    } else {
+                        $newVal = $domain . $path . $value;
+                    }
+                    $elem->setAttribute($attrName, $newVal);
+                }
+            }
+        }
     }
 }
