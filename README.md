@@ -1,2 +1,2 @@
-See [stratumtwo/README.md](./stratumtwo/README.md).
+See [stratumtwo/README.md](stratumtwo/README.md).
 
