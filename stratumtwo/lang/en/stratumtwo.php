@@ -24,7 +24,7 @@ $string['messageprovider:assistant_feedback_notification'] = 'Notification about
 // mod_form.php
 $string['deadline'] = 'Deadline';
 $string['roundname'] = 'Exercise round name';
-$string['roundname_help'] = 'This is the name of the exercise round that is shown in Moodle.';
+$string['roundname_help'] = 'This is the name of the exercise round that is shown in Moodle. Note: the number at the start of the name is updated automatically based on the round order and course module numbering setting.';
 $string['note'] = 'Note';
 $string['donotusemodform'] = 'You should use the Stratum2 exercises setup block to configure exercise rounds and exercises. However, you may use this page to configure common module settings and access restrictions.';
 $string['status'] = 'Status';

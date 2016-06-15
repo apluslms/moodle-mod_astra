@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         if (isset($_POST['save'])) {
             stratumtwo_rename_rounds_with_numbers($cid, $module_numbering);
+            stratumtwo_update_exercise_gradebook_item_names($cid);
         } else if (isset($_POST['renumbermodule'])) {
             stratumtwo_renumber_rounds_and_exercises($cid, $module_numbering, false);
         } else if (isset($_POST['renumbercourse'])) {

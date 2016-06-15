@@ -141,6 +141,21 @@ function stratumtwo_rename_rounds_with_numbers($courseid, $moduleNumberingStyle)
 }
 
 /**
+ * Update exercise gradebook item names with the current exercise settings stored
+ * in the database.
+ * @param int $courseid Moodle course ID in which exercises are updated
+ */
+function stratumtwo_update_exercise_gradebook_item_names($courseid) {
+    foreach (mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
+        foreach ($exround->getExercises(false, false) as $ex) {
+            // exercise name and order is read from the database,
+            // gradebook item is updated and the new name is then visible in the gradebook
+            $ex->updateGradebookItem();
+        }
+    }
+}
+
+/**
  * Return an array of course section numbers (0-N) that contain Stratum2 exercise rounds.
  * @param int $courseid Moodle course ID
  * @return array of section numbers
