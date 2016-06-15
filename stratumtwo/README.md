@@ -45,6 +45,9 @@ Thus, the plugin files (version.php etc.) should be under the following director
 moodledir/mod/stratumtwo/
 moodledir/blocks/stratumtwo_setup/
 
+After copying the files, an admin needs to visit the Moodle admin pages
+in the web browser and upgrade the database, as usual when installing plugins.
+
 mod_stratumtwo needs a secret key defined in the source code. If the code is
 pulled from a (Git) repository, the default key is not safe to use in production
 servers. The secret key should be 50-100 characters long and consist of printable
@@ -52,9 +55,16 @@ ASCII characters. It is defined in the PHP file `stratumtwo/stratum_settings.php
 as a constant `STRATUMTWO_SECRET_KEY`. One way to generate a new random key using
 a Linux shell is the following command: 
 `$ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-99};echo;`
+The new key should be copy-pasted into the PHP file, replacing the old value.
 
-After copying the files, an admin needs to visit the Moodle admin pages
-in the web browser and upgrade the database, as usual when installing plugins.
+If you use HTTPS connection between Moodle and exercise service (i.e., if exercise
+service URL begins with `https://`), you may need to add a certificate authority (CA)
+file to the Moodle plugin installation so that PHP `libcurl` may initiate the
+HTTPS connection to the exercise service. This file is used to verify the certificate
+provided by the exercise service. If the verification fails, the HTTPS connection
+also fails, as the other endpoint of the connection is considered untrusted.
+The CA file should be named `exservice_CA.pem` and it is installed in Moodle
+in the path `moodledir/mod/stratumtwo/exservice_CA.pem`.
 
 
 Code organization
