@@ -265,7 +265,9 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         // set min points to pass
         $DB->set_field('grade_items', 'gradepass', $this->getPointsToPass(), $grade_item_params);
         $gi = grade_item::fetch($grade_item_params);
-        $gi->update('mod/'. mod_stratumtwo_exercise_round::TABLE);
+        if ($gi) {
+            $gi->update('mod/'. mod_stratumtwo_exercise_round::TABLE);
+        }
         
         return $res;
     }
