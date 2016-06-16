@@ -280,7 +280,13 @@ class auto_setup {
         if (!isset($moduleName)) {
             $moduleName = '-';
         }
-        $roundRecord->name = "{$roundRecord->ordernum}. $moduleName";
+        $courseConfig = \mod_stratumtwo_course_config::getForCourseId($courseid);
+        if ($courseConfig) {
+            $numberingStyle = $courseConfig->getModuleNumbering();
+        } else {
+            $numberingStyle = \mod_stratumtwo_course_config::getDefaultModuleNumbering();
+        }
+        $roundRecord->name = \mod_stratumtwo_exercise_round::updateNameWithOrder($moduleName, $roundRecord->ordernum, $numberingStyle);
         // In order to show the ordinal number of the exercise round in the Moodle course page,
         // the number must be stored in the name.
         
