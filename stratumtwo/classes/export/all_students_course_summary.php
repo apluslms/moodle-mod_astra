@@ -25,6 +25,7 @@ class all_students_course_summary {
     
     protected $submissionsByExercise;
     protected $categoryTotalsByStudent;
+    protected $roundTotalsByStudent;
     
     /**
      * Construct a new summary object with the given filters.
@@ -138,10 +139,12 @@ class all_students_course_summary {
         
         // one large DB query instead of repeating multiple small queries for each student and exercise
         $allSubmissions = $DB->get_recordset_sql(
-            "SELECT s.id, s.status, s.submissiontime, s.exerciseid, s.submitter, s.grade, s.hash, u.idnumber, u.username, lob.remotekey $sbmsDataColumn 
+            "SELECT s.id, s.status, s.submissiontime, s.exerciseid, s.submitter, s.grade, s.hash, u.idnumber, u.username, 
+                    lob.remotekey, round.remotekey AS roundkey $sbmsDataColumn 
                FROM {". \mod_stratumtwo_submission::TABLE .'} s
                JOIN {user} u ON s.submitter = u.id
                JOIN {'. \mod_stratumtwo_learning_object::TABLE .'} lob ON s.exerciseid = lob.id
+               JOIN {'. \mod_stratumtwo_exercise_round::TABLE .'} round ON lob.roundid = round.id
               WHERE ' . $where . 'ORDER BY s.submissiontime ASC',
                 $params);
         foreach ($allSubmissions as $sbmsRecord) {
@@ -167,6 +170,7 @@ class all_students_course_summary {
                         'best' => $sbms,
                         'student_id' => $studentId,
                         'submissions' => array(),
+                        'roundkey' => $sbmsRecord->roundkey,
                 );
             }
             
@@ -210,6 +214,24 @@ class all_students_course_summary {
             }
         }
         $this->categoryTotalsByStudent = $categoryTotalsByStudent;
+        
+        // compute round totals
+        $roundTotalsByStudent = array();
+        foreach ($submissionsByExercise as $exRemoteKey => $students) {
+            foreach ($students as $userId => $results) {
+                $studentId = $results['student_id'];
+                $points = $results['best']->getGrade();
+                $roundKey = $results['roundkey'];
+                if (!isset($roundTotalsByStudent[$studentId])) {
+                    $roundTotalsByStudent[$studentId] = array();
+                }
+                if (!isset($roundTotalsByStudent[$studentId][$roundKey])) {
+                    $roundTotalsByStudent[$studentId][$roundKey] = 0;
+                }
+                $roundTotalsByStudent[$studentId][$roundKey] += $points;
+            }
+        }
+        $this->roundTotalsByStudent = $roundTotalsByStudent;
     }
     
     public function getExercises() {
@@ -226,5 +248,9 @@ class all_students_course_summary {
     
     public function getCategoryTotalsByStudent() {
         return $this->categoryTotalsByStudent;
+    }
+    
+    public function getRoundTotalsByStudent() {
+        return $this->roundTotalsByStudent;
     }
 }

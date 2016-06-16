@@ -81,6 +81,7 @@ class export_data {
                     $json['students'][$studentId] = array(
                             'exercises' => array(),
                             'categories' => array(),
+                            'rounds' => array(),
                     );
                 }
                 // the exercise is completely missing for the student in the JSON if there are
@@ -98,6 +99,7 @@ class export_data {
                         'submissiontime' => $bestSbms->getSubmissionTime(),
                         'id' => $bestSbms->getId(),
                         'numberofsubmissions' => $numSubmissions,
+                        'roundkey' => $results['roundkey'],
                 );
                 // include a list of all submissions in JSON
                 if ($this->includeSubmissions == all_students_course_summary::SUBMISSIONS_ALL ||
@@ -124,6 +126,13 @@ class export_data {
         
         $json['numberofstudents'] = \count($json['students']);
         
+        // round total points
+        foreach ($this->courseSummary->getRoundTotalsByStudent() as $studentId => $roundPoints) {
+            foreach ($roundPoints as $roundKey => $points) {
+                $json['students'][$studentId]['rounds'][$roundKey] = $points;
+            }
+        }
+        
         return $json;
         
         /* JSON structure:
@@ -136,6 +145,7 @@ class export_data {
                             "submissiontime": Unix timestamp,
                             "numberofsubmissions": 5,
                             "id": 1, (database ID of the submission)
+                            "roundkey": "someround",
                             "submissions": [ (each submission listed if all submissions are included)
                                 {
                                 "points": 5,
@@ -149,7 +159,11 @@ class export_data {
                     "categories": {
                         "<category1 name>": 50,
                         "coursetotal" (all categories summed): 100
-                    }
+                        // total points include only the submissions/exercises that match the filters
+                    },
+                    "rounds": {
+                        "<round remotekey>": 50, (total points in the round)
+                    },
                 }
             },
             "numberofstudents": 5
