@@ -20,7 +20,7 @@ class mod_stratumtwo_course_config extends mod_stratumtwo_database_object {
     const CONTENT_NUMBERING_ROMAN  = 2;
     
     public static function updateOrCreate($courseid, $sectionNumber, $api_key = null, $config_url = null,
-            $module_numbering = self::CONTENT_NUMBERING_ARABIC, $content_numbering = self::CONTENT_NUMBERING_ARABIC) {
+            $module_numbering = null, $content_numbering = null) {
         global $DB;
         
         $row = $DB->get_record(self::TABLE, array('course' => $courseid), '*', IGNORE_MISSING);
@@ -31,8 +31,12 @@ class mod_stratumtwo_course_config extends mod_stratumtwo_database_object {
             $newRow->sectionnum = $sectionNumber;
             $newRow->apikey = $api_key;
             $newRow->configurl = $config_url;
-            $newRow->modulenumbering = $module_numbering;
-            $newRow->contentnumbering = $content_numbering;
+            if ($module_numbering !== null) {
+                $newRow->modulenumbering = $module_numbering;
+            }
+            if ($content_numbering !== null) {
+                $newRow->contentnumbering = $content_numbering;
+            }
             $id = $DB->insert_record(self::TABLE, $newRow);
             return $id != 0;
         } else {
@@ -46,8 +50,12 @@ class mod_stratumtwo_course_config extends mod_stratumtwo_database_object {
             if ($config_url !== null) {
                 $row->configurl = $config_url;
             }
-            $row->modulenumbering = $module_numbering;
-            $row->contentnumbering = $content_numbering;
+            if ($module_numbering !== null) {
+                $row->modulenumbering = $module_numbering;
+            }
+            if ($content_numbering !== null) {
+                $row->contentnumbering = $content_numbering;
+            }
             return $DB->update_record(self::TABLE, $row);
         }
     }
