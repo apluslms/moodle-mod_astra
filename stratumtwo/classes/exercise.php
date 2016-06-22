@@ -439,21 +439,24 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
      * @param string $submissionUrl value for the submission_url GET query argument
      * @param string|int $uid user ID, if many users form a group, the IDs should
      * be given in the format "1-2-3" (separated by dash)
+     * @param int $submissionOrdinalNumber ordinal number of the submission that is
+     * uploaded for grading or the submission for which the exercise description is downloaded
      * @return string
      */
-    protected function buildServiceUrl($submissionUrl, $uid) {
+    protected function buildServiceUrl($submissionUrl, $uid, $submissionOrdinalNumber) {
         $query_data = array(
                 'submission_url' => $submissionUrl,
                 'post_url' => \mod_stratumtwo\urls\urls::newSubmissionHandler($this),
                 'max_points' => $this->getMaxPoints(),
                 'uid' => $uid,
+                'ordinal_number' => $submissionOrdinalNumber,
         );
         return $this->getServiceUrl() .'?'. http_build_query($query_data, 'i_', '&');
     }
     
-    public function getLoadUrl($userid) {
+    public function getLoadUrl($userid, $submissionOrdinalNumber) {
         return $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncNewSubmission($this, $userid),
-                $userid);
+                $userid, $submissionOrdinalNumber);
     }
     
     /**
@@ -488,7 +491,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         $api_key = ($courseConfig ? $courseConfig->getApiKey() : null);
         
         $serviceUrl = $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncGradeSubmission($submission),
-                $submission->getRecord()->submitter);
+                $submission->getRecord()->submitter, $submission->getCounter());
         try {
             $remotePage = new \mod_stratumtwo\protocol\remote_page(
                     $serviceUrl, true, $sbmsData, $files, $api_key);

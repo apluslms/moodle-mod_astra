@@ -304,7 +304,7 @@ abstract class mod_stratumtwo_learning_object extends mod_stratumtwo_database_ob
         return $ctx;
     }
     
-    public function getLoadUrl($userid) {
+    public function getLoadUrl($userid, $submissionOrdinalNumber) {
         // this method can be overridden in child classes to change the URL in loadPage method
         return $this->getServiceUrl();
     }
@@ -317,11 +317,18 @@ abstract class mod_stratumtwo_learning_object extends mod_stratumtwo_database_ob
      * @return stdClass with field content
      */
     public function loadPage($userid) {
+        global $DB;
+        
         $courseConfig = mod_stratumtwo_course_config::getForCourseId(
                 $this->getExerciseRound()->getCourse()->courseid);
         $api_key = ($courseConfig ? $courseConfig->getApiKey() : null);
         
-        $serviceUrl = $this->getLoadUrl($userid);
+        $submissionCount = $DB->count_records(\mod_stratumtwo_submission::TABLE, array(
+                'submitter' => $userid,
+                'exerciseid' => $this->getId(),
+        ));
+        // must increment $submissionCount since the exercise description must match the next new submission
+        $serviceUrl = $this->getLoadUrl($userid, $submissionCount + 1);
         try {
             $remotePage = new \mod_stratumtwo\protocol\remote_page($serviceUrl, false, null, null, $api_key);
             return $remotePage->loadExercisePage($this);
