@@ -364,14 +364,10 @@ class remote_page {
         // create HTML strings of all child nodes under body and concatenate
         // -> do not store the body element itself since this content will be
         // inserted to another HTML document
-        foreach ($element->getElementsByTagName('*') as $child) {
+        foreach ($element->childNodes as $child) {
             $html .= $this->DOMdoc->saveHTML($child);
         }
-        if ($html === '') {
-            // the loop above does not include text directly under body, so
-            // let's copy all text content if we have no other content yet
-            $html = $element->textContent;
-        }
+        
         return $html;
     }
     
