@@ -341,3 +341,11 @@ div.modal div.form-group input[type="text"] {
 	display: block;
 	width: 100%;
 }
+
+/* my submissions dropdown toggle in the exercise page switches text color
+when the dropdown is open -> keep the text always blue
+Similarly in chapter pages (embedded exercise summary navbar) */
+div.bs3-container-fluid .nav-tabs .open .dropdown-toggle,
+div.bs3-container-fluid .nav-pills.exercise-summary .open .dropdown-toggle {
+	color: rgb(51, 122, 183); /* blue */
+}
