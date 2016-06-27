@@ -313,6 +313,16 @@ header nav div.collapse.nav-collapse {
 	display: block;
 }
 
+/* search icon in the top orange navbar becomes too narrow */
+.searchicon {
+	width: 50px;
+}
+
+/* caret used in dropdown menus is positioned too low */
+.caret {
+	vertical-align: unset;
+}
+
 /* text in embedded exercise navbars in chapter pages becomes hard to read with incorrect color */
 div[data-aplus-chapter] p.navbar-text small {
 	color: rgb(119, 119, 119); /* gray */

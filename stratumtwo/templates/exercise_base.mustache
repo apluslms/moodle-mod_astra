@@ -127,5 +127,14 @@ require(['jquery', 'mod_stratumtwo/twbootstrap', 'mod_stratumtwo/aplus_filemodal
   
   /* Enable file modal */
   $('.file-modal').aplusFileModal();
+  
+  /* set active tab in the exercise page navbar */
+  var body_id = $('body').attr('id');
+  // e.g. page-mod-stratumtwo-exercise
+  if (body_id) {
+    var arr = body_id.split('-');
+    var page = arr[arr.length - 1];
+    $(".menu-" + page).addClass("active");
+  }
 });
 {{/js}}
