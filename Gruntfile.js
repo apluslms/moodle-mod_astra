@@ -36,7 +36,6 @@ module.exports = function(grunt) {
             all: [
                 'stratumtwo/amd/src/*.js',
                 '!stratumtwo/amd/src/twbootstrap.js',
-                '!stratumtwo/amd/src/jquery112.js',
                 '!stratumtwo/amd/src/highlight.js',
             ],
             //files: [inAMD ? cwd + '/src/*.js' : '**/amd/src/*.js'],
