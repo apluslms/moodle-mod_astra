@@ -533,7 +533,7 @@ class remote_page {
         foreach ($this->DOMdoc->getElementsByTagName($tagName) as $elem) {
             if ($elem->nodeType == \XML_ELEMENT_NODE && $elem->hasAttribute($attrName)) {
                 $value = $elem->getAttribute($attrName);
-                if (\preg_match($pattern, $value) === 0) {
+                if (!empty($value) && \preg_match($pattern, $value) === 0) {
                     // not absolute URL
                     if ($value[0] == '/') { // absolute path
                         $newVal = $domain . $value;
