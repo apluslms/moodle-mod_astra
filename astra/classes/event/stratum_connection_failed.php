@@ -1,28 +1,28 @@
 <?php
 
-namespace mod_stratumtwo\event;
+namespace mod_astra\event;
 defined('MOODLE_INTERNAL') || die();
 
 /* Event class that represents an error in the connection to
- * the external Stratum server. (For example, when curl cannot 
+ * the external exercise service server. (For example, when curl cannot 
  * connect to the server.)
  */
 /*
 An event is created like this:
-$event = \mod_stratumtwo\event\stratum_connection_failed::create(array(
+$event = \mod_astra\event\service_connection_failed::create(array(
     'context' => context_module::instance($cm->id),
     'relateduserid' => $user->id, // optional user that is related to the action,
     // may be different than the user taking the action
     'other' => array(
         'error' => curl_error($ch),
         'url' => 'https://tried.to.connect.here.com',
-        'objtable' => 'stratumtwo_lobjects', // or 'stratumtwo_submissions', used if relevant
+        'objtable' => 'astra_lobjects', // or 'astra_submissions', used if relevant
         'objid' => 1, // id of the module instance (DB row), zero means none
     )
 ));
 $event->trigger();
 */
-class stratum_connection_failed extends \core\event\base {
+class service_connection_failed extends \core\event\base {
 
     protected function init() {
         $this->data['crud'] = 'r'; // c(reate), r(ead), u(pdate), d(elete)
@@ -34,7 +34,7 @@ class stratum_connection_failed extends \core\event\base {
     /* Return localised name of the event, it is the same for all instances.
      */
     public static function get_name() {
-        return get_string('eventstratumconnectionfailed', \mod_stratumtwo_exercise_round::MODNAME);
+        return get_string('eventserviceconnectionfailed', \mod_astra_exercise_round::MODNAME);
     }
 
     /* Returns non-localised description of one particular event.
@@ -53,13 +53,13 @@ class stratum_connection_failed extends \core\event\base {
                 $this->other['objid'] == 0) {
             return null;
         }
-        if ($this->other['objtable'] == \mod_stratumtwo_learning_object::TABLE) {
-            return new \moodle_url('/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/exercise.php',
-                    array('id' => $this->other['objid'])); // stratum2 learning object ID
+        if ($this->other['objtable'] == \mod_astra_learning_object::TABLE) {
+            return new \moodle_url('/mod/'. \mod_astra_exercise_round::TABLE .'/exercise.php',
+                    array('id' => $this->other['objid'])); // astra learning object ID
         }
-        if ($this->other['objtable'] == \mod_stratumtwo_submission::TABLE) {
-            return new \moodle_url('/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/submission.php',
-                    array('id' => $this->other['objid'])); // stratum2 submission ID
+        if ($this->other['objtable'] == \mod_astra_submission::TABLE) {
+            return new \moodle_url('/mod/'. \mod_astra_exercise_round::TABLE .'/submission.php',
+                    array('id' => $this->other['objid'])); // astra submission ID
         }
         return null;
     }

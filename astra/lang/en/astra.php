@@ -1,23 +1,23 @@
 <?php
 
 /**
- * English strings for stratumtwo.
+ * English strings for astra.
  *
- * @package    mod_stratumtwo
+ * @package    mod_astra
  * @copyright  2016 Aalto SCI CS dept.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['modulename'] = 'Stratum2 exercise round';
-$string['modulenameplural'] = 'Stratum2 exercise rounds';
-$string['nostratums'] = 'No Stratum2 exercises in this course';
-$string['modulename_help'] = 'External Stratum2 exercises (Aalto SCI Dept. of Computer Science)'; // when type is selected for a new activity
+$string['modulename'] = 'Astra exercise round';
+$string['modulenameplural'] = 'Astra exercise rounds';
+$string['noastras'] = 'No Astra exercises in this course';
+$string['modulename_help'] = 'External Astra exercises (Aalto SCI Dept. of Computer Science)'; // when type is selected for a new activity
 
-$string['stratum'] = 'Stratum';
-$string['pluginadministration'] = 'Stratum2 exercises administration';
-$string['pluginname'] = 'Stratum2 exercises'; // Used by Moodle core
+$string['astra'] = 'Astra';
+$string['pluginadministration'] = 'Astra exercises administration';
+$string['pluginname'] = 'Astra exercises'; // Used by Moodle core
 // Moodle Message API
 $string['messageprovider:assistant_feedback_notification'] = 'Notification about new assistant feedback';
 
@@ -26,7 +26,7 @@ $string['deadline'] = 'Deadline';
 $string['roundname'] = 'Exercise round name';
 $string['roundname_help'] = 'This is the name of the exercise round that is shown in Moodle. Note: the number at the start of the name is updated automatically based on the round order and course module numbering setting.';
 $string['note'] = 'Note';
-$string['donotusemodform'] = 'You should use the Stratum2 exercises setup block to configure exercise rounds and exercises. However, you may use this page to configure common module settings and access restrictions.';
+$string['donotusemodform'] = 'You should use the Astra exercises setup block to configure exercise rounds and exercises. However, you may use this page to configure common module settings and access restrictions.';
 $string['status'] = 'Status';
 $string['statusready'] = 'Ready';
 $string['statushidden'] = 'Hidden';
@@ -137,8 +137,8 @@ $string['cateditsuccess'] = 'The category was updated successfully.';
 $string['catcreatesuccess'] = 'The category was created successfully.';
 $string['catcreatefailure'] = 'The new category could not be stored in the database.';
 $string['automaticsetup'] = 'Automatic setup';
-$string['autosetup'] = 'Update and create Stratum2 exercises automatically';
-$string['autosetup_help'] = 'Import configuration from the exercise service URL and override course contents (Stratum2 exercise rounds, exercises and categories).';
+$string['autosetup'] = 'Update and create Astra exercises automatically';
+$string['autosetup_help'] = 'Import configuration from the exercise service URL and override course contents (Astra exercise rounds, exercises and categories).';
 $string['createmodule'] = 'Create exercise round';
 $string['modeditsuccess'] = 'The exercise round was updated successfully.';
 $string['modcreatesuccess'] = 'The exercise round was created successfully.';
@@ -270,7 +270,7 @@ $string['apikey_help'] = 'API key to authorize access to the exercise service.';
 $string['sectionnum'] = 'Moodle course section number';
 $string['sectionnum_help'] = 'Number (0-N) of the Moodle course section, to which new exercise round activities should be added. Section zero is the course home page, the next section is number 1 and so on (see the navigation in the course page).';
 $string['apply'] = 'Apply';
-$string['createreminder'] = 'Reminder: in MyCourses, you must have the &quot;Advanced teacher&quot; role to create Stratum2 exercises.';
+$string['createreminder'] = 'Reminder: in MyCourses, you must have the &quot;Advanced teacher&quot; role to create Astra exercises.';
 $string['backtocourse'] = 'Back to the course';
 $string['autosetupsuccess'] = 'Configuration was downloaded and applied successfully.';
 $string['autosetuperror'] = 'There were errors in the automatic setup.';
@@ -326,13 +326,13 @@ $string['notenrollednosubmit'] = 'You are not enrolled in the course, hence you 
 
 // Events / logging
 $string['eventsubmitted'] = 'Student submitted a new solution';
-$string['eventstratumconnectionfailed'] = 'Connection to Stratum server failed';
-$string['eventstratumserverfailed'] = 'Stratum server failed';
-$string['eventexerciseviewed'] = 'Student viewed a Stratum2 exercise';
+$string['eventserviceconnectionfailed'] = 'Connection to exercise service failed';
+$string['eventexerciseservicefailed'] = 'Exercise service failed';
+$string['eventexerciseviewed'] = 'Student viewed an Astra exercise';
 
 // capabilities
-$string['stratumtwo:addinstance'] = 'Add a new Stratum2 exercise (round), and edit/delete them';
-$string['stratumtwo:view'] = 'View a Stratum2 exercise (round)';
-$string['stratumtwo:submit'] = 'Submit a new solution to a Stratum2 exercise';
-$string['stratumtwo:viewallsubmissions'] = 'View and inspect all submissions to Stratum2 exercises';
-$string['stratumtwo:grademanually'] = 'Edit the feedback and grade of a Stratum2 submission manually';
+$string['astra:addinstance'] = 'Add a new Astra exercise (round), and edit/delete them';
+$string['astra:view'] = 'View Astra exercise (round)';
+$string['astra:submit'] = 'Submit a new solution to an Astra exercise';
+$string['astra:viewallsubmissions'] = 'View and inspect all submissions to Astra exercises';
+$string['astra:grademanually'] = 'Edit the feedback and grade of an Astra submission manually';
