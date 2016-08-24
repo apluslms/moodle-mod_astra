@@ -5,7 +5,7 @@ define([ 'jquery' ], function ( jQuery ) {
  * It is enough to require this module once in a page 
  * (Moodle defines the module names automatically based on the
  * Moodle module/plugin name and the JS filename):
- * require(['mod_stratumtwo/twbootstrap'], function() {
+ * require(['mod_astra/twbootstrap'], function() {
  *   // Bootstrap JS has executed
  * });
  */

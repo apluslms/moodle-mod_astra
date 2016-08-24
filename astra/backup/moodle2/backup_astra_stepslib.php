@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Define the complete stratumtwo structure for backup, with file and id annotations.
+ * Define the complete astra structure for backup, with file and id annotations.
  */     
-class backup_stratumtwo_activity_structure_step extends backup_activity_structure_step {
- 
+class backup_astra_activity_structure_step extends backup_activity_structure_step {
+
     protected function define_structure() {
 
         // To know if we are including userinfo
@@ -12,7 +12,7 @@ class backup_stratumtwo_activity_structure_step extends backup_activity_structur
 
         // Define each element separated
         // exercise round
-        $stratumtwo = new backup_nested_element('stratumtwo', array('id'),
+        $astra = new backup_nested_element('astra', array('id'),
                 array(
                         'name', 'intro', 'introformat', 'timecreated', 'timemodified', 'ordernum', 'status',
                         'grade', 'remotekey', 'pointstopass', 'openingtime', 'closingtime', 'latesbmsallowed',
@@ -60,7 +60,7 @@ class backup_stratumtwo_activity_structure_step extends backup_activity_structur
                 ));
 
         // Build the tree
-        $stratumtwo->add_child($categories);
+        $astra->add_child($categories);
         $categories->add_child($category);
         $category->add_child($learningObjects);
         
@@ -71,7 +71,7 @@ class backup_stratumtwo_activity_structure_step extends backup_activity_structur
         $exercise->add_child($submissions);
         $submissions->add_child($submission);
         
-        $stratumtwo->add_child($courseSetting);
+        $astra->add_child($courseSetting);
         
         $exercise->add_child($deadlineDeviations);
         $deadlineDeviations->add_child($deadlineDeviation);
@@ -82,22 +82,22 @@ class backup_stratumtwo_activity_structure_step extends backup_activity_structur
         // (similarly for the one course settings DB row)
 
         // Define sources
-        $stratumtwo->set_source_table(mod_stratumtwo_exercise_round::TABLE, array('id' => backup::VAR_ACTIVITYID));
-        $category->set_source_table(mod_stratumtwo_category::TABLE, array('course' => backup::VAR_COURSEID));
-        $learningObject->set_source_table(mod_stratumtwo_learning_object::TABLE,
+        $astra->set_source_table(mod_astra_exercise_round::TABLE, array('id' => backup::VAR_ACTIVITYID));
+        $category->set_source_table(mod_astra_category::TABLE, array('course' => backup::VAR_COURSEID));
+        $learningObject->set_source_table(mod_astra_learning_object::TABLE,
                 array('roundid' => backup::VAR_ACTIVITYID, 'categoryid' => backup::VAR_PARENTID),
                 '(CASE WHEN parentid IS NULL THEN 1 ELSE 2 END), id ASC');
         // sort top-level learning objects first (parentid null)
-        $exercise->set_source_table(mod_stratumtwo_exercise::TABLE, array('lobjectid' => backup::VAR_PARENTID));
-        $chapter->set_source_table(mod_stratumtwo_chapter::TABLE, array('lobjectid' => backup::VAR_PARENTID));
-        $courseSetting->set_source_table(mod_stratumtwo_course_config::TABLE, array('course' => backup::VAR_COURSEID));
+        $exercise->set_source_table(mod_astra_exercise::TABLE, array('lobjectid' => backup::VAR_PARENTID));
+        $chapter->set_source_table(mod_astra_chapter::TABLE, array('lobjectid' => backup::VAR_PARENTID));
+        $courseSetting->set_source_table(mod_astra_course_config::TABLE, array('course' => backup::VAR_COURSEID));
         
         if ($userinfo) {
-            $submission->set_source_table(mod_stratumtwo_submission::TABLE,
+            $submission->set_source_table(mod_astra_submission::TABLE,
                     array('exerciseid' => '../../../id'));
-            $deadlineDeviation->set_source_table(mod_stratumtwo_deadline_deviation::TABLE,
+            $deadlineDeviation->set_source_table(mod_astra_deadline_deviation::TABLE,
                     array('exerciseid' => '../../../id'));
-            $submitLimitDeviation->set_source_table(mod_stratumtwo_submission_limit_deviation::TABLE,
+            $submitLimitDeviation->set_source_table(mod_astra_submission_limit_deviation::TABLE,
                     array('exerciseid' => '../../../id'));
         }
 
@@ -108,10 +108,10 @@ class backup_stratumtwo_activity_structure_step extends backup_activity_structur
         $submitLimitDeviation->annotate_ids('user', 'submitter');
 
         // Define file annotations
-        $submission->annotate_files(\mod_stratumtwo_exercise_round::MODNAME,
-                \mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA, 'id');
+        $submission->annotate_files(\mod_astra_exercise_round::MODNAME,
+                \mod_astra_submission::SUBMITTED_FILES_FILEAREA, 'id');
 
-        // Return the root element (stratumtwo), wrapped into standard activity structure
-        return $this->prepare_activity_structure($stratumtwo);
+        // Return the root element (astra), wrapped into standard activity structure
+        return $this->prepare_activity_structure($astra);
     }
 }

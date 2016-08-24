@@ -1,13 +1,13 @@
 <?php
- 
-require_once(dirname(__FILE__) .'/backup_stratumtwo_stepslib.php');
-//require_once(dirname(__FILE__) .'/backup_stratumtwo_settingslib.php');
- 
+
+require_once(dirname(__FILE__) .'/backup_astra_stepslib.php');
+//require_once(dirname(__FILE__) .'/backup_astra_settingslib.php');
+
 /**
- * Stratumtwo backup task that provides all the settings and steps to perform one
+ * Astra backup task that provides all the settings and steps to perform one
  * complete backup of the activity.
  */
-class backup_stratumtwo_activity_task extends backup_activity_task {
+class backup_astra_activity_task extends backup_activity_task {
 
     /**
      * Define (add) particular settings this activity can have
@@ -20,8 +20,8 @@ class backup_stratumtwo_activity_task extends backup_activity_task {
      * Define (add) particular steps this activity can have
      */
     protected function define_my_steps() {
-        // stratumtwo only has one structure step
-        $this->add_step(new backup_stratumtwo_activity_structure_step('stratumtwo_structure', 'stratumtwo.xml'));
+        // astra only has one structure step
+        $this->add_step(new backup_astra_activity_structure_step('astra_structure', 'astra.xml'));
     }
 
     /**
@@ -34,16 +34,16 @@ class backup_stratumtwo_activity_task extends backup_activity_task {
         $base = preg_quote($CFG->wwwroot, "/");
         
         // Link to the list of exercise rounds
-        $search = "/(". $base ."\/mod\/". mod_stratumtwo_exercise_round::TABLE ."\/index.php\?id\=)([0-9]+)/";
-        $content = preg_replace($search, '$@STRATUMTWOINDEX*$2@$', $content);
+        $search = "/(". $base ."\/mod\/". mod_astra_exercise_round::TABLE ."\/index.php\?id\=)([0-9]+)/";
+        $content = preg_replace($search, '$@ASTRAINDEX*$2@$', $content);
         
         // Link to round view by moduleid
-        $search = "/(". $base ."\/mod\/". mod_stratumtwo_exercise_round::TABLE ."\/view.php\?id\=)([0-9]+)/";
-        $content = preg_replace($search, '$@STRATUMTWOVIEWBYID*$2@$', $content);
+        $search = "/(". $base ."\/mod\/". mod_astra_exercise_round::TABLE ."\/view.php\?id\=)([0-9]+)/";
+        $content = preg_replace($search, '$@ASTRAVIEWBYID*$2@$', $content);
         
-        // Link to round view by stratumtwo id
-        $search = "/(". $base ."\/mod\/". mod_stratumtwo_exercise_round::TABLE ."\/view.php\?s\=)([0-9]+)/";
-        $content = preg_replace($search, '$@STRATUMTWOVIEWBYS*$2@$', $content);
+        // Link to round view by astra id
+        $search = "/(". $base ."\/mod\/". mod_astra_exercise_round::TABLE ."\/view.php\?s\=)([0-9]+)/";
+        $content = preg_replace($search, '$@ASTRAVIEWBYS*$2@$', $content);
         
         return $content;
     }

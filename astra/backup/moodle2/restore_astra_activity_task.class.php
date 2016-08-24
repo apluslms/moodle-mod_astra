@@ -1,12 +1,12 @@
 <?php
 
 /**
- * stratumtwo restore task that provides all the settings and steps to perform one
+ * astra restore task that provides all the settings and steps to perform one
  * complete restore of the activity
  */
-require_once(dirname(__FILE__) .'/restore_stratumtwo_stepslib.php');
+require_once(dirname(__FILE__) .'/restore_astra_stepslib.php');
 
-class restore_stratumtwo_activity_task extends restore_activity_task {
+class restore_astra_activity_task extends restore_activity_task {
 
     /**
      * Define (add) particular settings this activity can have
@@ -20,7 +20,7 @@ class restore_stratumtwo_activity_task extends restore_activity_task {
      */
     protected function define_my_steps() {
         // Choice only has one structure step
-        $this->add_step(new restore_stratumtwo_activity_structure_step('stratumtwo_structure', 'stratumtwo.xml'));
+        $this->add_step(new restore_astra_activity_structure_step('astra_structure', 'astra.xml'));
     }
 
     /**
@@ -32,7 +32,7 @@ class restore_stratumtwo_activity_task extends restore_activity_task {
         // we do not expect any plugin content (e.g., descriptions in rounds) to include links to
         // other plugin pages in Moodle, so that we would need to decode them in restoring to update
         // new IDs in the links
-        //$contents[] = new restore_decode_content(mod_stratumtwo_exercise_round::TABLE, array('intro'), 'stratumtwo');
+        //$contents[] = new restore_decode_content(mod_astra_exercise_round::TABLE, array('intro'), 'astra');
 
         return $contents;
     }
@@ -44,12 +44,12 @@ class restore_stratumtwo_activity_task extends restore_activity_task {
     public static function define_decode_rules() {
         $rules = array();
         
-        $rules[] = new restore_decode_rule('STRATUMTWOINDEX',
-                '/mod/'. mod_stratumtwo_exercise_round::TABLE .'/index.php?id=$1', 'course');
-        $rules[] = new restore_decode_rule('STRATUMTWOVIEWBYID',
-                '/mod/'. mod_stratumtwo_exercise_round::TABLE .'/view.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('STRATUMTWOVIEWBYS',
-                '/mod/'. mod_stratumtwo_exercise_round::TABLE .'/view.php?s=$1', 'stratumtwo');
+        $rules[] = new restore_decode_rule('ASTRAINDEX',
+                '/mod/'. mod_astra_exercise_round::TABLE .'/index.php?id=$1', 'course');
+        $rules[] = new restore_decode_rule('ASTRAVIEWBYID',
+                '/mod/'. mod_astra_exercise_round::TABLE .'/view.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('ASTRAVIEWBYS',
+                '/mod/'. mod_astra_exercise_round::TABLE .'/view.php?s=$1', 'astra');
 
         return $rules;
     }
@@ -57,17 +57,17 @@ class restore_stratumtwo_activity_task extends restore_activity_task {
     /**
      * Define the restore log rules that will be applied
      * by the {@link restore_logs_processor} when restoring
-     * stratumtwo logs. It must return one array
+     * astra logs. It must return one array
      * of {@link restore_log_rule} objects
      */
     public static function define_restore_log_rules() {
         $rules = array();
         
-        $rules[] = new restore_log_rule(mod_stratumtwo_exercise_round::TABLE, 'view',
-                'view.php?id={course_module}', '{stratumtwo}');
-        $rules[] = new restore_log_rule(mod_stratumtwo_exercise_round::TABLE, 'view exercise',
+        $rules[] = new restore_log_rule(mod_astra_exercise_round::TABLE, 'view',
+                'view.php?id={course_module}', '{astra}');
+        $rules[] = new restore_log_rule(mod_astra_exercise_round::TABLE, 'view exercise',
                 'exercise.php?id={learningobject}', '{learningobject}');
-        $rules[] = new restore_log_rule(mod_stratumtwo_exercise_round::TABLE, 'submit solution',
+        $rules[] = new restore_log_rule(mod_astra_exercise_round::TABLE, 'submit solution',
                 'submission.php?id={submission}', '{submission}');
 
         return $rules;
@@ -86,7 +86,7 @@ class restore_stratumtwo_activity_task extends restore_activity_task {
     public static function define_restore_log_rules_for_course() {
         $rules = array();
         
-        $rules[] = new restore_log_rule(mod_stratumtwo_exercise_round::TABLE, 'view all', 'index.php?id={course}', null);
+        $rules[] = new restore_log_rule(mod_astra_exercise_round::TABLE, 'view all', 'index.php?id={course}', null);
 
         return $rules;
     }

@@ -1,5 +1,5 @@
 /* highlight.js as an AMD module for Moodle.
- * @module mod_stratumtwo/highlight
+ * @module mod_astra/highlight
  */
 define([], function() {
 

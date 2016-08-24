@@ -7,7 +7,7 @@
  * Source: A+ (a-plus/assets/js/aplus.js)
  * License: GNU GPL v3
  * 
- * @module mod_stratumtwo/aplus_searchselect
+ * @module mod_astra/aplus_searchselect
  */
 define(['jquery'], function(jQuery) {
 

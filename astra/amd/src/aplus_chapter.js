@@ -9,9 +9,9 @@
  * Source: A+ (a-plus/exercise/static/exercise/chapter.js)
  * License: GNU GPL v3
  * 
- * @module mod_stratumtwo/aplus_chapter
+ * @module mod_astra/aplus_chapter
  */
-define(['jquery', 'mod_stratumtwo/twbootstrap'], function(jQuery) {
+define(['jquery', 'mod_astra/twbootstrap'], function(jQuery) {
 
 /**
  * Chapter element containing number of exercise elements.

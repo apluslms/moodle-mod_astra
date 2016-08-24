@@ -7,9 +7,9 @@
  * Source: A+ (a-plus/assets/js/aplus.js)
  * License: GNU GPL v3
  * 
- * @module mod_stratumtwo/aplus_filemodal
+ * @module mod_astra/aplus_filemodal
  */
-define(['jquery', 'mod_stratumtwo/highlight', 'mod_stratumtwo/twbootstrap'], function(jQuery, hljs) {
+define(['jquery', 'mod_astra/highlight', 'mod_astra/twbootstrap'], function(jQuery, hljs) {
 /**
  * Open submitted file in a modal.
  */

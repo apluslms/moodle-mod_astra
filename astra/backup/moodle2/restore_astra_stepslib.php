@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Structure step to restore one stratumtwo activity
+ * Structure step to restore one astra activity
  */
-class restore_stratumtwo_activity_structure_step extends restore_activity_structure_step {
+class restore_astra_activity_structure_step extends restore_activity_structure_step {
 
     // gather learnig objects that have non-null parentid fields -> parentid is updated
     // in after_execute method after all learning objects have been restored and their new
@@ -15,31 +15,31 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
         $paths = array();
         $userinfo = $this->get_setting_value('userinfo');
 
-        $paths[] = new restore_path_element('stratumtwo', '/activity/stratumtwo');
-        $paths[] = new restore_path_element('category', '/activity/stratumtwo/categories/category');
+        $paths[] = new restore_path_element('astra', '/activity/astra');
+        $paths[] = new restore_path_element('category', '/activity/astra/categories/category');
         $paths[] = new restore_path_element('learningobject',
-                '/activity/stratumtwo/categories/category/learningobjects/learningobject');
+                '/activity/astra/categories/category/learningobjects/learningobject');
         $paths[] = new restore_path_element('exercise',
-                '/activity/stratumtwo/categories/category/learningobjects/learningobject/exercise');
+                '/activity/astra/categories/category/learningobjects/learningobject/exercise');
         $paths[] = new restore_path_element('chapter',
-                '/activity/stratumtwo/categories/category/learningobjects/learningobject/chapter');
+                '/activity/astra/categories/category/learningobjects/learningobject/chapter');
         $paths[] = new restore_path_element('coursesetting',
-                '/activity/stratumtwo/coursesetting');
+                '/activity/astra/coursesetting');
         
         if ($userinfo) {
             $paths[] = new restore_path_element('submission',
-                    '/activity/stratumtwo/categories/category/learningobjects/learningobject/exercise/submissions/submission');
+                    '/activity/astra/categories/category/learningobjects/learningobject/exercise/submissions/submission');
             $paths[] = new restore_path_element('deadlinedeviation',
-                    '/activity/stratumtwo/categories/category/learningobjects/learningobject/exercise/deadlinedeviations/deadlinedeviation');
+                    '/activity/astra/categories/category/learningobjects/learningobject/exercise/deadlinedeviations/deadlinedeviation');
             $paths[] = new restore_path_element('submitlimitdeviation',
-                    '/activity/stratumtwo/categories/category/learningobjects/learningobject/exercise/submitlimitdeviations/submitlimitdeviation');
+                    '/activity/astra/categories/category/learningobjects/learningobject/exercise/submitlimitdeviations/submitlimitdeviation');
         }
 
         // Return the paths wrapped into standard activity structure
         return $this->prepare_activity_structure($paths);
     }
 
-    protected function process_stratumtwo($data) {
+    protected function process_astra($data) {
         global $DB;
 
         $data = (object) $data;
@@ -58,12 +58,12 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
         // The teacher should check remote keys (and exercise service configuration) after
         // restoring if existing rounds/learning objects are duplicated in the restore process.
         
-        // insert the stratumtwo (exercise round) record
-        $newitemid = $DB->insert_record(mod_stratumtwo_exercise_round::TABLE, $data);
+        // insert the astra (exercise round) record
+        $newitemid = $DB->insert_record(mod_astra_exercise_round::TABLE, $data);
         // immediately after inserting "activity" record, call this
         $this->apply_activity_instance($newitemid);
         
-        if ($DB->count_records(mod_stratumtwo_exercise_round::TABLE,
+        if ($DB->count_records(mod_astra_exercise_round::TABLE,
                 array('course' => $data->course, 'remotekey' => $data->remotekey)) > 1) {
             $this->get_logger()->process(
                 'The course probably was not empty before restoring and now there are multiple exercise rounds with the same remote key. '.
@@ -80,9 +80,9 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
         $data->course = $this->get_courseid();
         // each exercise round XML tree contains all categories in the course, thus
         // we cannot create a new category every time we find a category XML element
-        $existingCat = $DB->get_record(mod_stratumtwo_category::TABLE, array('course' => $data->course, 'name' => $data->name));
+        $existingCat = $DB->get_record(mod_astra_category::TABLE, array('course' => $data->course, 'name' => $data->name));
         if ($existingCat === false) { // does not yet exist
-            $newitemid = $DB->insert_record(mod_stratumtwo_category::TABLE, $data);
+            $newitemid = $DB->insert_record(mod_astra_category::TABLE, $data);
         } else {
             // do not modify the existing category
             $newitemid = $existingCat->id;
@@ -97,7 +97,7 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
         $data = (object) $data;
         $oldid = $data->id;
         $data->categoryid = $this->get_new_parentid('category');
-        $data->roundid = $this->get_new_parentid('stratumtwo');
+        $data->roundid = $this->get_new_parentid('astra');
         
         if ($data->parentid !== null) {
             $oldParentId = $data->parentid;
@@ -113,7 +113,7 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
             }
         }
         
-        $newitemid = $DB->insert_record(mod_stratumtwo_learning_object::TABLE, $data);
+        $newitemid = $DB->insert_record(mod_astra_learning_object::TABLE, $data);
         $this->set_mapping('learningobject', $oldid, $newitemid);
     }
     
@@ -123,7 +123,7 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
         $data = (object) $data;
         $oldid = $data->id;
         $data->lobjectid = $this->get_new_parentid('learningobject');
-        $newitemid = $DB->insert_record(mod_stratumtwo_exercise::TABLE, $data);
+        $newitemid = $DB->insert_record(mod_astra_exercise::TABLE, $data);
     }
     
     protected function process_chapter($data) {
@@ -132,7 +132,7 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
         $data = (object) $data;
         $oldid = $data->id;
         $data->lobjectid = $this->get_new_parentid('learningobject');
-        $newitemid = $DB->insert_record(mod_stratumtwo_chapter::TABLE, $data);
+        $newitemid = $DB->insert_record(mod_astra_chapter::TABLE, $data);
     }
     
     protected function process_coursesetting($data) {
@@ -143,9 +143,9 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
         $data->course = $this->get_courseid();
         // each exercise round XML tree contains one course settings element, thus
         // we only create a new settings row if it does not yet exist in the course
-        $existingSetting = $DB->get_record(mod_stratumtwo_course_config::TABLE, array('course' => $data->course));
+        $existingSetting = $DB->get_record(mod_astra_course_config::TABLE, array('course' => $data->course));
         if ($existingSetting === false) {
-            $newitemid = $DB->insert_record(mod_stratumtwo_course_config::TABLE, $data);
+            $newitemid = $DB->insert_record(mod_astra_course_config::TABLE, $data);
         }
     }
     
@@ -161,7 +161,7 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
         $data->grader = $this->get_mappingid('user', $data->grader);
         $data->gradingtime = $this->apply_date_offset($data->gradingtime);
         
-        $newitemid = $DB->insert_record(mod_stratumtwo_submission::TABLE, $data);
+        $newitemid = $DB->insert_record(mod_astra_submission::TABLE, $data);
         // set mapping for restoring submitted files
         $this->set_mapping('submission', $oldid, $newitemid, true);
     }
@@ -174,7 +174,7 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
         $data->submitter = $this->get_mappingid('user', $data->submitter);
         $data->exerciseid = $this->get_new_parentid('learningobject');
         
-        $newitemid = $DB->insert_record(mod_stratumtwo_deadline_deviation::TABLE, $data);
+        $newitemid = $DB->insert_record(mod_astra_deadline_deviation::TABLE, $data);
     }
     
     protected function process_submitlimitdeviation($data) {
@@ -185,15 +185,15 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
         $data->submitter = $this->get_mappingid('user', $data->submitter);
         $data->exerciseid = $this->get_new_parentid('learningobject');
         
-        $newitemid = $DB->insert_record(mod_stratumtwo_submission_limit_deviation::TABLE, $data);
+        $newitemid = $DB->insert_record(mod_astra_submission_limit_deviation::TABLE, $data);
     }
 
     protected function after_execute() {
         global $DB;
         
         // Restore submitted files
-        $this->add_related_files(mod_stratumtwo_exercise_round::MODNAME,
-                mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA, 'submission');
+        $this->add_related_files(mod_astra_exercise_round::MODNAME,
+                mod_astra_submission::SUBMITTED_FILES_FILEAREA, 'submission');
         
         // fix learning object parentids
         foreach ($this->learningObjectsWithParents as $old_lobject) {
@@ -203,9 +203,9 @@ class restore_stratumtwo_activity_structure_step extends restore_activity_struct
             
             if (!$new_lobject->id || !$new_lobject->parentid) {
                 // mapping not found even though all learning objects have been restored
-                debugging('restore_stratumtwo_activity_structure_step::after_execute: learning object mapping not found while fixing parentids');
+                debugging('restore_astra_activity_structure_step::after_execute: learning object mapping not found while fixing parentids');
             } else {
-                $DB->update_record(mod_stratumtwo_learning_object::TABLE, $new_lobject);
+                $DB->update_record(mod_astra_learning_object::TABLE, $new_lobject);
             }
         }
     }
