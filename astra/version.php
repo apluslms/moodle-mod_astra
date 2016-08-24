@@ -6,7 +6,7 @@
  * Setting the $plugin->version to 0 prevents the plugin from being installed.
  * See https://docs.moodle.org/dev/version.php for more info.
  *
- * @package    mod_stratumtwo
+ * @package    mod_astra
  * @copyright  2016 Aalto SCI CS dept.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

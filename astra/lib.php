@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Library of interface functions and constants for module stratumtwo
+ * Library of interface functions and constants for module astra
  *
  * All the core Moodle functions, neeeded to allow the module to work
  * integrated in Moodle should be placed here.
  *
- * All the stratumtwo specific functions, needed to implement all the module
+ * All the astra specific functions, needed to implement all the module
  * logic, should go to locallib.php. This will help to save some memory when
  * Moodle is performing actions across all modules.
  *
- * @package    mod_stratumtwo
+ * @package    mod_astra
  * @copyright  2016 Aalto SCI CS dept.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
  * @param string $feature FEATURE_xx constant for requested feature
  * @return mixed true if the feature is supported, null if unknown
  */
-function stratumtwo_supports($feature) {
+function astra_supports($feature) {
 
     switch($feature) {
         case FEATURE_MOD_INTRO:
@@ -44,7 +44,7 @@ function stratumtwo_supports($feature) {
 }
 
 /**
- * Saves a new instance of the stratumtwo into the database 
+ * Saves a new instance of the astra into the database 
  * (a new empty exercise round).
  *
  * Given an object containing all the necessary data,
@@ -52,33 +52,33 @@ function stratumtwo_supports($feature) {
  * will create a new instance and return the id number
  * of the new instance.
  *
- * @param stdClass $stratumtwo Submitted data from the form in mod_form.php
- * @param mod_stratumtwo_mod_form $mform The form instance itself (if needed)
- * @return int The id of the newly inserted stratum record, 0 if failed
+ * @param stdClass $astra Submitted data from the form in mod_form.php
+ * @param mod_astra_mod_form $mform The form instance itself (if needed)
+ * @return int The id of the newly inserted record, 0 if failed
  */
-function stratumtwo_add_instance(stdClass $stratumtwo, mod_stratumtwo_mod_form $mform = null) {
-    return mod_stratumtwo_exercise_round::addInstance($stratumtwo);
+function astra_add_instance(stdClass $astra, mod_astra_mod_form $mform = null) {
+    return mod_astra_exercise_round::addInstance($astra);
 }
 
 /**
- * Updates an instance of the stratumtwo in the database.
+ * Updates an instance of the astra in the database.
  *
  * Given an object containing all the necessary data,
  * (defined by the form in mod_form.php) this function
  * will update an existing instance with new data.
  *
- * @param stdClass $stratumtwo An object from the form in mod_form.php
- * @param mod_stratumtwo_mod_form $mform The form instance itself (if needed)
+ * @param stdClass $astra An object from the form in mod_form.php
+ * @param mod_astra_mod_form $mform The form instance itself (if needed)
  * @return boolean Success/Fail
  */
-function stratumtwo_update_instance(stdClass $stratumtwo, mod_stratumtwo_mod_form $mform = null) {
+function astra_update_instance(stdClass $astra, mod_astra_mod_form $mform = null) {
 
-    $stratumtwo->id = $stratumtwo->instance;
-    return mod_stratumtwo_exercise_round::updateInstance($stratumtwo);
+    $astra->id = $astra->instance;
+    return mod_astra_exercise_round::updateInstance($astra);
 }
 
 /**
- * Removes an instance of the stratumtwo (exercise round) from the database.
+ * Removes an instance of the astra (exercise round) from the database.
  *
  * Given an ID of an instance of this module,
  * this function will permanently delete the instance
@@ -87,13 +87,13 @@ function stratumtwo_update_instance(stdClass $stratumtwo, mod_stratumtwo_mod_for
  * @param int $id Id of the module instance
  * @return boolean Success/Failure
  */
-function stratumtwo_delete_instance($id) {
+function astra_delete_instance($id) {
     global $DB;
 
-    if (! $stratumtwo = $DB->get_record(mod_stratumtwo_exercise_round::TABLE, array('id' => $id))) {
+    if (! $astra = $DB->get_record(mod_astra_exercise_round::TABLE, array('id' => $id))) {
         return false;
     }
-    $exround = new mod_stratumtwo_exercise_round($stratumtwo);
+    $exround = new mod_astra_exercise_round($astra);
     return $exround->deleteInstance();
 }
 
@@ -108,17 +108,17 @@ function stratumtwo_delete_instance($id) {
  * @param stdClass $course The course record
  * @param stdClass $user The user record
  * @param cm_info|stdClass $cm The course module info object or record
- * @param stdClass $stratumtwo The stratumtwo instance record
+ * @param stdClass $astra The astra instance record
  * @return stdClass|null
  */
-function stratumtwo_user_outline($course, $user, $cm, $stratumtwo) {
+function astra_user_outline($course, $user, $cm, $astra) {
     // this callback is called from report/outline/user.php (course totals for user activity report)
     // report is accessible from the course user profile page, site may disallow students from viewing their reports
     
     // return the user's best total grade in the round and nothing else as the outline
     
-    $exround = new mod_stratumtwo_exercise_round($stratumtwo);
-    $summary = new \mod_stratumtwo\summary\user_module_summary($exround, $user);
+    $exround = new mod_astra_exercise_round($astra);
+    $summary = new \mod_astra\summary\user_module_summary($exround, $user);
     
     $return = new stdClass();
     $return->time = null;
@@ -126,10 +126,10 @@ function stratumtwo_user_outline($course, $user, $cm, $stratumtwo) {
     if ($summary->isSubmitted()) {
         $maxPoints = $summary->getMaxPoints();
         $points = $summary->getTotalPoints();
-        $return->info = get_string('grade', mod_stratumtwo_exercise_round::MODNAME) ." $points/$maxPoints";
+        $return->info = get_string('grade', mod_astra_exercise_round::MODNAME) ." $points/$maxPoints";
         $return->time = $summary->getLatestSubmissionTime();
     } else {
-        $return->info = get_string('nosubmissions', mod_stratumtwo_exercise_round::MODNAME);
+        $return->info = get_string('nosubmissions', mod_astra_exercise_round::MODNAME);
     }
     
     return $return;
@@ -144,52 +144,52 @@ function stratumtwo_user_outline($course, $user, $cm, $stratumtwo) {
  * @param stdClass $course the current course record
  * @param stdClass $user the record of the user we are generating report for
  * @param cm_info $cm course module info
- * @param stdClass $stratumtwo the module instance record
+ * @param stdClass $astra the module instance record
  */
-function stratumtwo_user_complete($course, $user, $cm, $stratumtwo) {
+function astra_user_complete($course, $user, $cm, $astra) {
     // this callback is called from report/outline/user.php (course totals for user activity report)
     // report is accessible from the course user profile page, site may disallow students from viewing their reports
     
     // reuse the other callback that gathers all submissions in a round for a user
     $activities = array();
     $index = 0;
-    stratumtwo_get_recent_mod_activity($activities, $index, 0, $course->id, $cm->id, $user->id);
+    astra_get_recent_mod_activity($activities, $index, 0, $course->id, $cm->id, $user->id);
     $modnames = get_module_types_names();
     foreach ($activities as $activity) {
-        stratumtwo_print_recent_mod_activity($activity, $course->id, true, $modnames, true);
+        astra_print_recent_mod_activity($activity, $course->id, true, $modnames, true);
     }
 }
 
 /**
  * Given a course and a time, this module should find recent activity
- * that has occurred in stratumtwo activities and print it out.
+ * that has occurred in astra activities and print it out.
  *
  * @param stdClass $course The course record
  * @param bool $viewfullnames Should we display full names
  * @param int $timestart Print activity since this timestamp
  * @return boolean True if anything was printed, otherwise false
  */
-function stratumtwo_print_recent_activity($course, $viewfullnames, $timestart) {
+function astra_print_recent_activity($course, $viewfullnames, $timestart) {
     // this callback is used by the Moodle recent activity block
     global $USER, $DB, $OUTPUT;
     
     // all submissions in the course since $timestart
     $sql =
         'SELECT s.* 
-           FROM {'. mod_stratumtwo_submission::TABLE .'} s 
+           FROM {'. mod_astra_submission::TABLE .'} s 
           WHERE s.exerciseid IN (
             SELECT id 
-              FROM {'. mod_stratumtwo_learning_object::TABLE .'} 
+              FROM {'. mod_astra_learning_object::TABLE .'} 
              WHERE categoryid IN (
               SELECT id 
-                FROM {'. mod_stratumtwo_category::TABLE .'} 
+                FROM {'. mod_astra_category::TABLE .'} 
                WHERE course = ?
              )
           ) AND s.submissiontime > ?';
     $params = array($course->id, $timestart);
     
     $context = context_course::instance($course->id);
-    $isTeacher = has_capability('mod/stratumtwo:viewallsubmissions', $context);
+    $isTeacher = has_capability('mod/astra:viewallsubmissions', $context);
     if (!$isTeacher) {
         // student only sees her own recent activity, not from other students
         $sql .= ' AND s.submitter = ?';
@@ -200,7 +200,7 @@ function stratumtwo_print_recent_activity($course, $viewfullnames, $timestart) {
     $submissionRecords = $DB->get_recordset_sql($sql, $params);
     // organize recent submissions by exercise
     foreach ($submissionRecords as $sbmsRec) {
-        $sbms = new mod_stratumtwo_submission($sbmsRec);
+        $sbms = new mod_astra_submission($sbmsRec);
         if (isset($submissionsByExercise[$sbmsRec->exerciseid])) {
             $submissionsByExercise[$sbmsRec->exerciseid][] = $sbms; 
         } else {
@@ -213,7 +213,7 @@ function stratumtwo_print_recent_activity($course, $viewfullnames, $timestart) {
         return false;
     }
     
-    echo $OUTPUT->heading(get_string('exercisessubmitted', mod_stratumtwo_exercise_round::MODNAME) .':', 3);
+    echo $OUTPUT->heading(get_string('exercisessubmitted', mod_astra_exercise_round::MODNAME) .':', 3);
     
     if ($isTeacher) {
         // teacher: show the number of recent submissions in each exercise
@@ -228,9 +228,9 @@ function stratumtwo_print_recent_activity($course, $viewfullnames, $timestart) {
             $out .= '<div class="head">';
             $out .= '<div class="date">'.userdate(time(), get_string('strftimerecent')).'</div>';
             $out .= '<div class="name">'.
-                    get_string('submissionsreceived', mod_stratumtwo_exercise_round::MODNAME, $numSubmissions).'</div>';
+                    get_string('submissionsreceived', mod_astra_exercise_round::MODNAME, $numSubmissions).'</div>';
             $out .= '</div>';
-            $out .= '<div class="info"><a href="'. \mod_stratumtwo\urls\urls::submissionList($exercise) .'">'.
+            $out .= '<div class="info"><a href="'. \mod_astra\urls\urls::submissionList($exercise) .'">'.
                     format_string($text, true).'</a></div>';
             echo $out;
         }
@@ -248,10 +248,10 @@ function stratumtwo_print_recent_activity($course, $viewfullnames, $timestart) {
             if ($best->isGraded()) {
                 $grade = $best->getGrade();
                 $maxPoints = $best->getExercise()->getMaxPoints();
-                $text .= ' ('. get_string('grade', mod_stratumtwo_exercise_round::MODNAME) ." $grade/$maxPoints)";
+                $text .= ' ('. get_string('grade', mod_astra_exercise_round::MODNAME) ." $grade/$maxPoints)";
             }
             print_recent_activity_note($best->getSubmissionTime(), $USER, $text,
-                    \mod_stratumtwo\urls\urls::submission($best), false, $viewfullnames);
+                    \mod_astra\urls\urls::submission($best), false, $viewfullnames);
         }
     }
     
@@ -263,7 +263,7 @@ function stratumtwo_print_recent_activity($course, $viewfullnames, $timestart) {
  *
  * This callback function is supposed to populate the passed array with
  * custom activity records. These records are then rendered into HTML via
- * {@link stratumtwo_print_recent_mod_activity()}.
+ * {@link astra_print_recent_mod_activity()}.
  *
  * Returns void, it adds items into $activities and increases $index.
  *
@@ -275,12 +275,12 @@ function stratumtwo_print_recent_activity($course, $viewfullnames, $timestart) {
  * @param int $userid check for a particular user's activity only, defaults to 0 (all users)
  * @param int $groupid check for a particular group's activity only, defaults to 0 (all groups)
  */
-function stratumtwo_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid=0, $groupid=0) {
+function astra_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid=0, $groupid=0) {
     // this callback is called from course/recent.php, which is linked from the recent activity block
     global $USER, $DB;
     
     $context = context_course::instance($courseid);
-    $isTeacher = has_capability('mod/stratumtwo:viewallsubmissions', $context);
+    $isTeacher = has_capability('mod/astra:viewallsubmissions', $context);
     if ($userid != $USER->id && !$isTeacher) {
         if ($userid == 0) {
             // all users requested but a student sees only herself
@@ -292,15 +292,15 @@ function stratumtwo_get_recent_mod_activity(&$activities, &$index, $timestart, $
     
     $modinfo = get_fast_modinfo($courseid);
     $cm = $modinfo->get_cm($cmid);
-    $exround = mod_stratumtwo_exercise_round::createFromId($cm->instance);
+    $exround = mod_astra_exercise_round::createFromId($cm->instance);
     
     // all submissions in the round given by $cmid since $timestart
     $sql =
         'SELECT s.*
-           FROM {'. mod_stratumtwo_submission::TABLE .'} s 
+           FROM {'. mod_astra_submission::TABLE .'} s 
           WHERE s.exerciseid IN (
             SELECT id
-              FROM {'. mod_stratumtwo_learning_object::TABLE .'} 
+              FROM {'. mod_astra_learning_object::TABLE .'} 
              WHERE roundid = ? 
           ) AND s.submissiontime > ?';
     $params = array($exround->getId(), $timestart);
@@ -317,7 +317,7 @@ function stratumtwo_get_recent_mod_activity(&$activities, &$index, $timestart, $
     $submissionRecords = $DB->get_recordset_sql($sql, $params);
     // organize recent submissions by exercise
     foreach ($submissionRecords as $sbmsRec) {
-        $sbms = new mod_stratumtwo_submission($sbmsRec);
+        $sbms = new mod_astra_submission($sbmsRec);
         if (isset($submissionsByExercise[$sbmsRec->exerciseid])) {
             $submissionsByExercise[$sbmsRec->exerciseid][] = $sbms;
         } else {
@@ -339,7 +339,7 @@ function stratumtwo_get_recent_mod_activity(&$activities, &$index, $timestart, $
                 $item->submission = $sbms;
                 // the following fields are required by Moodle
                 $item->cmid = $cmid;
-                $item->type = mod_stratumtwo_exercise_round::TABLE;
+                $item->type = mod_astra_exercise_round::TABLE;
                 
                 $activities[$index++] = $item;
             }
@@ -348,7 +348,7 @@ function stratumtwo_get_recent_mod_activity(&$activities, &$index, $timestart, $
 }
 
 /**
- * Prints single activity item prepared by {@link stratumtwo_get_recent_mod_activity()}
+ * Prints single activity item prepared by {@link astra_get_recent_mod_activity()}
  *
  * @param stdClass $activity activity record with added 'cmid' property
  * @param int $courseid the id of the course we produce the report for
@@ -356,7 +356,7 @@ function stratumtwo_get_recent_mod_activity(&$activities, &$index, $timestart, $
  * @param array $modnames as returned by {@link get_module_types_names()}
  * @param bool $viewfullnames display users' full names
  */
-function stratumtwo_print_recent_mod_activity($activity, $courseid, $detail, $modnames, $viewfullnames) {
+function astra_print_recent_mod_activity($activity, $courseid, $detail, $modnames, $viewfullnames) {
     // modified from the corresponding function in mod_assign (function assign_print_recent_mod_activity in lib.php)
     global $CFG, $OUTPUT;
     
@@ -366,18 +366,18 @@ function stratumtwo_print_recent_mod_activity($activity, $courseid, $detail, $mo
     echo $OUTPUT->user_picture($activity->user);
     echo '</td><td>';
     
-    $modname = $modnames[mod_stratumtwo_exercise_round::TABLE]; // localized module name
+    $modname = $modnames[mod_astra_exercise_round::TABLE]; // localized module name
     echo '<div class="title">';
-    echo '<img src="' . $OUTPUT->pix_url('icon', mod_stratumtwo_exercise_round::MODNAME) . '" '.
+    echo '<img src="' . $OUTPUT->pix_url('icon', mod_astra_exercise_round::MODNAME) . '" '.
             'class="icon" alt="' . $modname . '">';
-    echo '<a href="' . \mod_stratumtwo\urls\urls::submission($activity->submission) . '">';
+    echo '<a href="' . \mod_astra\urls\urls::submission($activity->submission) . '">';
     echo $activity->name;
     echo '</a>';
     echo '</div>';
     
     if ($activity->isgraded) {
         echo '<div class="grade">';
-        echo get_string('grade', mod_stratumtwo_exercise_round::MODNAME) .': ';
+        echo get_string('grade', mod_astra_exercise_round::MODNAME) .': ';
         echo "{$activity->grade}/{$activity->maxpoints}";
         echo '</div>';
     }
@@ -400,7 +400,7 @@ function stratumtwo_print_recent_mod_activity($activity, $courseid, $detail, $mo
  *
  * @return boolean
  */
-function stratumtwo_cron () {
+function astra_cron () {
     return true; // no failures
 }
 
@@ -412,7 +412,7 @@ function stratumtwo_cron () {
  *
  * @return array
  */
-function stratumtwo_get_extra_capabilities() {
+function astra_get_extra_capabilities() {
     return array(
         'moodle/course:manageactivities', // used in submission.php and exercise.php
         'moodle/role:assign', // used in auto_setup.php
@@ -423,19 +423,19 @@ function stratumtwo_get_extra_capabilities() {
 /* Gradebook API */
 
 /**
- * Is a given scale used by the instance of stratumtwo?
+ * Is a given scale used by the instance of astra?
  *
- * This function returns if a scale is being used by one stratumtwo
+ * This function returns if a scale is being used by one astra
  * if it has support for grading and scales.
  *
- * @param int $stratumtwoid ID of an instance of this module
+ * @param int $astraid ID of an instance of this module
  * @param int $scaleid ID of the scale
- * @return bool true if the scale is used by the given stratumtwo instance
+ * @return bool true if the scale is used by the given astra instance
  */
-function stratumtwo_scale_used($stratumtwoid, $scaleid) {
-    return false; // stratumtwo does not use scales
+function astra_scale_used($astraid, $scaleid) {
+    return false; // astra does not use scales
     /*global $DB;
-    if ($scaleid and $DB->record_exists(mod_stratumtwo_exercise_round::TABLE, array('id' => $stratumtwoid, 'grade' => -$scaleid))) {
+    if ($scaleid and $DB->record_exists(mod_astra_exercise_round::TABLE, array('id' => $astraid, 'grade' => -$scaleid))) {
         return true;
     } else {
         return false;
@@ -443,17 +443,17 @@ function stratumtwo_scale_used($stratumtwoid, $scaleid) {
 }
 
 /**
- * Checks if scale is being used by any instance of stratumtwo.
+ * Checks if scale is being used by any instance of astra.
  *
  * This is used to find out if scale used anywhere.
  *
  * @param int $scaleid ID of the scale
- * @return boolean true if the scale is used by any stratumtwo instance
+ * @return boolean true if the scale is used by any astra instance
  */
-function stratumtwo_scale_used_anywhere($scaleid) {
-    return false; // stratumtwo does not use scales
+function astra_scale_used_anywhere($scaleid) {
+    return false; // astra does not use scales
     /*global $DB;
-    if ($scaleid and $DB->record_exists(mod_stratumtwo_exercise_round::TABLE, array('grade' => -$scaleid))) {
+    if ($scaleid and $DB->record_exists(mod_astra_exercise_round::TABLE, array('grade' => -$scaleid))) {
         return true;
     } else {
         return false;
@@ -461,16 +461,16 @@ function stratumtwo_scale_used_anywhere($scaleid) {
 }
 
 /**
- * Creates or updates grade item for the given stratumtwo instance (exercise round).
+ * Creates or updates grade item for the given astra instance (exercise round).
  *
  * Needed by {@link grade_update_mod_grades()}.
  *
- * @param stdClass $stratumtwo instance object with extra cmidnumber and modname property
+ * @param stdClass $astra instance object with extra cmidnumber and modname property
  * @param $grades save grades in the gradebook, or give string reset to delete all grades
  * @return void
  */
-function stratumtwo_grade_item_update(stdClass $stratumtwo, $grades=NULL) {
-    $exround = new mod_stratumtwo_exercise_round($stratumtwo);
+function astra_grade_item_update(stdClass $astra, $grades=NULL) {
+    $exround = new mod_astra_exercise_round($astra);
     $exround->updateGradebookItem($grades === 'reset');
     
     if ($grades !== null && $grades !== 'reset') {
@@ -481,31 +481,31 @@ function stratumtwo_grade_item_update(stdClass $stratumtwo, $grades=NULL) {
 }
 
 /**
- * Delete grade item for given stratumtwo instance.
+ * Delete grade item for given astra instance.
  *
- * @param stdClass $stratumtwo instance object
+ * @param stdClass $astra instance object
  * @return grade_item
  */
-function stratumtwo_grade_item_delete($stratumtwo) {
-    $exround = new mod_stratumtwo_exercise_round($stratumtwo);
+function astra_grade_item_delete($astra) {
+    $exround = new mod_astra_exercise_round($astra);
     return $exround->deleteGradebookItem();
 }
 
 /**
- * Update stratumtwo grades in the gradebook.
+ * Update astra grades in the gradebook.
  *
  * Needed by {@link grade_update_mod_grades()}.
  *
- * @param stdClass $stratumtwo instance object with extra cmidnumber and modname property
+ * @param stdClass $astra instance object with extra cmidnumber and modname property
  * @param int $userid update grade of specific user only, 0 means all participants
  * @param bool $nullifnone If a single user is specified, $nullifnone is true and
  *     the user has no grade then a grade item with a null rawgrade should be inserted
  * @return void
  */
-function stratumtwo_update_grades(stdClass $stratumtwo, $userid = 0, $nullifnone = true) {
+function astra_update_grades(stdClass $astra, $userid = 0, $nullifnone = true) {
     // this function has no grades parameter, so the grades should be read
     // from some plugin database or an external server
-    $exround = new mod_stratumtwo_exercise_round($stratumtwo);
+    $exround = new mod_astra_exercise_round($astra);
     $exround->writeAllGradesToGradebook($userid, $nullifnone);
 }
 
@@ -522,17 +522,17 @@ function stratumtwo_update_grades(stdClass $stratumtwo, $userid = 0, $nullifnone
  * @param stdClass $context
  * @return array of [(string)filearea] => (string)description
  */
-function stratumtwo_get_file_areas($course, $cm, $context) {
+function astra_get_file_areas($course, $cm, $context) {
     return array(
-        \mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA =>
-            get_string('submittedfilesareadescription', mod_stratumtwo_exercise_round::MODNAME),
+        \mod_astra_submission::SUBMITTED_FILES_FILEAREA =>
+            get_string('submittedfilesareadescription', mod_astra_exercise_round::MODNAME),
     );
 }
 
 /**
- * File browsing support for stratumtwo file areas
+ * File browsing support for astra file areas
  *
- * @package mod_stratumtwo
+ * @package mod_astra
  * @category files
  *
  * @param file_browser $browser
@@ -546,32 +546,32 @@ function stratumtwo_get_file_areas($course, $cm, $context) {
  * @param string $filename
  * @return file_info instance or null if not found
  */
-function stratumtwo_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
+function astra_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
     global $CFG, $DB, $USER;
     if ($context->contextlevel != CONTEXT_MODULE) {
         return null;
     }
     // Make sure the filearea is one of those used by the plugin.
-    if ($filearea !== \mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA) {
+    if ($filearea !== \mod_astra_submission::SUBMITTED_FILES_FILEAREA) {
         return null;
     }
     // Check the relevant capabilities - these may vary depending on the filearea being accessed.
-    if (!has_capability('mod/stratumtwo:view', $context)) {
+    if (!has_capability('mod/astra:view', $context)) {
         return null;
     }
     // itemid is the ID of the submission which the file was submitted to
-    $submissionRecord = $DB->get_record(mod_stratumtwo_submission::TABLE, array('id' => $itemid), '*', IGNORE_MISSING);
+    $submissionRecord = $DB->get_record(mod_astra_submission::TABLE, array('id' => $itemid), '*', IGNORE_MISSING);
     if ($submissionRecord === false) {
         return null;
     }
     // check that the user may view the file
-    if ($submissionRecord->submitter != $USER->id && !has_capability('mod/stratumtwo:viewallsubmissions', $context)) {
+    if ($submissionRecord->submitter != $USER->id && !has_capability('mod/astra:viewallsubmissions', $context)) {
         return null;
     }
     
     // Retrieve the file from the Files API.
     $fs = get_file_storage();
-    $file = $fs->get_file($context->id, mod_stratumtwo_exercise_round::MODNAME, $filearea, $itemid, $filepath, $filename);
+    $file = $fs->get_file($context->id, mod_astra_exercise_round::MODNAME, $filearea, $itemid, $filepath, $filename);
     if (!$file) {
         return null; // The file does not exist.
     }
@@ -582,20 +582,20 @@ function stratumtwo_get_file_info($browser, $areas, $course, $cm, $context, $fil
 }
 
 /**
- * Serves the files from the stratumtwo file areas
+ * Serves the files from the astra file areas
  *
- * @package mod_stratumtwo
+ * @package mod_astra
  * @category files
  *
  * @param stdClass $course the course object
  * @param stdClass $cm the course module object
- * @param stdClass $context the stratumtwo's context
+ * @param stdClass $context the astra's context
  * @param string $filearea the name of the file area
  * @param array $args extra arguments (itemid, path)
  * @param bool $forcedownload whether or not force download
  * @param array $options additional options affecting the file serving
  */
-function stratumtwo_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options=array()) {
+function astra_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options=array()) {
     global $DB, $USER;
     // Check the contextlevel is as expected - if your plugin is a block, this becomes CONTEXT_BLOCK, etc.
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -603,7 +603,7 @@ function stratumtwo_pluginfile($course, $cm, $context, $filearea, array $args, $
     }
     
     // Make sure the filearea is one of those used by the plugin.
-    if ($filearea !== \mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA) {
+    if ($filearea !== \mod_astra_submission::SUBMITTED_FILES_FILEAREA) {
         return false;
     }
     
@@ -611,7 +611,7 @@ function stratumtwo_pluginfile($course, $cm, $context, $filearea, array $args, $
     require_login($course, true, $cm);
     
     // Check the relevant capabilities - these may vary depending on the filearea being accessed.
-    if (!has_capability('mod/stratumtwo:view', $context)) {
+    if (!has_capability('mod/astra:view', $context)) {
         return false;
     }
     
@@ -621,11 +621,11 @@ function stratumtwo_pluginfile($course, $cm, $context, $filearea, array $args, $
     // Use the itemid to retrieve any relevant data records and perform any security checks to see if the
     // user really does have access to the file in question.
     // itemid is the ID of the submission which the file was submitted to
-    $submissionRecord = $DB->get_record(mod_stratumtwo_submission::TABLE, array('id' => $itemid), '*', IGNORE_MISSING);
+    $submissionRecord = $DB->get_record(mod_astra_submission::TABLE, array('id' => $itemid), '*', IGNORE_MISSING);
     if ($submissionRecord === false) {
         return false;
     }
-    if ($submissionRecord->submitter != $USER->id && !has_capability('mod/stratumtwo:viewallsubmissions', $context)) {
+    if ($submissionRecord->submitter != $USER->id && !has_capability('mod/astra:viewallsubmissions', $context)) {
         return false;
     }
     
@@ -639,7 +639,7 @@ function stratumtwo_pluginfile($course, $cm, $context, $filearea, array $args, $
     
     // Retrieve the file from the Files API.
     $fs = get_file_storage();
-    $file = $fs->get_file($context->id, mod_stratumtwo_exercise_round::MODNAME, $filearea, $itemid, $filepath, $filename);
+    $file = $fs->get_file($context->id, mod_astra_exercise_round::MODNAME, $filearea, $itemid, $filepath, $filename);
     if (!$file) {
         return false; // The file does not exist.
     }
@@ -651,28 +651,28 @@ function stratumtwo_pluginfile($course, $cm, $context, $filearea, array $args, $
 /* Navigation API */
 
 /**
- * Extends the global navigation tree by adding stratumtwo nodes if there is a relevant content
+ * Extends the global navigation tree by adding astra nodes if there is a relevant content
  *
  * This can be called by an AJAX request so do not rely on $PAGE as it might not be set up properly.
  *
- * @param navigation_node $navref An object representing the navigation tree node of the stratumtwo module instance
+ * @param navigation_node $navref An object representing the navigation tree node of the astra module instance
  * @param stdClass $course current course record
- * @param stdClass $module current stratumtwo instance record
+ * @param stdClass $module current astra instance record
  * @param cm_info $cm course module information
  */
-//function stratumtwo_extend_navigation(navigation_node $navref, stdClass $course, stdClass $module, cm_info $cm) {
+//function astra_extend_navigation(navigation_node $navref, stdClass $course, stdClass $module, cm_info $cm) {
 // Delete this function and its docblock, or implement it.
 //}
 
 /**
- * Extends the settings navigation with the stratumtwo settings
+ * Extends the settings navigation with the astra settings
  *
- * This function is called when the context for the page is a stratumtwo module. This is not called by AJAX
+ * This function is called when the context for the page is a astra module. This is not called by AJAX
  * so it is safe to rely on the $PAGE.
  *
  * @param settings_navigation $settingsnav complete settings navigation tree
- * @param navigation_node $stratumtwonode stratumtwo administration node
+ * @param navigation_node $astranode astra administration node
  */
-//function stratumtwo_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $stratumtwonode=null) {
+//function astra_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $astranode=null) {
 // Delete this function and its docblock, or implement it.
 //}
