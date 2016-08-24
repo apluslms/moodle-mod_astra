@@ -1,11 +1,14 @@
 # test pages for experiments
-stratumtwo/classes/output/test_page.php
-stratumtwo/templates/test_page.mustache
-stratumtwo/templates/whole_test_page.mustache
-stratumtwo/testpage.php
+astra/classes/output/test_page.php
+astra/templates/test_page.mustache
+astra/templates/whole_test_page.mustache
+astra/testpage.php
 
 # script for copying files to logic-dev
 copy.sh
+
+# HTTPS certificate for the exercise service
+astra/exservice_CA.pem
 
 # downloaded Node.js / NPM packages
 node_modules

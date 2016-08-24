@@ -1,2 +1,2 @@
-See [stratumtwo/README.md](stratumtwo/README.md).
+See [astra/README.md](astra/README.md).
 

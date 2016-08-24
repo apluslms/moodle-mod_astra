@@ -34,9 +34,9 @@ module.exports = function(grunt) {
         jshint: {
             options: {jshintrc: '.jshintrc'},
             all: [
-                'stratumtwo/amd/src/*.js',
-                '!stratumtwo/amd/src/twbootstrap.js',
-                '!stratumtwo/amd/src/highlight.js',
+                'astra/amd/src/*.js',
+                '!astra/amd/src/twbootstrap.js',
+                '!astra/amd/src/highlight.js',
             ],
             //files: [inAMD ? cwd + '/src/*.js' : '**/amd/src/*.js'],
             // Bootstrap leaves out semicolons at the end of statements
@@ -66,10 +66,10 @@ module.exports = function(grunt) {
                     preserveComments: saveLicense,
                 },
                 files: {
-                    'stratumtwo/amd/build/aplus_filemodal.min.js': ['stratumtwo/amd/src/aplus_filemodal.js'],
-                    'stratumtwo/amd/build/aplus_tablefilter.min.js': ['stratumtwo/amd/src/aplus_tablefilter.js'],
-                    'stratumtwo/amd/build/aplus_searchselect.min.js': ['stratumtwo/amd/src/aplus_searchselect.js'],
-                    'stratumtwo/amd/build/aplus_chapter.min.js': ['stratumtwo/amd/src/aplus_chapter.js'],
+                    'astra/amd/build/aplus_filemodal.min.js': ['astra/amd/src/aplus_filemodal.js'],
+                    'astra/amd/build/aplus_tablefilter.min.js': ['astra/amd/src/aplus_tablefilter.js'],
+                    'astra/amd/build/aplus_searchselect.min.js': ['astra/amd/src/aplus_searchselect.js'],
+                    'astra/amd/build/aplus_chapter.min.js': ['astra/amd/src/aplus_chapter.js'],
                 }
             },
         },
