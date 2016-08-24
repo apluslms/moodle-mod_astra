@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\autosetup;
+namespace mod_astra\autosetup;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,16 +33,16 @@ class auto_setup {
     public static function configure_content_from_url($courseid, $sectionNumber, $url, $api_key = null) {
         $setup = new self();
         try {
-            $response = \mod_stratumtwo\protocol\remote_page::request($url, false, null, null, $api_key);
-        } catch (\mod_stratumtwo\protocol\remote_page_exception $e) {
+            $response = \mod_astra\protocol\remote_page::request($url, false, null, null, $api_key);
+        } catch (\mod_astra\protocol\remote_page_exception $e) {
             return array($e->getMessage());
         }
         // save API key and config URL
-        \mod_stratumtwo_course_config::updateOrCreate($courseid, $sectionNumber, $api_key, $url);
+        \mod_astra_course_config::updateOrCreate($courseid, $sectionNumber, $api_key, $url);
         
         $conf = \json_decode($response);
         if ($conf === null) {
-            return array(\get_string('configjsonparseerror', \mod_stratumtwo_exercise_round::MODNAME));
+            return array(\get_string('configjsonparseerror', \mod_astra_exercise_round::MODNAME));
         }
         
         return $setup->configure_content($courseid, $sectionNumber, $conf);
@@ -63,10 +63,10 @@ class auto_setup {
         global $DB;
 
         if (!isset($conf->categories) || ! \is_object($conf->categories)) {
-            return array(\get_string('configcategoriesmissing', \mod_stratumtwo_exercise_round::MODNAME));
+            return array(\get_string('configcategoriesmissing', \mod_astra_exercise_round::MODNAME));
         }
         if (!isset($conf->modules) || ! \is_array($conf->modules)) {
-            return array(\get_string('configmodulesmissing', \mod_stratumtwo_exercise_round::MODNAME));
+            return array(\get_string('configmodulesmissing', \mod_astra_exercise_round::MODNAME));
         }
 
         $errors = array();
@@ -109,7 +109,7 @@ class auto_setup {
             if (!\has_capability('moodle/role:assign', $course_ctx) ||
                     !\array_key_exists($teacher_role_id, \get_assignable_roles($course_ctx))) {
                 // ensure that the current user (teacher) is allowed to modify user roles in the course
-                $errors[] = \get_string('configuserrolesdisallowed', \mod_stratumtwo_exercise_round::MODNAME);
+                $errors[] = \get_string('configuserrolesdisallowed', \mod_astra_exercise_round::MODNAME);
                 $assistant_users = array();
             }
         }
@@ -137,15 +137,15 @@ class auto_setup {
         }
         
         // hide rounds and exercises/chapters that exist in Moodle but were not seen in the config
-        foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid, true) as $exround) {
+        foreach (\mod_astra_exercise_round::getExerciseRoundsInCourse($courseid, true) as $exround) {
             $updateRoundMaxPoints = false;
             if (! \in_array($exround->getId(), $seen_modules)) {
-                $exround->setStatus(\mod_stratumtwo_exercise_round::STATUS_HIDDEN);
+                $exround->setStatus(\mod_astra_exercise_round::STATUS_HIDDEN);
                 $exround->save();
             }
             foreach ($exround->getLearningObjects() as $lobj) {
                 if (! \in_array($lobj->getId(), $seen_exercises)) {
-                    $lobj->setStatus(\mod_stratumtwo_learning_object::STATUS_HIDDEN);
+                    $lobj->setStatus(\mod_astra_learning_object::STATUS_HIDDEN);
                     $lobj->save();
                     $updateRoundMaxPoints = true;
                 }
@@ -157,13 +157,13 @@ class auto_setup {
         
         if ($must_sort && empty($errors)) {
             // Sort the activities in the section
-            \stratumtwo_sort_activities_in_section($courseid, $sectionNumber);
+            \astra_sort_activities_in_section($courseid, $sectionNumber);
             \rebuild_course_cache($courseid, true);
         }
         
         // clean up obsolete categories
-        foreach (\mod_stratumtwo_category::getCategoriesInCourse($courseid, true) as $cat) {
-            if ($cat->getStatus() == \mod_stratumtwo_category::STATUS_HIDDEN &&
+        foreach (\mod_astra_category::getCategoriesInCourse($courseid, true) as $cat) {
+            if ($cat->getStatus() == \mod_astra_category::STATUS_HIDDEN &&
                     $cat->countLearningObjects(true) == 0) {
                 $cat->delete();
             }
@@ -194,7 +194,7 @@ class auto_setup {
         ), \IGNORE_MISSING);
         // if manual enrolment is not supported, no users are enrolled
         if ($enrolid === false) {
-            $errors[] = \get_string('confignomanualenrol', \mod_stratumtwo_exercise_round::MODNAME);
+            $errors[] = \get_string('confignomanualenrol', \mod_astra_exercise_round::MODNAME);
             return;
         }
         
@@ -246,11 +246,11 @@ class auto_setup {
         global $DB;
         
         if (!isset($module->key)) {
-            $errors[] = \get_string('configmodkeymissing', \mod_stratumtwo_exercise_round::MODNAME);
+            $errors[] = \get_string('configmodkeymissing', \mod_astra_exercise_round::MODNAME);
             return;
         }
         // either update existing exercise round or create new
-        $roundRecord = $DB->get_record(\mod_stratumtwo_exercise_round::TABLE, array(
+        $roundRecord = $DB->get_record(\mod_astra_exercise_round::TABLE, array(
                 'course' => $courseid,
                 'remotekey' => $module->key,
         ));
@@ -280,20 +280,20 @@ class auto_setup {
         if (!isset($moduleName)) {
             $moduleName = '-';
         }
-        $courseConfig = \mod_stratumtwo_course_config::getForCourseId($courseid);
+        $courseConfig = \mod_astra_course_config::getForCourseId($courseid);
         if ($courseConfig) {
             $numberingStyle = $courseConfig->getModuleNumbering();
         } else {
-            $numberingStyle = \mod_stratumtwo_course_config::getDefaultModuleNumbering();
+            $numberingStyle = \mod_astra_course_config::getDefaultModuleNumbering();
         }
-        $roundRecord->name = \mod_stratumtwo_exercise_round::updateNameWithOrder($moduleName, $roundRecord->ordernum, $numberingStyle);
+        $roundRecord->name = \mod_astra_exercise_round::updateNameWithOrder($moduleName, $roundRecord->ordernum, $numberingStyle);
         // In order to show the ordinal number of the exercise round in the Moodle course page,
         // the number must be stored in the name.
         
         if (isset($module->status))
             $roundRecord->status = $this->parseModuleStatus($module->status, $errors);
         if (!isset($roundRecord->status))
-            $roundRecord->status = \mod_stratumtwo_exercise_round::STATUS_READY;
+            $roundRecord->status = \mod_astra_exercise_round::STATUS_READY;
         
         if (isset($module->points_to_pass)) {
             $p = $this->parseInt($module->points_to_pass, $errors);
@@ -354,12 +354,12 @@ class auto_setup {
         );
         
         // Moodle course module visibility
-        $roundRecord->visible = ($roundRecord->status != \mod_stratumtwo_exercise_round::STATUS_HIDDEN) ? 1 : 0;
+        $roundRecord->visible = ($roundRecord->status != \mod_astra_exercise_round::STATUS_HIDDEN) ? 1 : 0;
         
         if (isset($roundRecord->id)) {
             // update existing exercise round
             // settings for the Moodle course module
-            $exround = new \mod_stratumtwo_exercise_round($roundRecord);
+            $exround = new \mod_astra_exercise_round($roundRecord);
             $cm = $exround->getCourseModule();
             $roundRecord->coursemodule = $cm->id; // Moodle course module ID
             $roundRecord->cmidnumber = $cm->idnumber; // keep the old Moodle course module idnumber
@@ -369,12 +369,12 @@ class auto_setup {
         } else {
             // create new exercise round
             // settings for the Moodle course module
-            $roundRecord->modulename = \mod_stratumtwo_exercise_round::TABLE;
+            $roundRecord->modulename = \mod_astra_exercise_round::TABLE;
             $roundRecord->section = $sectionNumber;
             $roundRecord->cmidnumber = ''; // Moodle course module idnumber, unused
             
             $moduleinfo = \create_module($roundRecord); // throws moodle_exception
-            $exround = \mod_stratumtwo_exercise_round::createFromId($moduleinfo->instance);
+            $exround = \mod_astra_exercise_round::createFromId($moduleinfo->instance);
         }
         
         $seen_modules[] = $exround->getId();
@@ -435,14 +435,14 @@ class auto_setup {
      * @param int $courseid Moodle course ID
      * @param stdClass $categoriesConf configuration JSON
      * @param array $errors possible errors are added here
-     * @return array of mod_stratumtwo_category objects indexed by category keys
+     * @return array of mod_astra_category objects indexed by category keys
      */
     protected function configure_categories($courseid, \stdClass $categoriesConf, &$errors) {
         $categories = array();
         $seen_cats = array();
         foreach ($categoriesConf as $key => $cat) {
             if (!isset($cat->name)) {
-                $errors[] = \get_string('configcatnamemissing', \mod_stratumtwo_exercise_round::MODNAME);
+                $errors[] = \get_string('configcatnamemissing', \mod_astra_exercise_round::MODNAME);
                 continue;
             }
             $catRecord = new \stdClass();
@@ -456,13 +456,13 @@ class auto_setup {
                 if ($catRecord->pointstopass === null)
                     unset($catRecord->pointstopass);
             }
-            $category = \mod_stratumtwo_category::createFromId(\mod_stratumtwo_category::updateOrCreate($catRecord));
+            $category = \mod_astra_category::createFromId(\mod_astra_category::updateOrCreate($catRecord));
             $categories[$key] = $category;
             $seen_cats[] = $category->getId();
         }
         
         // hide categories that exist in Moodle but were not seen in the config
-        foreach (\mod_stratumtwo_category::getCategoriesInCourse($courseid) as $id => $cat) {
+        foreach (\mod_astra_category::getCategoriesInCourse($courseid) as $id => $cat) {
             if (! \in_array($id, $seen_cats)) {
                 $cat->setHidden();
                 $cat->save();
@@ -475,37 +475,37 @@ class auto_setup {
     /**
      * Configure learning objects (exercises/chapters) (create/update) in an
      * exercise round based on the configuration JSON.
-     * @param array $categories \mod_stratumtwo_category objects indexed by keys
-     * @param \mod_stratumtwo_exercise_round $exround
+     * @param array $categories \mod_astra_category objects indexed by keys
+     * @param \mod_astra_exercise_round $exround
      * @param array $config configuration JSON of the exercises
      * @param array $seen array of exercise IDs that have been seen in the config
      * @param array $errors
-     * @param \mod_stratumtwo_learning_object $parent set if the object is listed under another object,
+     * @param \mod_astra_learning_object $parent set if the object is listed under another object,
      * null if there is no parent object.
      * @param int $n ordering number
      * @return int new ordering number, use if exercises are numerated course-wide
      */
-    protected function configure_learning_objects(array &$categories, \mod_stratumtwo_exercise_round $exround,
-            array $config, array &$seen, array &$errors, \mod_stratumtwo_learning_object $parent = null, $n = 0) {
+    protected function configure_learning_objects(array &$categories, \mod_astra_exercise_round $exround,
+            array $config, array &$seen, array &$errors, \mod_astra_learning_object $parent = null, $n = 0) {
         global $DB;
         
         foreach ($config as $o) {
             if (!isset($o->key)) {
-                $errors[] = \get_string('configexercisekeymissing', \mod_stratumtwo_exercise_round::MODNAME);
+                $errors[] = \get_string('configexercisekeymissing', \mod_astra_exercise_round::MODNAME);
                 continue;
             }
             if (!isset($o->category)) {
-                $errors[] = \get_string('configexercisecatmissing', \mod_stratumtwo_exercise_round::MODNAME);
+                $errors[] = \get_string('configexercisecatmissing', \mod_astra_exercise_round::MODNAME);
                 continue;
             }
             if (!isset($categories[$o->category])) {
-                $errors[] = \get_string('configexerciseunknowncat', \mod_stratumtwo_exercise_round::MODNAME, $o->category);
+                $errors[] = \get_string('configexerciseunknowncat', \mod_astra_exercise_round::MODNAME, $o->category);
                 continue;
             }
             
             // find if a learning object with the key exists in the same course as the exercise round
-            $lobjectRecord = $DB->get_record_select(\mod_stratumtwo_learning_object::TABLE,
-                    'remotekey = ? AND roundid IN (SELECT id FROM {'. \mod_stratumtwo_exercise_round::TABLE .'} WHERE course = ?)',
+            $lobjectRecord = $DB->get_record_select(\mod_astra_learning_object::TABLE,
+                    'remotekey = ? AND roundid IN (SELECT id FROM {'. \mod_astra_exercise_round::TABLE .'} WHERE course = ?)',
                     array($o->key, $exround->getCourse()->courseid), '*', IGNORE_MISSING);
             if ($lobjectRecord === false) {
                 // create new later
@@ -527,7 +527,7 @@ class auto_setup {
             // is it an exercise or chapter?
             if (isset($o->max_submissions)) { // exercise
                 if (isset($lobjectRecord->id)) { // the exercise exists in Moodle, read old field values
-                    $exerciseRecord = $DB->get_record(\mod_stratumtwo_exercise::TABLE, array('lobjectid' => $lobjectRecord->id),
+                    $exerciseRecord = $DB->get_record(\mod_astra_exercise::TABLE, array('lobjectid' => $lobjectRecord->id),
                             '*', \MUST_EXIST);
                     // copy object fields
                     foreach ($exerciseRecord as $key => $val) {
@@ -571,7 +571,7 @@ class auto_setup {
             } else {
                 // chapter
                 if (isset($lobjectRecord->id)) { // the chapter exists in Moodle, read old field values
-                    $chapterRecord = $DB->get_record(\mod_stratumtwo_chapter::TABLE, array('lobjectid' => $lobjectRecord->id),
+                    $chapterRecord = $DB->get_record(\mod_astra_chapter::TABLE, array('lobjectid' => $lobjectRecord->id),
                             '*', \MUST_EXIST);
                     // copy object fields
                     foreach ($chapterRecord as $key => $val) {
@@ -614,7 +614,7 @@ class auto_setup {
             if (isset($lobjectRecord->id)) {
                 // update existing
                 if (isset($o->max_submissions)) { // exercise
-                    $learningObject = new \mod_stratumtwo_exercise($lobjectRecord);
+                    $learningObject = new \mod_astra_exercise($lobjectRecord);
                     if ($oldRoundId == $lobjectRecord->roundid) { // round not changed
                         $learningObject->save($learningObject->isHidden() ||
                                 $learningObject->getExerciseRound()->isHidden() ||
@@ -632,7 +632,7 @@ class auto_setup {
                     }
                 } else {
                     // chapter
-                    $learningObject = new \mod_stratumtwo_chapter($lobjectRecord);
+                    $learningObject = new \mod_astra_chapter($lobjectRecord);
                     $learningObject->save();
                 }
             } else {
@@ -658,51 +658,51 @@ class auto_setup {
     protected function parseLearningObjectStatus($value, &$errors) {
         switch ($value) {
             case 'ready':
-                return \mod_stratumtwo_learning_object::STATUS_READY;
+                return \mod_astra_learning_object::STATUS_READY;
                 break;
             case 'hidden':
-                return \mod_stratumtwo_learning_object::STATUS_HIDDEN;
+                return \mod_astra_learning_object::STATUS_HIDDEN;
                 break;
             case 'maintenance':
-                return \mod_stratumtwo_learning_object::STATUS_MAINTENANCE;
+                return \mod_astra_learning_object::STATUS_MAINTENANCE;
                 break;
             case 'unlisted':
-                return \mod_stratumtwo_learning_object::STATUS_UNLISTED;
+                return \mod_astra_learning_object::STATUS_UNLISTED;
                 break;
             default:
-                $errors[] = \get_string('configbadstatus', \mod_stratumtwo_exercise_round::MODNAME, $value);
-                return \mod_stratumtwo_learning_object::STATUS_HIDDEN;
+                $errors[] = \get_string('configbadstatus', \mod_astra_exercise_round::MODNAME, $value);
+                return \mod_astra_learning_object::STATUS_HIDDEN;
         }
     }
     
     protected function parseModuleStatus($value, &$errors) {
         switch ($value) {
             case 'ready':
-                return \mod_stratumtwo_exercise_round::STATUS_READY;
+                return \mod_astra_exercise_round::STATUS_READY;
                 break;
             case 'hidden':
-                return \mod_stratumtwo_exercise_round::STATUS_HIDDEN;
+                return \mod_astra_exercise_round::STATUS_HIDDEN;
                 break;
             case 'maintenance':
-                return \mod_stratumtwo_exercise_round::STATUS_MAINTENANCE;
+                return \mod_astra_exercise_round::STATUS_MAINTENANCE;
                 break;
             default:
-                $errors[] = \get_string('configbadstatus', \mod_stratumtwo_exercise_round::MODNAME, $value);
-                return \mod_stratumtwo_exercise_round::STATUS_HIDDEN;
+                $errors[] = \get_string('configbadstatus', \mod_astra_exercise_round::MODNAME, $value);
+                return \mod_astra_exercise_round::STATUS_HIDDEN;
         }
     }
     
     protected function parseCategoryStatus($value, &$errors) {
         switch ($value) {
             case 'ready':
-                return \mod_stratumtwo_category::STATUS_READY;
+                return \mod_astra_category::STATUS_READY;
                 break;
             case 'hidden':
-                return \mod_stratumtwo_category::STATUS_HIDDEN;
+                return \mod_astra_category::STATUS_HIDDEN;
                 break;
             default:
-                $errors[] = \get_string('configbadstatus', \mod_stratumtwo_exercise_round::MODNAME, $value);
-                return \mod_stratumtwo_category::STATUS_HIDDEN;
+                $errors[] = \get_string('configbadstatus', \mod_astra_exercise_round::MODNAME, $value);
+                return \mod_astra_category::STATUS_HIDDEN;
         }
     }
     
@@ -710,7 +710,7 @@ class auto_setup {
         if (\is_numeric($value))
             return (int) $value;
         else {
-            $errors[] = \get_string('configbadint', \mod_stratumtwo_exercise_round::MODNAME, $value);
+            $errors[] = \get_string('configbadint', \mod_astra_exercise_round::MODNAME, $value);
             return null;
         }
     }
@@ -719,7 +719,7 @@ class auto_setup {
         if (\is_numeric($value))
             return (float) $value;
         else {
-            $errors[] = \get_string('configbadfloat', \mod_stratumtwo_exercise_round::MODNAME, $value);
+            $errors[] = \get_string('configbadfloat', \mod_astra_exercise_round::MODNAME, $value);
             return null;
         }
     }
@@ -738,7 +738,7 @@ class auto_setup {
             if ($date !== false)
                 return $date->getTimestamp();
         }
-        $errors[] = \get_string('configbaddate', \mod_stratumtwo_exercise_round::MODNAME, $value);
+        $errors[] = \get_string('configbaddate', \mod_astra_exercise_round::MODNAME, $value);
         return null;
     }
     
@@ -764,7 +764,7 @@ class auto_setup {
                 }
             }
         }
-        $errors[] = \get_string('configbadduration', \mod_stratumtwo_exercise_round::MODNAME, $duration);
+        $errors[] = \get_string('configbadduration', \mod_astra_exercise_round::MODNAME, $duration);
         return null;
     }
     
@@ -781,7 +781,7 @@ class auto_setup {
         $not_found_ids = array();
         
         if (!\is_array($student_ids)) {
-            $errors[] = \get_string('configassistantsnotarray', \mod_stratumtwo_exercise_round::MODNAME);
+            $errors[] = \get_string('configassistantsnotarray', \mod_astra_exercise_round::MODNAME);
             return $users;
         }
         
@@ -795,7 +795,7 @@ class auto_setup {
         }
         
         if (!empty($not_found_ids)) {
-            $errors[] = \get_string('configassistantnotfound', \mod_stratumtwo_exercise_round::MODNAME,
+            $errors[] = \get_string('configassistantnotfound', \mod_astra_exercise_round::MODNAME,
                     \implode(', ', $not_found_ids));
         }
         return $users;

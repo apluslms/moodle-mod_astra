@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\output;
+namespace mod_astra\output;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -8,9 +8,9 @@ class exercise_round_page implements \renderable, \templatable {
     protected $exround;
     protected $moduleSummary;
     
-    public function __construct(\mod_stratumtwo_exercise_round $exround, \stdClass $user) {
+    public function __construct(\mod_astra_exercise_round $exround, \stdClass $user) {
         $this->exround = $exround;
-        $this->moduleSummary = new \mod_stratumtwo\summary\user_module_summary($exround, $user);
+        $this->moduleSummary = new \mod_astra\summary\user_module_summary($exround, $user);
     }
     
     /**
@@ -21,13 +21,13 @@ class exercise_round_page implements \renderable, \templatable {
     public function export_for_template(\renderer_base $output) {
         $data = new \stdClass();
         $ctx = \context_module::instance($this->exround->getCourseModule()->id);
-        $data->is_course_staff = \has_capability('mod/stratumtwo:viewallsubmissions', $ctx);
+        $data->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $ctx);
         $data->course_module = $this->exround->getTemplateContext();
         $data->module_summary = $this->moduleSummary->getTemplateContext();
         $data->module_summary->classes = 'pull-right'; // CSS classes
         $data->categories = $this->moduleSummary->getExercisesByCategoriesTemplateContext();
         
-        $data->toDateStr = new \mod_stratumtwo\output\date_to_string();
+        $data->toDateStr = new \mod_astra\output\date_to_string();
         
         $data->toc = self::getRoundTableOfContentsContext($this->exround);
         
@@ -38,13 +38,13 @@ class exercise_round_page implements \renderable, \templatable {
     
     /**
      * Return table of contents context for an exercise round.
-     * @param \mod_stratumtwo_exercise_round $exround
+     * @param \mod_astra_exercise_round $exround
      * @return stdClass
      */
-    public static function getRoundTableOfContentsContext(\mod_stratumtwo_exercise_round $exround) {
+    public static function getRoundTableOfContentsContext(\mod_astra_exercise_round $exround) {
         $toc = $exround->getTemplateContext();
         $toc->has_started = $exround->hasStarted();
-        $toc->lobjects = \mod_stratumtwo\output\index_page::buildRoundLobjectsContextForToc(
+        $toc->lobjects = \mod_astra\output\index_page::buildRoundLobjectsContextForToc(
                 $exround->getLearningObjects(false, false));
         return $toc;
     }

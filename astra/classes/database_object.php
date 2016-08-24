@@ -5,7 +5,7 @@ defined('MOODLE_INTERNAL') || die();
  * Abstract base class for the classes that represent database records.
  * Database schemas are defined in the file db/install.xml.
  */
-abstract class mod_stratumtwo_database_object {
+abstract class mod_astra_database_object {
     // child classes must define constant TABLE (name of the database table)
     protected $record; // database record, stdClass
     
@@ -19,8 +19,8 @@ abstract class mod_stratumtwo_database_object {
         $rec = $DB->get_record(static::TABLE, array('id' => $id), '*', MUST_EXIST);
         return new static($rec);
         // class to instantiate is the class given in the static call: 
-        // mod_stratumtwo_submission::createFromId() returns instance of 
-        // mod_stratumtwo_submission
+        // mod_astra_submission::createFromId() returns instance of 
+        // mod_astra_submission
     }
     
     /**

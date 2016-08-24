@@ -1,6 +1,6 @@
 <?php
 
-namespace mod_stratumtwo\export;
+namespace mod_astra\export;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -58,13 +58,13 @@ class export_data {
         // submission status to non-localized string for JSON
         $sbmsStatusToString = function ($status) {
             switch ($status) {
-                case \mod_stratumtwo_submission::STATUS_INITIALIZED :
+                case \mod_astra_submission::STATUS_INITIALIZED :
                     return 'initialized';
-                case \mod_stratumtwo_submission::STATUS_WAITING :
+                case \mod_astra_submission::STATUS_WAITING :
                     return 'waiting';
-                case \mod_stratumtwo_submission::STATUS_READY :
+                case \mod_astra_submission::STATUS_READY :
                     return 'ready';
-                case \mod_stratumtwo_submission::STATUS_ERROR :
+                case \mod_astra_submission::STATUS_ERROR :
                     return 'error';
                 default :
                     return 'undefined'; // should not happen
@@ -186,7 +186,7 @@ class export_data {
             return array(); // no exercises, no results
         }
         
-        $visibleExrounds = \mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->courseId);
+        $visibleExrounds = \mod_astra_exercise_round::getExerciseRoundsInCourse($this->courseId);
         $exrounds = array(); // organize by round id
         foreach ($visibleExrounds as $exround) {
             $exrounds[$exround->getId()] = $exround;

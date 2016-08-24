@@ -1,6 +1,6 @@
 <?php
 
-namespace mod_stratumtwo\form;
+namespace mod_astra\form;
 
 defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->libdir/formslib.php");
@@ -20,10 +20,10 @@ class add_submit_limit_deviation_form extends \moodleform {
     }
     
     public function definition() {
-        $mod = \mod_stratumtwo_exercise_round::MODNAME;
+        $mod = \mod_astra_exercise_round::MODNAME;
         $mform = $this->_form;
         
-        \mod_stratumtwo\form\add_deadline_deviation_form::add_common_deviation_fields($mform, $this->courseid);
+        \mod_astra\form\add_deadline_deviation_form::add_common_deviation_fields($mform, $this->courseid);
         
         // extra submissions
         $mform->addElement('text', 'extrasubmissions', get_string('extrasubmissions', $mod));
@@ -40,11 +40,11 @@ class add_submit_limit_deviation_form extends \moodleform {
         $errors = parent::validation($data, $files);
         
         $errors = \array_merge($errors,
-                \mod_stratumtwo\form\add_deadline_deviation_form::common_validation($data, $files));
+                \mod_astra\form\add_deadline_deviation_form::common_validation($data, $files));
         
         // extra submissions must be at least 1
         if ($data['extrasubmissions'] !== '' && $data['extrasubmissions'] < 1) {
-            $errors['extrasubmissions'] = get_string('negativeerror', \mod_stratumtwo_exercise_round::MODNAME);
+            $errors['extrasubmissions'] = get_string('negativeerror', \mod_astra_exercise_round::MODNAME);
         }
         
         return $errors;

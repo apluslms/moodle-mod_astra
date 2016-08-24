@@ -1,6 +1,6 @@
 <?php
 
-namespace mod_stratumtwo\form;
+namespace mod_astra\form;
 
 defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->libdir/formslib.php");
@@ -23,7 +23,7 @@ class export_results_form extends \moodleform {
     
     public function definition() {
         $mform = $this->_form;
-        $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
+        $mod = \mod_astra_exercise_round::MODNAME; // for get_string()
         
         // Include all exercises checkbox
         $mform->addElement('advcheckbox', 'inclallexercises',
@@ -33,7 +33,7 @@ class export_results_form extends \moodleform {
         $mform->setDefault('inclallexercises', 1);
         
         // all exercises in the course
-        $allExerciseRounds = \mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->courseid, true);
+        $allExerciseRounds = \mod_astra_exercise_round::getExerciseRoundsInCourse($this->courseid, true);
         $exerciseOptions = array();
         $roundOptions = array();
         foreach ($allExerciseRounds as $exround) {
@@ -43,7 +43,7 @@ class export_results_form extends \moodleform {
             $roundOptions[$exround->getId()] = $exround->getName();
         }
         // all categories
-        $allCategories = \mod_stratumtwo_category::getCategoriesInCourse($this->courseid, true);
+        $allCategories = \mod_astra_category::getCategoriesInCourse($this->courseid, true);
         $categoryOptions = array();
         foreach ($allCategories as $cat) {
             $categoryOptions[$cat->getId()] = $cat->getName();
@@ -66,10 +66,10 @@ class export_results_form extends \moodleform {
         
         // all students in the course
         $studentOptions = array();
-        $enrolled_users = \get_enrolled_users(\context_course::instance($this->courseid), 'mod/stratumtwo:submit',
+        $enrolled_users = \get_enrolled_users(\context_course::instance($this->courseid), 'mod/astra:submit',
                 0, 'u.*', 'idnumber, username');
         foreach ($enrolled_users as $user) {
-            $studentOptions[$user->id] = \mod_stratumtwo_deviation_rule::submitterName($user);
+            $studentOptions[$user->id] = \mod_astra_deviation_rule::submitterName($user);
         }
         
         // select students (if none selected, all students are included)
@@ -90,13 +90,13 @@ class export_results_form extends \moodleform {
         
         // select which submissions are included in the regrading
         $submissionOptions = array(
-                \mod_stratumtwo\export\all_students_course_summary::SUBMISSIONS_BEST =>
+                \mod_astra\export\all_students_course_summary::SUBMISSIONS_BEST =>
                     get_string('massregrsbmsbest', $mod),
-                \mod_stratumtwo\export\all_students_course_summary::SUBMISSIONS_LATEST =>
+                \mod_astra\export\all_students_course_summary::SUBMISSIONS_LATEST =>
                     get_string('massregrsbmslatest', $mod),
-                \mod_stratumtwo\export\all_students_course_summary::SUBMISSIONS_ALL =>
+                \mod_astra\export\all_students_course_summary::SUBMISSIONS_ALL =>
                     get_string('massregrsbmsall', $mod),
-                \mod_stratumtwo\export\all_students_course_summary::SUBMISSIONS_ONLY_ERROR =>
+                \mod_astra\export\all_students_course_summary::SUBMISSIONS_ONLY_ERROR =>
                     get_string('massregrsbmserror', $mod),
         );
         $mform->addElement('select', 'selectsubmissions',
@@ -107,7 +107,7 @@ class export_results_form extends \moodleform {
     }
     
     public function validation($data, $files) {
-        $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
+        $mod = \mod_astra_exercise_round::MODNAME; // for get_string()
         $errors = parent::validation($data, $files);
         
         $exerciseSelectMethods = 0;
@@ -150,11 +150,11 @@ class export_results_form extends \moodleform {
         } else if (!empty($fromform->selectcategories)) {
             // all exercises in these categories
             $exerciseIds = \array_keys(
-                    $DB->get_records_list(\mod_stratumtwo_learning_object::TABLE, 'categoryid', $fromform->selectcategories, '', 'id'));
+                    $DB->get_records_list(\mod_astra_learning_object::TABLE, 'categoryid', $fromform->selectcategories, '', 'id'));
         } else { // (!empty($fromform['selectrounds']))
             // all exercises in these rounds
             $exerciseIds = \array_keys(
-                    $DB->get_records_list(\mod_stratumtwo_learning_object::TABLE, 'roundid', $fromform->selectrounds, '', 'id'));
+                    $DB->get_records_list(\mod_astra_learning_object::TABLE, 'roundid', $fromform->selectrounds, '', 'id'));
         }
         return $exerciseIds;
     }

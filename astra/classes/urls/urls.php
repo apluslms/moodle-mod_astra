@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\urls;
+namespace mod_astra\urls;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -9,7 +9,7 @@ defined('MOODLE_INTERNAL') || die;
 class urls {
     public static function baseURL() {
         global $CFG;
-        return $CFG->wwwroot .'/mod/'. \mod_stratumtwo_exercise_round::TABLE;
+        return $CFG->wwwroot .'/mod/'. \mod_astra_exercise_round::TABLE;
     }
     
     private static function buildUrl($path, array $query, $asMoodleUrl = false) {
@@ -21,12 +21,12 @@ class urls {
         }
     }
     
-    public static function exerciseRound(\mod_stratumtwo_exercise_round $exround, $asMdlUrl = false) {
+    public static function exerciseRound(\mod_astra_exercise_round $exround, $asMdlUrl = false) {
         $query = array('id' => $exround->getCourseModule()->id);
         return self::buildUrl('/view.php', $query, $asMdlUrl);
     }
     
-    public static function editExerciseRound(\mod_stratumtwo_exercise_round $exround, $asMdlUrl = false) {
+    public static function editExerciseRound(\mod_astra_exercise_round $exround, $asMdlUrl = false) {
         $query = array('id' => $exround->getId());
         return self::buildUrl('/teachers/edit_round.php', $query, $asMdlUrl);
     }
@@ -36,68 +36,68 @@ class urls {
         return self::buildUrl('/teachers/edit_round.php', $query, $asMdlUrl);
     }
     
-    public static function deleteExerciseRound(\mod_stratumtwo_exercise_round $exround, $asMdlUrl = false) {
+    public static function deleteExerciseRound(\mod_astra_exercise_round $exround, $asMdlUrl = false) {
         $query = array('id' => $exround->getId(), 'type' => 'round');
         return self::buildUrl('/teachers/delete.php', $query, $asMdlUrl);
     }
     
-    public static function newSubmissionHandler(\mod_stratumtwo_exercise $ex, $asMdlUrl = false) {
+    public static function newSubmissionHandler(\mod_astra_exercise $ex, $asMdlUrl = false) {
         // form POST target for new submissions
         return self::exercise($ex, $asMdlUrl); // POST to the exercise page
     }
     
     // also used for other learning objects (chapters), not just exercises
-    public static function exercise(\mod_stratumtwo_learning_object $ex, $asMdlUrl = false) {
+    public static function exercise(\mod_astra_learning_object $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId());
         return self::buildUrl('/exercise.php', $query, $asMdlUrl);
     }
     
-    public static function editExercise(\mod_stratumtwo_learning_object $ex, $asMdlUrl = false) {
+    public static function editExercise(\mod_astra_learning_object $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId());
         return self::buildUrl('/teachers/edit_exercise.php', $query, $asMdlUrl);
     }
     
-    public static function createExercise(\mod_stratumtwo_exercise_round $exround, $asMdlUrl = false) {
+    public static function createExercise(\mod_astra_exercise_round $exround, $asMdlUrl = false) {
         $query = array('round' => $exround->getId(), 'type' => 'exercise');
         return self::buildUrl('/teachers/edit_exercise.php', $query, $asMdlUrl);
     }
     
-    public static function createChapter(\mod_stratumtwo_exercise_round $exround, $asMdlUrl = false) {
+    public static function createChapter(\mod_astra_exercise_round $exround, $asMdlUrl = false) {
         $query = array('round' => $exround->getId(), 'type' => 'chapter');
         return self::buildUrl('/teachers/edit_exercise.php', $query, $asMdlUrl);
     }
     
-    public static function deleteExercise(\mod_stratumtwo_learning_object $ex, $asMdlUrl = false) {
+    public static function deleteExercise(\mod_astra_learning_object $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId(), 'type' => 'exercise');
         return self::buildUrl('/teachers/delete.php', $query, $asMdlUrl);
     }
     
-    public static function submission(\mod_stratumtwo_submission $sbms, $asMdlUrl = false) {
+    public static function submission(\mod_astra_submission $sbms, $asMdlUrl = false) {
         $query = array('id' => $sbms->getId());
         return self::buildUrl('/submission.php', $query, $asMdlUrl);
     }
     
-    public static function inspectSubmission(\mod_stratumtwo_submission $sbms, $asMdlUrl = false) {
+    public static function inspectSubmission(\mod_astra_submission $sbms, $asMdlUrl = false) {
         $query = array('id' => $sbms->getId());
         return self::buildUrl('/teachers/inspect.php', $query, $asMdlUrl);
     }
     
-    public static function submissionList(\mod_stratumtwo_exercise $ex, $asMdlUrl = false) {
+    public static function submissionList(\mod_astra_exercise $ex, $asMdlUrl = false) {
         $query = array('id' => $ex->getId());
         return self::buildUrl('/teachers/submission_list.php', $query, $asMdlUrl);
     }
     
-    public static function assessSubmissionManually(\mod_stratumtwo_submission $sbms, $asMdlUrl = false) {
+    public static function assessSubmissionManually(\mod_astra_submission $sbms, $asMdlUrl = false) {
         $query = array('id' => $sbms->getId());
         return self::buildUrl('/teachers/assess_submission.php', $query, $asMdlUrl);
     }
     
-    public static function resubmitToService(\mod_stratumtwo_submission $sbms, $asMdlUrl = false) {
+    public static function resubmitToService(\mod_astra_submission $sbms, $asMdlUrl = false) {
         $query = array('id' => $sbms->getId());
         return self::buildUrl('/teachers/resubmit_submission.php', $query, $asMdlUrl);
     }
     
-    public static function asyncGradeSubmission(\mod_stratumtwo_submission $sbms, $asMdlUrl = false) {
+    public static function asyncGradeSubmission(\mod_astra_submission $sbms, $asMdlUrl = false) {
         // exercise service HTTP POSTs grading results asynchronously to this URL
         $query = array(
                 'id' => $sbms->getId(),
@@ -106,7 +106,7 @@ class urls {
         return self::buildUrl('/async/grade_submission.php', $query, $asMdlUrl);
     }
     
-    public static function asyncNewSubmission(\mod_stratumtwo_exercise $ex, $userid, $asMdlUrl = false) {
+    public static function asyncNewSubmission(\mod_astra_exercise $ex, $userid, $asMdlUrl = false) {
         // URL for asynchronously creating a new graded submission
         $query = array(
                 'id' => $ex->getId(),
@@ -116,7 +116,7 @@ class urls {
         return self::buildUrl('/async/new_submission.php', $query, $asMdlUrl);
     }
     
-    public static function editCategory(\mod_stratumtwo_category $cat, $asMdlUrl = false) {
+    public static function editCategory(\mod_astra_category $cat, $asMdlUrl = false) {
         $query = array('id' => $cat->getId());
         return self::buildUrl('/teachers/edit_category.php', $query, $asMdlUrl);
     }
@@ -126,7 +126,7 @@ class urls {
         return self::buildUrl('/teachers/edit_category.php', $query, $asMdlUrl);
     }
     
-    public static function deleteCategory(\mod_stratumtwo_category $cat, $asMdlUrl = false) {
+    public static function deleteCategory(\mod_astra_category $cat, $asMdlUrl = false) {
         $query = array('id' => $cat->getId(), 'type' => 'category');
         return self::buildUrl('/teachers/delete.php', $query, $asMdlUrl);
     }
@@ -161,7 +161,7 @@ class urls {
         return self::buildUrl('/teachers/add_deviation.php', $query, $asMdlUrl);
     }
     
-    public static function deleteDeadlineDeviation(\mod_stratumtwo_deadline_deviation $dev, $asMdlUrl = false) {
+    public static function deleteDeadlineDeviation(\mod_astra_deadline_deviation $dev, $asMdlUrl = false) {
         $query = array(
                 'remove' => 'dl',
                 'id' => $dev->getId(),
@@ -169,7 +169,7 @@ class urls {
         return self::buildUrl('/teachers/deviations.php', $query, $asMdlUrl);
     }
     
-    public static function deleteSubmissionLimitDeviation(\mod_stratumtwo_submission_limit_deviation $dev, $asMdlUrl = false) {
+    public static function deleteSubmissionLimitDeviation(\mod_astra_submission_limit_deviation $dev, $asMdlUrl = false) {
         $query = array(
                 'remove' => 'submitlimit',
                 'id' => $dev->getId(),

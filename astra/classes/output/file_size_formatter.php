@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\output;
+namespace mod_astra\output;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -11,7 +11,7 @@ defined('MOODLE_INTERNAL') || die;
  * 
  * Example
  * Preparing context variables before rendering:
- * $context->fileSizeFormatter = new \mod_stratumtwo\output\file_size_formatter();
+ * $context->fileSizeFormatter = new \mod_astra\output\file_size_formatter();
  * $context->filesize = 1024;
  * 
  * In the Mustache template:

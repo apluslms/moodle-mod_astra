@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\summary;
+namespace mod_astra\summary;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -23,12 +23,12 @@ class user_module_summary {
      * in this round and
      * this method will not generate any database queries.
      *
-     * @param \mod_stratumtwo_exercise_round $exround
+     * @param \mod_astra_exercise_round $exround
      * @param \stdClass $user
      * @param array $exerciseSummaries array of user_exercise_summary objects
      * @param bool $generate
      */
-    public function __construct(\mod_stratumtwo_exercise_round $exround, $user,
+    public function __construct(\mod_astra_exercise_round $exround, $user,
             array $exerciseSummaries = array(), $generate = true) {
         $this->exround = $exround;
         $this->user = $user;
@@ -65,14 +65,14 @@ class user_module_summary {
         // all submissions from the user in any exercise in the exercise round
         $sql = 
             'SELECT id, status, exerciseid, grade, submissiontime 
-             FROM {'. \mod_stratumtwo_submission::TABLE .'} '
+             FROM {'. \mod_astra_submission::TABLE .'} '
            .'WHERE submitter = ? AND exerciseid IN (' .
-                 \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE, 'lob.id') .
+                 \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_exercise::TABLE, 'lob.id') .
                  ' WHERE lob.roundid = ?)';
         $submissions = $DB->get_recordset_sql($sql, array($this->user->id, $this->exround->getId()));
         // find best submission for each exercise
         foreach ($submissions as $record) {
-            $sbms = new \mod_stratumtwo_submission($record);
+            $sbms = new \mod_astra_submission($record);
             $exerciseBest = &$submissionsByExerciseId[$record->exerciseid];
             $count = $exerciseBest['count'];
             $best = $exerciseBest['best'];

@@ -4,7 +4,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Abstract class for student-specific submission deviations to an exercise.
  */
-abstract class mod_stratumtwo_deviation_rule extends mod_stratumtwo_database_object {
+abstract class mod_astra_deviation_rule extends mod_astra_database_object {
     // subclasses must define constant TABLE
     
     // cache
@@ -39,9 +39,9 @@ abstract class mod_stratumtwo_deviation_rule extends mod_stratumtwo_database_obj
         // on the class used in the static method call
         return $DB->get_recordset_select(static::TABLE,
                 'exerciseid IN ('.
-                    mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE, 'lob.id') .
+                    mod_astra_learning_object::getSubtypeJoinSQL(mod_astra_exercise::TABLE, 'lob.id') .
                     ' WHERE lob.roundid IN ' .
-                        '(SELECT id FROM {'. mod_stratumtwo_exercise_round::TABLE .'} WHERE course = ?))',
+                        '(SELECT id FROM {'. mod_astra_exercise_round::TABLE .'} WHERE course = ?))',
                 array($courseid),
                 'exerciseid ASC, submitter ASC');
     }
@@ -53,7 +53,7 @@ abstract class mod_stratumtwo_deviation_rule extends mod_stratumtwo_database_obj
     
     public function getExercise() {
         if ($this->exercise === null) {
-            $this->exercise = mod_stratumtwo_exercise::createFromId($this->record->exerciseid);
+            $this->exercise = mod_astra_exercise::createFromId($this->record->exerciseid);
         }
         return $this->exercise;
     }

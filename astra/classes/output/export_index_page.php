@@ -1,10 +1,10 @@
 <?php
 
-namespace mod_stratumtwo\output;
+namespace mod_astra\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-use \mod_stratumtwo\urls\urls;
+use \mod_astra\urls\urls;
 
 class export_index_page implements \renderable, \templatable {
     

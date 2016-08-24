@@ -9,9 +9,9 @@ defined('MOODLE_INTERNAL') || die();
  * The maximum points in a round is defined by the sum of the exercise maximum
  * points.
  */
-class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
-    const TABLE   = 'stratumtwo'; // database table name
-    const MODNAME = 'mod_stratumtwo'; // module name for get_string
+class mod_astra_exercise_round extends mod_astra_database_object {
+    const TABLE   = 'astra'; // database table name
+    const MODNAME = 'mod_astra'; // module name for get_string
     
     const STATUS_READY       = 0;
     const STATUS_HIDDEN      = 1;
@@ -22,13 +22,13 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     
     private $cm; // Moodle course module as cm_info instance
     
-    public function __construct($stratumtwo) {
-        parent::__construct($stratumtwo);
+    public function __construct($astra) {
+        parent::__construct($astra);
         $this->cm = $this->findCourseModule();
     }
     
     /**
-     * Find the Moodle course module corresponding to this stratumtwo activity instance.
+     * Find the Moodle course module corresponding to this astra activity instance.
      * @return cm_info|null the Moodle course module. Null if it does not exist.
      */
     protected function findCourseModule() {
@@ -41,7 +41,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     /**
-     * Return the Moodle course module corresponding to this stratumtwo activity instance.
+     * Return the Moodle course module corresponding to this astra activity instance.
      * @return cm_info|null the Moodle course module. Null if it does not exist.
      */
     public function getCourseModule() {
@@ -192,7 +192,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
      * numbering style.
      * @param string $oldName old name with a possible old number
      * @param int $order new ordinal number to use
-     * @param int $numberingStyle module numbering constant from mod_stratumtwo_course_config
+     * @param int $numberingStyle module numbering constant from mod_astra_course_config
      * @return string
      */
     public static function updateNameWithOrder($oldName, $order, $numberingStyle) {
@@ -204,14 +204,14 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         if ($name !== null) {
             $name = trim($name);
             switch ($numberingStyle) {
-                case mod_stratumtwo_course_config::MODULE_NUMBERING_ARABIC:
+                case mod_astra_course_config::MODULE_NUMBERING_ARABIC:
                     $name = "$order. $name";
                     break;
-                case mod_stratumtwo_course_config::MODULE_NUMBERING_ROMAN:
-                    $name = stratumtwo_roman_numeral($order) .' '. $name;
+                case mod_astra_course_config::MODULE_NUMBERING_ROMAN:
+                    $name = astra_roman_numeral($order) .' '. $name;
                     break;
-                //case mod_stratumtwo_course_config::MODULE_NUMBERING_HIDDEN_ARABIC:
-                //case mod_stratumtwo_course_config::MODULE_NUMBERING_NONE:
+                //case mod_astra_course_config::MODULE_NUMBERING_HIDDEN_ARABIC:
+                //case mod_astra_course_config::MODULE_NUMBERING_NONE:
                 default:
                     // do not add anything to the name
             }
@@ -282,7 +282,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
                 $visible = 0;
                 break;
             default:
-                throw new coding_exception('Stratum2 exercise round has unknown status.');
+                throw new coding_exception('Astra exercise round has unknown status.');
         }
 
         $this->update_event(self::EVENT_DL_TYPE, $dl, $title, $visible);
@@ -358,11 +358,11 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     /**
-     * Return an array of the learning objects in this round (as mod_stratumtwo_learning_object
+     * Return an array of the learning objects in this round (as mod_astra_learning_object
      * instances).
      * @param bool $includeHidden if true, hidden learning objects are included
      * @param bool $sort if true, the result array is sorted
-     * @return (sorted) array of mod_stratumtwo_learning_object instances
+     * @return (sorted) array of mod_astra_learning_object instances
      */
     public function getLearningObjects($includeHidden = false, $sort = true) {
         global $DB;
@@ -372,22 +372,22 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         
         if (!$includeHidden) {
             $where .= ' AND status != ?';
-            $params[] = mod_stratumtwo_learning_object::STATUS_HIDDEN;
+            $params[] = mod_astra_learning_object::STATUS_HIDDEN;
         }
         $exerciseRecords = $DB->get_records_sql(
-                mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_exercise::TABLE) . $where,
+                mod_astra_learning_object::getSubtypeJoinSQL(mod_astra_exercise::TABLE) . $where,
                 $params);
         $chapterRecords = $DB->get_records_sql(
-                mod_stratumtwo_learning_object::getSubtypeJoinSQL(mod_stratumtwo_chapter::TABLE) . $where,
+                mod_astra_learning_object::getSubtypeJoinSQL(mod_astra_chapter::TABLE) . $where,
                 $params);
         
         // gather all learning objects of the round in one array
         $learningObjects = array();
         foreach ($exerciseRecords as $ex) {
-            $learningObjects[] = new mod_stratumtwo_exercise($ex);
+            $learningObjects[] = new mod_astra_exercise($ex);
         }
         foreach ($chapterRecords as $ch) {
-            $learningObjects[] = new mod_stratumtwo_chapter($ch);
+            $learningObjects[] = new mod_astra_chapter($ch);
         }
         
         // Sort again since some learning objects may have parent objects, and combining
@@ -405,11 +405,11 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     /**
      * Sort the given learning objects that should all belong to the same round.
      * The sorting uses ordernums of the objects and places child objects after their parent.
-     * @param array $learningObjects array of mod_stratumtwo_learning_objects that are to be sorted
+     * @param array $learningObjects array of mod_astra_learning_objects that are to be sorted
      * @param int|null $startParentId only include objects starting from this level.
      * This is an ID of an object that is parent to other objects. Only the children and their
      * children etc. of the object are included. Give null for top level (include all).
-     * @return mod_stratumtwo_learning_object[] a new array of the sorted objects
+     * @return mod_astra_learning_object[] a new array of the sorted objects
      */
     public static function sortRoundLearningObjects(array $learningObjects, $startParentId = null) {
         $orderSortCallback = function($obj1, $obj2) {
@@ -452,7 +452,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
      * Return an array of the exercises in this round.
      * @param bool $includeHidden if true, hidden exercises are included
      * @param bool $sort if true, the result array is sorted
-     * @return mod_stratumtwo_exercise[]
+     * @return mod_astra_exercise[]
      */
     public function getExercises($includeHidden = false, $sort = true) {
         // array_filter keeps the old indexes/keys, so a numerically indexed array may
@@ -582,7 +582,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     /**
-     * Delete Moodle gradebook item for this stratumtwo (exercise round) instance.
+     * Delete Moodle gradebook item for this astra (exercise round) instance.
      * @return int GRADE_UPDATE_OK or GRADE_UPDATE_FAILED (or GRADE_UPDATE_MULTIPLE)
      */
     public function deleteGradebookItem() {
@@ -669,7 +669,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     
     /**
      * Write grades of this exercise round and its exercises to the Moodle gradebook.
-     * The grades are read from the database tables of the Stratum2 plugin.
+     * The grades are read from the database tables of the plugin.
      * @param int $userid update grade of a specific user only, 0 means all participants
      * @param bool $nullifnone If a single user is specified, $nullifnone is true and
      *     the user has no grade then a grade item with a null rawgrade should be inserted
@@ -714,23 +714,23 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     /**
-     * Save a new instance of stratumtwo into the database 
+     * Save a new instance of astra into the database 
      * (a new empty exercise round).
-     * @param stdClass $stratumtwo
-     * @return int The id of the newly inserted stratum record, 0 if failed
+     * @param stdClass $astra
+     * @return int The id of the newly inserted record, 0 if failed
      */
-    public static function addInstance(stdClass $stratumtwo) {
+    public static function addInstance(stdClass $astra) {
         global $DB;
         
-        $stratumtwo->timecreated = time();
+        $astra->timecreated = time();
         // Round max points depend on the max points of the exercises. A new round has
         // no exercises yet.
-        $stratumtwo->grade = 0;
+        $astra->grade = 0;
         
-        $stratumtwo->id = $DB->insert_record(self::TABLE, $stratumtwo);
+        $astra->id = $DB->insert_record(self::TABLE, $astra);
         
-        if ($stratumtwo->id) {
-            $exround = new self($stratumtwo);
+        if ($astra->id) {
+            $exround = new self($astra);
             if (!$exround->isHidden()) {
                 $exround->updateGradebookItem();
                 // NOTE: the course module does not usually yet exist in the DB at this stage
@@ -738,32 +738,32 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
             }
         }
         
-        return $stratumtwo->id;
+        return $astra->id;
     }
     
     /**
-     * Update an instance of the stratumtwo (exercise round) in the database.
-     * @param stdClass $stratumtwo record with id field and updated values for
+     * Update an instance of the astra (exercise round) in the database.
+     * @param stdClass $astra record with id field and updated values for
      * any other field
      * @return bool true on success, false on failure
      */
-    public static function updateInstance(stdClass $stratumtwo) {
+    public static function updateInstance(stdClass $astra) {
         global $DB;
         // do not modify the Moodle course module here, since this function is called
         // (from lib.php) as a part of standard Moodle course module creation/modification
         
-        $stratumtwo->timemodified = time();
-        $result = $DB->update_record(self::TABLE, $stratumtwo);
+        $astra->timemodified = time();
+        $result = $DB->update_record(self::TABLE, $astra);
         
         if ($result) {
-            if (!isset($stratumtwo->grade)) {
-                // $stratumtwo does not have grade field set since it comes from the Moodle mod_form
-                $stratumtwo->grade = $DB->get_field(self::TABLE, 'grade', array(
-                        'id' => $stratumtwo->id,
+            if (!isset($astra->grade)) {
+                // $astra does not have grade field set since it comes from the Moodle mod_form
+                $astra->grade = $DB->get_field(self::TABLE, 'grade', array(
+                        'id' => $astra->id,
                 ), MUST_EXIST);
             }
             
-            $exround = new self($stratumtwo);
+            $exround = new self($astra);
             $exround->updateGradebookItem(); // uses visibility of the Moodle course module
             $exround->update_calendar();
         }
@@ -781,7 +781,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     /**
-     * Remove this instance of the stratumtwo (exercise round) from the database.
+     * Remove this instance of the astra (exercise round) from the database.
      * @return boolean true on success, false on failure
      */
     public function deleteInstance() {
@@ -813,11 +813,11 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
     }
     
     /**
-     * Return an array of the exercise rounds (as mod_stratumtwo_exercise_round objects)
+     * Return an array of the exercise rounds (as mod_astra_exercise_round objects)
      * in a course.
      * @param int $courseid
      * @param bool $includeHidden if true, hidden rounds are included
-     * @return array of mod_stratumtwo_exercise_round objects
+     * @return array of mod_astra_exercise_round objects
      */
     public static function getExerciseRoundsInCourse($courseid, $includeHidden = false) {
         global $DB;
@@ -842,26 +842,26 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
      * @param stdClass $exercise settings for the nex exercise: object with fields
      * status, parentid, ordernum, remotekey, name, serviceurl,
      * maxsubmissions, pointstopass, maxpoints
-     * @param mod_stratumtwo_category $category category of the exercise
-     * @return mod_stratumtwo_exercise the new exercise, or null if failed
+     * @param mod_astra_category $category category of the exercise
+     * @return mod_astra_exercise the new exercise, or null if failed
      */
-    public function createNewExercise(stdClass $exercise, mod_stratumtwo_category $category) {
+    public function createNewExercise(stdClass $exercise, mod_astra_category $category) {
         global $DB;
 
         $exercise->categoryid = $category->getId();
         $exercise->roundid = $this->getId();
         $exercise->gradeitemnumber = $this->getNewGradebookItemNumber();
         
-        $exercise->lobjectid = $DB->insert_record(mod_stratumtwo_learning_object::TABLE, $exercise);
+        $exercise->lobjectid = $DB->insert_record(mod_astra_learning_object::TABLE, $exercise);
         $ex = null;
         if ($exercise->lobjectid) {
-            $exercise->id = $DB->insert_record(mod_stratumtwo_exercise::TABLE, $exercise);
+            $exercise->id = $DB->insert_record(mod_astra_exercise::TABLE, $exercise);
             
             try {
-                $ex = mod_stratumtwo_exercise::createFromId($exercise->lobjectid);
+                $ex = mod_astra_exercise::createFromId($exercise->lobjectid);
             } catch (dml_exception $e) {
                 // learning object row was created but not the exercise row, remove learning object
-                $DB->delete_records(mod_stratumtwo_learning_object::TABLE, array('id' => $exercise->lobjectid));
+                $DB->delete_records(mod_astra_learning_object::TABLE, array('id' => $exercise->lobjectid));
                 return null;
             }
             
@@ -881,25 +881,25 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
      * Create a new chapter to this exercise round.
      * @param stdClass $chapter settings for the nex chapter: object with fields
      * status, parentid, ordernum, remotekey, name, serviceurl, generatetoc
-     * @param mod_stratumtwo_category $category category of the chapter
-     * @return mod_stratumtwo_chapter the new chapter, or null if failed
+     * @param mod_astra_category $category category of the chapter
+     * @return mod_astra_chapter the new chapter, or null if failed
      */
-    public function createNewChapter(stdClass $chapter, mod_stratumtwo_category $category) {
+    public function createNewChapter(stdClass $chapter, mod_astra_category $category) {
         global $DB;
         
         $chapter->categoryid = $category->getId();
         $chapter->roundid = $this->getId();
         
-        $chapter->lobjectid = $DB->insert_record(mod_stratumtwo_learning_object::TABLE, $chapter);
+        $chapter->lobjectid = $DB->insert_record(mod_astra_learning_object::TABLE, $chapter);
         $ch = null;
         if ($chapter->lobjectid) {
-            $chapter->id = $DB->insert_record(mod_stratumtwo_chapter::TABLE, $chapter);
+            $chapter->id = $DB->insert_record(mod_astra_chapter::TABLE, $chapter);
             
             try {
-                $ch = mod_stratumtwo_chapter::createFromId($chapter->lobjectid);
+                $ch = mod_astra_chapter::createFromId($chapter->lobjectid);
             } catch (dml_exception $e) {
                 // learning object row was created but not the chapter row, remove learning object
-                $DB->delete_records(mod_stratumtwo_learning_object::TABLE, array('id' => $chapter->lobjectid));
+                $DB->delete_records(mod_astra_learning_object::TABLE, array('id' => $chapter->lobjectid));
             }
         }
         
@@ -942,13 +942,13 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
         $ctx->open = $this->isOpen();
         $ctx->not_started = !$this->hasStarted();
         $ctx->status_str = $this->getStatus(true);
-        $ctx->editurl = \mod_stratumtwo\urls\urls::editExerciseRound($this);
-        $ctx->removeurl = \mod_stratumtwo\urls\urls::deleteExerciseRound($this);
-        $ctx->url = \mod_stratumtwo\urls\urls::exerciseRound($this);
-        $ctx->addnewexerciseurl = \mod_stratumtwo\urls\urls::createExercise($this);
-        $ctx->addnewchapterurl = \mod_stratumtwo\urls\urls::createChapter($this);
+        $ctx->editurl = \mod_astra\urls\urls::editExerciseRound($this);
+        $ctx->removeurl = \mod_astra\urls\urls::deleteExerciseRound($this);
+        $ctx->url = \mod_astra\urls\urls::exerciseRound($this);
+        $ctx->addnewexerciseurl = \mod_astra\urls\urls::createExercise($this);
+        $ctx->addnewchapterurl = \mod_astra\urls\urls::createChapter($this);
         $context = context_module::instance($this->getCourseModule()->id);
-        $ctx->is_course_staff = \has_capability('mod/stratumtwo:viewallsubmissions', $context);
+        $ctx->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $context);
         
         return $ctx;
     }
@@ -972,7 +972,7 @@ class mod_stratumtwo_exercise_round extends mod_stratumtwo_database_object {
      * or create it if it does not yet exist.
      * @param int $courseid Moodle course ID
      * @param string $remotekey
-     * @return mod_stratumtwo_exercise_round|NULL null if creation fails
+     * @return mod_astra_exercise_round|NULL null if creation fails
      */
     public static function getOrCreate($courseid, $remotekey) {
         global $DB;

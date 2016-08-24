@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\summary;
+namespace mod_astra\summary;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -21,12 +21,12 @@ class user_category_summary {
      * $exerciseSummaries must contain all the exercise summaries for the student
      * in this category and this method will not generate any database queries.
      * 
-     * @param \mod_stratumtwo_category $category
+     * @param \mod_astra_category $category
      * @param \stdClass $user
      * @param array $exerciseSummaries array of user_exercise_summary objects
      * @param bool $generate
      */
-    public function __construct(\mod_stratumtwo_category $category, $user, 
+    public function __construct(\mod_astra_category $category, $user, 
             array $exerciseSummaries = array(), $generate = true) {
         $this->user = $user;
         $this->category = $category;

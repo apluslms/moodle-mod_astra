@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\protocol;
+namespace mod_astra\protocol;
 
 defined('MOODLE_INTERNAL') || die;
 

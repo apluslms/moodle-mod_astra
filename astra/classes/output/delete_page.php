@@ -1,6 +1,6 @@
 <?php
 
-namespace mod_stratumtwo\output;
+namespace mod_astra\output;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -24,7 +24,7 @@ class delete_page implements \renderable, \templatable {
     public function export_for_template(\renderer_base $output) {
         $ctx = new \stdClass();
         $ctx->objecttype = $this->objectType;
-        $ctx->cancelurl = \mod_stratumtwo\urls\urls::editCourse($this->courseid);
+        $ctx->cancelurl = \mod_astra\urls\urls::editCourse($this->courseid);
         $ctx->message = $this->message;
         $ctx->actionurl = $this->actionUrl;
         return $ctx;

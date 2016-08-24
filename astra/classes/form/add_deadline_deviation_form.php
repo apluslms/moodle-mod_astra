@@ -1,6 +1,6 @@
 <?php
 
-namespace mod_stratumtwo\form;
+namespace mod_astra\form;
 
 defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->libdir/formslib.php");
@@ -20,7 +20,7 @@ class add_deadline_deviation_form extends \moodleform {
     }
     
     public function definition() {
-        $mod = \mod_stratumtwo_exercise_round::MODNAME;
+        $mod = \mod_astra_exercise_round::MODNAME;
         $mform = $this->_form;
         
         self::add_common_deviation_fields($mform, $this->courseid);
@@ -47,10 +47,10 @@ class add_deadline_deviation_form extends \moodleform {
     
     // add fields that are used by both deadline and submission limit deviations
     public static function add_common_deviation_fields($mform, $courseid) {
-        $mod = \mod_stratumtwo_exercise_round::MODNAME;
+        $mod = \mod_astra_exercise_round::MODNAME;
         
         // all exercises in the course
-        $allExerciseRounds = \mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid);
+        $allExerciseRounds = \mod_astra_exercise_round::getExerciseRoundsInCourse($courseid);
         $exerciseOptions = array();
         foreach ($allExerciseRounds as $exround) {
             foreach ($exround->getExercises() as $ex) {
@@ -68,11 +68,11 @@ class add_deadline_deviation_form extends \moodleform {
         $mform->setType('submittertext', \PARAM_RAW);
         
         // all enrolled students in the course
-        $enrolled_users = \get_enrolled_users(\context_course::instance($courseid), 'mod/stratumtwo:submit',
+        $enrolled_users = \get_enrolled_users(\context_course::instance($courseid), 'mod/astra:submit',
                 0, 'u.*', 'idnumber, username');
         $submitterOptions = array();
         foreach ($enrolled_users as $user) {
-            $submitterOptions[$user->id] = \mod_stratumtwo_deviation_rule::submitterName($user);
+            $submitterOptions[$user->id] = \mod_astra_deviation_rule::submitterName($user);
         }
         $submitter_select = $mform->addElement('select', 'submitter', get_string('submitter', $mod),
                 $submitterOptions, array('class' => 'search-select'));
@@ -114,7 +114,7 @@ class add_deadline_deviation_form extends \moodleform {
         if (!empty($data['submittertext'])) {
             list($ids, $errors) = self::parseSubmittersText($data['submittertext']);
             if (!empty($errors)) {
-                return array('submittertext' => get_string('idsnotfound', \mod_stratumtwo_exercise_round::MODNAME,
+                return array('submittertext' => get_string('idsnotfound', \mod_astra_exercise_round::MODNAME,
                         \implode(', ', $errors)));
             }
         }
@@ -131,7 +131,7 @@ class add_deadline_deviation_form extends \moodleform {
         
         // extra minutes must be at least 1
         if ($data['extraminutes'] !== '' && $data['extraminutes'] < 1) {
-            $errors['extraminutes'] = get_string('negativeerror', \mod_stratumtwo_exercise_round::MODNAME);
+            $errors['extraminutes'] = get_string('negativeerror', \mod_astra_exercise_round::MODNAME);
         }
         
         return $errors;

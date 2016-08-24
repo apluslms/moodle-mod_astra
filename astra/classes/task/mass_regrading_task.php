@@ -1,10 +1,10 @@
 <?php
 
-namespace mod_stratumtwo\task;
+namespace mod_astra\task;
 
 defined('MOODLE_INTERNAL') || die;
 
-use \mod_stratumtwo\export\all_students_course_summary;
+use \mod_astra\export\all_students_course_summary;
 
 /**
  * Adhoc task (background job that runs immediately after being set up) for

@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\summary;
+namespace mod_astra\summary;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -23,15 +23,15 @@ class user_exercise_summary {
      * $submissionCount and $bestSubmission must have correct values and 
      * this method will not generate any database queries.
      * 
-     * @param \mod_stratumtwo_exercise $ex
+     * @param \mod_astra_exercise $ex
      * @param \stdClass $user
      * @param int $submissionCount
-     * @param \mod_stratumtwo_submission $bestSubmission
-     * @param \mod_stratumtwo_category $category category of the exercise, to avoid querying the database
+     * @param \mod_astra_submission $bestSubmission
+     * @param \mod_astra_category $category category of the exercise, to avoid querying the database
      * @param bool $generate
      */
-    public function __construct(\mod_stratumtwo_exercise $ex, $user, $submissionCount = 0,
-            \mod_stratumtwo_submission $bestSubmission = null, \mod_stratumtwo_category $category = null,
+    public function __construct(\mod_astra_exercise $ex, $user, $submissionCount = 0,
+            \mod_astra_submission $bestSubmission = null, \mod_astra_category $category = null,
             $generate = true) {
         $this->user = $user;
         $this->exercise = $ex;
@@ -51,7 +51,7 @@ class user_exercise_summary {
         global $DB;
         
         // all submissions from the user in the exercise
-        $submissions = $DB->get_recordset(\mod_stratumtwo_submission::TABLE, array(
+        $submissions = $DB->get_recordset(\mod_astra_submission::TABLE, array(
                 'submitter'  => $this->user->id,
                 'exerciseid' => $this->exercise->getId(),
         ), '', 'id, status, exerciseid, grade, submissiontime');
@@ -60,7 +60,7 @@ class user_exercise_summary {
         $this->bestSubmission = null;
         // find best submission and count
         foreach ($submissions as $record) {
-            $sbms = new \mod_stratumtwo_submission($record);
+            $sbms = new \mod_astra_submission($record);
             if ($this->bestSubmission === null || $sbms->getGrade() > $this->bestSubmission->getGrade() ||
                     ($sbms->getGrade() == $this->bestSubmission->getGrade() &&
                      $sbms->getSubmissionTime() < $this->bestSubmission->getSubmissionTime())) {

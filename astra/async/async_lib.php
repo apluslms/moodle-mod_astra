@@ -2,31 +2,31 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-class mod_stratumtwo_async_forbidden_access_exception extends \Exception {
+class mod_astra_async_forbidden_access_exception extends \Exception {
 }
 
 // Functions derived from A+ (a-plus/exercise/async_views.py)
 
 /**
  * Handle asynchronous GET or POST HTTP request from the exercise service.
- * @param mod_stratumtwo_exercise $exercise
+ * @param mod_astra_exercise $exercise
  * @param stdClass $user
  * @param array $postData null if GET
- * @param mod_stratumtwo_submission $submission the submission that is graded, or null
+ * @param mod_astra_submission $submission the submission that is graded, or null
  * if creating a new graded submission
  * @return array
- * @throws mod_stratumtwo_async_forbidden_access_exception if the request originates from
+ * @throws mod_astra_async_forbidden_access_exception if the request originates from
  * an IP address that does not match the exercise service.
  */
-function stratumtwo_async_submission_handler(mod_stratumtwo_exercise $exercise,
-        stdClass $user, $postData, mod_stratumtwo_submission $submission = null) {
+function astra_async_submission_handler(mod_astra_exercise $exercise,
+        stdClass $user, $postData, mod_astra_submission $submission = null) {
     // async requests should only originate from the exercise service, check the request IP address
-    if ($_SERVER['REMOTE_ADDR'] != stratumtwo_get_service_ip($exercise->getServiceUrl())) {
-        throw new mod_stratumtwo_async_forbidden_access_exception('Access denied from this IP address.');
+    if ($_SERVER['REMOTE_ADDR'] != astra_get_service_ip($exercise->getServiceUrl())) {
+        throw new mod_astra_async_forbidden_access_exception('Access denied from this IP address.');
     }
     if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         // GET requests receive a JSON response about the current state of the exercise for the user
-        return stratumtwo_get_async_submission_info($exercise, $user);
+        return astra_get_async_submission_info($exercise, $user);
     }
     // create a new submission if it is not provided in parameters
     if (is_null($submission)) {
@@ -37,9 +37,9 @@ function stratumtwo_async_submission_handler(mod_stratumtwo_exercise $exercise,
             );
         }
         // create a new submission
-        $sbmsId = mod_stratumtwo_submission::createNewSubmission($exercise, $user->id);
+        $sbmsId = mod_astra_submission::createNewSubmission($exercise, $user->id);
         if ($sbmsId != 0)
-            $submission = mod_stratumtwo_submission::createFromId($sbmsId);
+            $submission = mod_astra_submission::createFromId($sbmsId);
         else
             return array(
                 'success' => false,
@@ -47,18 +47,18 @@ function stratumtwo_async_submission_handler(mod_stratumtwo_exercise $exercise,
             );
     }
     
-    return stratumtwo_post_async_submission($exercise, $submission, $user, $postData);
+    return astra_post_async_submission($exercise, $submission, $user, $postData);
 }
 
 /**
  * Grade the submission using the $postData.
- * @param mod_stratumtwo_exercise $exercise
- * @param mod_stratumtwo_submission $submission
+ * @param mod_astra_exercise $exercise
+ * @param mod_astra_submission $submission
  * @param stdClass $user
  * @param array $postData
  */
-function stratumtwo_post_async_submission(mod_stratumtwo_exercise $exercise,
-        mod_stratumtwo_submission $submission, stdClass $user, $postData) {
+function astra_post_async_submission(mod_astra_exercise $exercise,
+        mod_astra_submission $submission, stdClass $user, $postData) {
     global $PAGE;
     
     $require = function($name, $optional = false) use ($postData) {
@@ -81,10 +81,10 @@ function stratumtwo_post_async_submission(mod_stratumtwo_exercise $exercise,
     } catch (\Exception $e) { // required field missing
         $submission->setError();
         // set feedback: exercise service malfunctioning
-        $renderer = $PAGE->get_renderer(\mod_stratumtwo_exercise_round::MODNAME);
+        $renderer = $PAGE->get_renderer(\mod_astra_exercise_round::MODNAME);
         $ctx = new \stdClass();
-        $ctx->error = get_string('servicemalfunction', \mod_stratumtwo_exercise_round::MODNAME);
-        $submission->setFeedback($renderer->render_from_template(\mod_stratumtwo_exercise_round::MODNAME . '/_error_alert', $ctx));
+        $ctx->error = get_string('servicemalfunction', \mod_astra_exercise_round::MODNAME);
+        $submission->setFeedback($renderer->render_from_template(\mod_astra_exercise_round::MODNAME . '/_error_alert', $ctx));
         $submission->save();
         return array(
                 'success' => false,
@@ -105,10 +105,10 @@ function stratumtwo_post_async_submission(mod_stratumtwo_exercise $exercise,
 
 /**
  * Send a JSON response about the current state of the exercise for the given user.
- * @param mod_stratumtwo_exercise $exercise
+ * @param mod_astra_exercise $exercise
  * @param stdClass $user
  */
-function stratumtwo_get_async_submission_info(mod_stratumtwo_exercise $exercise, stdClass $user) {
+function astra_get_async_submission_info(mod_astra_exercise $exercise, stdClass $user) {
     $submissions = $exercise->getSubmissionsForStudent($user->id, false, 'grade DESC, submissiontime ASC');
     // sort so that the best submissions come first
     if ($submissions->valid()) { // not empty
@@ -132,12 +132,12 @@ function stratumtwo_get_async_submission_info(mod_stratumtwo_exercise $exercise,
  * @param string $url
  * @return string
  */
-function stratumtwo_get_service_ip($url) {
+function astra_get_service_ip($url) {
     // works only with IPv4
     return gethostbyname(parse_url($url, PHP_URL_HOST));
 }
 
-function stratumtwo_send_json_response($data, $http_status = null) {
+function astra_send_json_response($data, $http_status = null) {
     if ($http_status !== null) {
         http_response_code($http_status);
     }

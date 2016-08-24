@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\output;
+namespace mod_astra\output;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -11,7 +11,7 @@ class index_page implements \renderable, \templatable {
     
     public function __construct(\stdClass $course, \stdClass $user) {
         $this->course = $course;
-        $this->courseSummary = new \mod_stratumtwo\summary\user_course_summary($course, $user);
+        $this->courseSummary = new \mod_astra\summary\user_course_summary($course, $user);
         $this->rounds = $this->courseSummary->getExerciseRounds();
     }
     
@@ -23,7 +23,7 @@ class index_page implements \renderable, \templatable {
     public function export_for_template(\renderer_base $output) {
         $data = new \stdClass();
         $ctx = \context_course::instance($this->course->id);
-        $data->is_course_staff = \has_capability('mod/stratumtwo:viewallsubmissions', $ctx);
+        $data->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $ctx);
         
         $roundsData = array();
         foreach ($this->rounds as $round) {
@@ -42,12 +42,12 @@ class index_page implements \renderable, \templatable {
             $cat = new \stdClass();
             $cat->name = $catSummary->getCategory()->getName();
             $cat->summary = $catSummary->getTemplateContext();
-            $cat->status_ready = ($catSummary->getCategory()->getStatus() === \mod_stratumtwo_category::STATUS_READY);
+            $cat->status_ready = ($catSummary->getCategory()->getStatus() === \mod_astra_category::STATUS_READY);
             $categories[] = $cat;
         }
         $data->categories = $categories;
         
-        $data->toDateStr = new \mod_stratumtwo\output\date_to_string();
+        $data->toDateStr = new \mod_astra\output\date_to_string();
         
         $data->toc = $this->getCourseTableOfContentsContext();
         
@@ -67,13 +67,13 @@ class index_page implements \renderable, \templatable {
             $exerciseRecords = array();
             $chapterRecords = array();
         } else {
-            $params = array(\mod_stratumtwo_learning_object::STATUS_HIDDEN);
+            $params = array(\mod_astra_learning_object::STATUS_HIDDEN);
             $exerciseRecords = $DB->get_records_sql(
-                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE) .
+                    \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_exercise::TABLE) .
                     ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .') AND lob.status != ?',
                     $params);
             $chapterRecords = $DB->get_records_sql(
-                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_chapter::TABLE) .
+                    \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_chapter::TABLE) .
                     ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .') AND lob.status != ?',
                     $params);
         }
@@ -83,10 +83,10 @@ class index_page implements \renderable, \templatable {
             $lobjectsByRoundId[$rid] = array();
         }
         foreach ($exerciseRecords as $rec) {
-            $lobjectsByRoundId[$rec->roundid][] = new \mod_stratumtwo_exercise($rec);
+            $lobjectsByRoundId[$rec->roundid][] = new \mod_astra_exercise($rec);
         }
         foreach ($chapterRecords as $rec) {
-            $lobjectsByRoundId[$rec->roundid][] = new \mod_stratumtwo_chapter($rec);
+            $lobjectsByRoundId[$rec->roundid][] = new \mod_astra_chapter($rec);
         }
         
         $toc = new \stdClass(); // table of contents
@@ -103,7 +103,7 @@ class index_page implements \renderable, \templatable {
     /**
      * Return a template context object of the learning objects in an exercise round for
      * the use in a table of contents.
-     * @param \mod_stratumtwo_learning_object[] $learningObjects learning objects in a round
+     * @param \mod_astra_learning_object[] $learningObjects learning objects in a round
      * @return \stdClass[]
      */
     public static function buildRoundLobjectsContextForToc($learningObjects) {
@@ -137,7 +137,7 @@ class index_page implements \renderable, \templatable {
                 $childCtx = new \stdClass();
                 $childCtx->is_empty = $child->isEmpty();
                 $childCtx->name = $child->getName();
-                $childCtx->url = \mod_stratumtwo\urls\urls::exercise($child);
+                $childCtx->url = \mod_astra\urls\urls::exercise($child);
                 $childCtx->children = $traverse($child->getId());
                 $childCtx->has_children = \count($childCtx->children) > 0;
                 $container[] = $childCtx;

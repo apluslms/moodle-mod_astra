@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\output;
+namespace mod_astra\output;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -7,7 +7,7 @@ class all_submissions_page implements \renderable, \templatable {
     
     protected $exercise;
     
-    public function __construct(\mod_stratumtwo_exercise $ex) {
+    public function __construct(\mod_astra_exercise $ex) {
         $this->exercise = $ex;
     }
     
@@ -17,14 +17,14 @@ class all_submissions_page implements \renderable, \templatable {
         $sbmsList = array();
         $submissions = $this->exercise->getAllSubmissions();
         foreach ($submissions as $sbmsRecord) {
-            $sbms = new \mod_stratumtwo_submission($sbmsRecord);
+            $sbms = new \mod_astra_submission($sbmsRecord);
             $sbmsList[] = $sbms->getTemplateContext(false, false);
         }
         $submissions->close();
         
         $ctx->submissions = $sbmsList;
         $ctx->count = \count($sbmsList);
-        $ctx->toDateStr = new \mod_stratumtwo\output\date_to_string();
+        $ctx->toDateStr = new \mod_astra\output\date_to_string();
         
         return $ctx;
     }

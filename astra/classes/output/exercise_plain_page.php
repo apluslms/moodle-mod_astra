@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\output;
+namespace mod_astra\output;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -15,8 +15,8 @@ class exercise_plain_page implements \renderable, \templatable {
     protected $errorMsg;
     protected $submission;
     
-    public function __construct(\mod_stratumtwo_exercise_round $exround,
-            \mod_stratumtwo_learning_object $learningObject,
+    public function __construct(\mod_astra_exercise_round $exround,
+            \mod_astra_learning_object $learningObject,
             \stdClass $user,
             $errorMsg = null,
             $submission = null) {
@@ -24,7 +24,7 @@ class exercise_plain_page implements \renderable, \templatable {
         $this->learningObject = $learningObject;
         $this->user = $user;
         if ($learningObject->isSubmittable()) {
-            $this->exerciseSummary = new \mod_stratumtwo\summary\user_exercise_summary($learningObject, $user);
+            $this->exerciseSummary = new \mod_astra\summary\user_exercise_summary($learningObject, $user);
         } else {
             $this->exerciseSummary = null;
         }
@@ -40,7 +40,7 @@ class exercise_plain_page implements \renderable, \templatable {
     public function export_for_template(\renderer_base $output) {
         $data = new \stdClass();
         $ctx = \context_module::instance($this->exround->getCourseModule()->id);
-        $data->is_course_staff = \has_capability('mod/stratumtwo:viewallsubmissions', $ctx);
+        $data->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $ctx);
         
         $status_maintenance = ($this->exround->isUnderMaintenance() || $this->learningObject->isUnderMaintenance());
         $not_started = !$this->exround->hasStarted();
@@ -56,19 +56,19 @@ class exercise_plain_page implements \renderable, \templatable {
                 $remotePage = $this->learningObject->loadPage($this->user->id);
                 unset($remotePage->remote_page);
                 $data->page = $remotePage; // has content field
-            } catch (\mod_stratumtwo\protocol\remote_page_exception $e) {
-                $data->error = \get_string('serviceconnectionfailed', \mod_stratumtwo_exercise_round::MODNAME);
+            } catch (\mod_astra\protocol\remote_page_exception $e) {
+                $data->error = \get_string('serviceconnectionfailed', \mod_astra_exercise_round::MODNAME);
                 $page = new \stdClass();
                 $page->content = '';
                 $data->page = $page;
             }
         } else if ($status_maintenance) {
             $data->page = new \stdClass();
-            $data->page->content = '<p>'. \get_string('undermaintenance', \mod_stratumtwo_exercise_round::MODNAME) .'</p>';
+            $data->page->content = '<p>'. \get_string('undermaintenance', \mod_astra_exercise_round::MODNAME) .'</p>';
         } else {
             // not started
             $data->page = new \stdClass();
-            $data->page->content = '<p>'. \get_string('notopenedyet', \mod_stratumtwo_exercise_round::MODNAME) .'</p>';
+            $data->page->content = '<p>'. \get_string('notopenedyet', \mod_astra_exercise_round::MODNAME) .'</p>';
         }
         
         if (!is_null($this->errorMsg)) {
@@ -88,7 +88,7 @@ class exercise_plain_page implements \renderable, \templatable {
             $data->summary = $this->exerciseSummary->getTemplateContext();
             // add a field to the summary object
             if ($this->exerciseSummary->getBestSubmission() !== null) {
-                $data->summary->best_submission_url = \mod_stratumtwo\urls\urls::submission($this->exerciseSummary->getBestSubmission());
+                $data->summary->best_submission_url = \mod_astra\urls\urls::submission($this->exerciseSummary->getBestSubmission());
             } else {
                 $data->summary->best_submission_url = null;
             }
@@ -96,7 +96,7 @@ class exercise_plain_page implements \renderable, \templatable {
             $data->exercise = $this->learningObject->getTemplateContext(false);
         }
         
-        $data->toDateStr = new \mod_stratumtwo\output\date_to_string();
+        $data->toDateStr = new \mod_astra\output\date_to_string();
         
         return $data;
     }

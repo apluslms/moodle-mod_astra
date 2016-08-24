@@ -4,8 +4,8 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Student-specific deadline deviation (extension) to an exercise.
  */
-class mod_stratumtwo_deadline_deviation extends mod_stratumtwo_deviation_rule {
-    const TABLE = 'stratumtwo_dl_deviations';
+class mod_astra_deadline_deviation extends mod_astra_deviation_rule {
+    const TABLE = 'astra_dl_deviations';
     
     public function getNormalDeadline() {
         return $this->getExercise()->getExerciseRound()->getClosingTime(); // Unix timestamp
@@ -48,7 +48,7 @@ class mod_stratumtwo_deadline_deviation extends mod_stratumtwo_deviation_rule {
         $ctx = parent::getTemplateContext();
         $ctx->extra_minutes = $this->getExtraTime();
         $ctx->without_late_penalty = ($this->useLatePenalty() ? 'false' : 'true');
-        $ctx->remove_url = \mod_stratumtwo\urls\urls::deleteDeadlineDeviation($this);
+        $ctx->remove_url = \mod_astra\urls\urls::deleteDeadlineDeviation($this);
         return $ctx;
     }
     

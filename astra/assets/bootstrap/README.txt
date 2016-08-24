@@ -11,6 +11,6 @@ container-fluid to bs3-container-fluid
 already use that container)
 
 Bootstrap Javascript is only used as an AMD module under the directory
-stratumtwo/amd. The Bootstrap JS code is wrapped in an AMD module definition
+astra/amd. The Bootstrap JS code is wrapped in an AMD module definition
 there. There is one hack to make dropdowns work in Moodle on line 318 in
-stratumtwo/amd/src/twbootstrap.js.
+astra/amd/src/twbootstrap.js.

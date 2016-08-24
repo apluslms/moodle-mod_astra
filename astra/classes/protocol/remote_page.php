@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\protocol;
+namespace mod_astra\protocol;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -36,7 +36,7 @@ class remote_page {
      * values are objects with fields filename (original base name), filepath (full path)
      * and mimetype.
      * @param string $api_key API key for authorization, null if not used
-     * @throws \mod_stratumtwo\protocol\remote_page_exception if there are errors
+     * @throws \mod_astra\protocol\remote_page_exception if there are errors
      * in connecting to the server
      */
     public function __construct($url, $post = false, $data = null, $files = null, $api_key = null) {
@@ -44,7 +44,7 @@ class remote_page {
         $this->response = self::request($url, $post, $data, $files, $api_key);
         $this->DOMdoc = new \DOMDocument();
         if ($this->DOMdoc->loadHTML($this->response) === false)
-            throw new \mod_stratumtwo\protocol\remote_page_exception('DOMDocument::loadHTML could not load the response');
+            throw new \mod_astra\protocol\remote_page_exception('DOMDocument::loadHTML could not load the response');
     }
     
     /**
@@ -55,9 +55,9 @@ class remote_page {
      * @param array $files array or files to upload. Keys are used as POST data keys and
      * values are objects with fields filename, filepath and mimetype.
      * @param string $api_key API key for authorization, null if not used
-     * @throws \mod_stratumtwo\protocol\stratum_connection_exception if there are errors
+     * @throws \mod_astra\protocol\service_connection_exception if there are errors
      * in connecting to the server
-     * @throws \mod_stratumtwo\protocol\stratum_server_exception if there is an error
+     * @throws \mod_astra\protocol\exercise_service_exception if there is an error
      * in the exercise service
      * @return string the response
      */
@@ -115,7 +115,7 @@ class remote_page {
             // curl failed
             $error = curl_error($ch);
             curl_close($ch);
-            throw new \mod_stratumtwo\protocol\stratum_connection_exception($error);
+            throw new \mod_astra\protocol\service_connection_exception($error);
         } else {
             // check HTTP status code
             $resStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -123,7 +123,7 @@ class remote_page {
             if ($resStatus != 200) {
                 // server returned some error message
                 $error = "curl HTTP response status: $resStatus";
-                throw new \mod_stratumtwo\protocol\stratum_server_exception($error);
+                throw new \mod_astra\protocol\exercise_service_exception($error);
             }
         }
         return $response; // response as string
@@ -135,7 +135,7 @@ class remote_page {
      */
     protected static function exercise_service_CA_path() {
         global $CFG;
-        return $CFG->dirroot .'/mod/'. \mod_stratumtwo_exercise_round::TABLE .'/exservice_CA.pem';
+        return $CFG->dirroot .'/mod/'. \mod_astra_exercise_round::TABLE .'/exservice_CA.pem';
     }
     
     /**
@@ -175,10 +175,10 @@ class remote_page {
     /**
      * Load the exercise page (usually containing instructions and submission form,
      * or chapter content) from the exercise service.
-     * @param \mod_stratumtwo_learning_object $learningObject
+     * @param \mod_astra_learning_object $learningObject
      * @return \stdClass with fields content and remote_page
      */
-    public function loadExercisePage(\mod_stratumtwo_learning_object $learningObject) {
+    public function loadExercisePage(\mod_astra_learning_object $learningObject) {
         $this->parsePageContent($learningObject);
         $page = new \stdClass();
         $page->content = $this->content;
@@ -189,12 +189,12 @@ class remote_page {
     /**
      * Load the feedback page for a new submission and store the grading results
      * if the submission was graded synchronously.
-     * @param \mod_stratumtwo_exercise $exercise
-     * @param \mod_stratumtwo_submission $submission
+     * @param \mod_astra_exercise $exercise
+     * @param \mod_astra_submission $submission
      * @param string $noPenalties
      */
-    public function loadFeedbackPage(\mod_stratumtwo_exercise $exercise,
-            \mod_stratumtwo_submission $submission, $noPenalties = false) {
+    public function loadFeedbackPage(\mod_astra_exercise $exercise,
+            \mod_astra_submission $submission, $noPenalties = false) {
         $this->parsePageContent($exercise);
         $feedback = $this->content;
         if ($this->isAccepted) {
@@ -217,7 +217,7 @@ class remote_page {
         }
     }
     
-    protected function parsePageContent(\mod_stratumtwo_learning_object $lobj) {
+    protected function parsePageContent(\mod_astra_learning_object $lobj) {
         if ($lobj->isSubmittable()) {
             $this->fixFormAction($lobj);
             $this->fixFormMultipleCheckboxes();
@@ -228,7 +228,7 @@ class remote_page {
             foreach ($lobj->getChildren() as $childEx) {
                 $replaceValues[$childEx->getOrder()] = array(
                         'data-aplus-order' => $childEx->getOrder(),
-                        'data-aplus-exercise' => \mod_stratumtwo\urls\urls::exercise($childEx),
+                        'data-aplus-exercise' => \mod_astra\urls\urls::exercise($childEx),
                 );
             }
             $this->findAndReplaceElementAttributes('div', 'data-aplus-exercise', $replaceValues);
@@ -371,10 +371,10 @@ class remote_page {
         return $html;
     }
     
-    protected function fixFormAction(\mod_stratumtwo_exercise $ex) {
+    protected function fixFormAction(\mod_astra_exercise $ex) {
         $nodesList = $this->DOMdoc->getElementsByTagName('form');
         // set action to the new submission handler in Moodle
-        $formAction = \mod_stratumtwo\urls\urls::newSubmissionHandler($ex);
+        $formAction = \mod_astra\urls\urls::newSubmissionHandler($ex);
         foreach ($nodesList as $formNode) {
             if ($formNode->nodeType == \XML_ELEMENT_NODE) {
                 $formNode->setAttribute('action', $formAction);

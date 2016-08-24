@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\summary;
+namespace mod_astra\summary;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -28,7 +28,7 @@ class user_course_summary {
         $this->user = $user;
         
         // all exercise rounds in the course
-        $this->exerciseRounds = \mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($course->id);
+        $this->exerciseRounds = \mod_astra_exercise_round::getExerciseRoundsInCourse($course->id);
         
         // user_module_summary objects indexed by exercise round IDs
         $this->moduleSummariesByRoundId = array();
@@ -51,13 +51,13 @@ class user_course_summary {
             $exerciseRecords = array();
         } else {
             $exerciseRecords = $DB->get_records_sql(
-                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL() .
+                    \mod_astra_learning_object::getSubtypeJoinSQL() .
                     ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .')' .
                     ' ORDER BY lob.roundid ASC, lob.ordernum ASC, lob.id ASC');
         }
         $this->exerciseCount = \count($exerciseRecords);
         $exercisesByRoundId = array();
-        $categories = \mod_stratumtwo_category::getCategoriesInCourse($this->course->id); // only visible categories
+        $categories = \mod_astra_category::getCategoriesInCourse($this->course->id); // only visible categories
         foreach ($roundIds as $roundId) {
             // initialize before the next foreach, needed if some rounds have no exercises
             $exercisesByRoundId[$roundId] = array();
@@ -65,9 +65,9 @@ class user_course_summary {
         foreach ($exerciseRecords as $exrecord) {
             // append exercises
             // filter out hidden exercises or exercises in hidden categories
-            if ($exrecord->status != \mod_stratumtwo_learning_object::STATUS_HIDDEN &&
+            if ($exrecord->status != \mod_astra_learning_object::STATUS_HIDDEN &&
                     isset($categories[$exrecord->categoryid])) {
-                $exercisesByRoundId[$exrecord->roundid][] = new \mod_stratumtwo_exercise($exrecord);
+                $exercisesByRoundId[$exrecord->roundid][] = new \mod_astra_exercise($exrecord);
             }
         }
         
@@ -90,11 +90,11 @@ class user_course_summary {
         // all submissions from the user in any exercise in the course
         $sql =
             'SELECT id, status, exerciseid, grade, submissiontime
-             FROM {'. \mod_stratumtwo_submission::TABLE .'} 
+             FROM {'. \mod_astra_submission::TABLE .'} 
              WHERE submitter = ? AND exerciseid IN (' .
-                 \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE, 'lob.id') .
+                 \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_exercise::TABLE, 'lob.id') .
                  ' WHERE lob.categoryid IN (
-                     SELECT id FROM {'. \mod_stratumtwo_category::TABLE .'} 
+                     SELECT id FROM {'. \mod_astra_category::TABLE .'} 
                      WHERE course = ?
                  )
              )';
@@ -102,7 +102,7 @@ class user_course_summary {
         $submissions = $DB->get_recordset_sql($sql, array($this->user->id, $this->course->id));
         // find best submissions
         foreach ($submissions as $record) {
-            $sbms = new \mod_stratumtwo_submission($record);
+            $sbms = new \mod_astra_submission($record);
             $exerciseBest = &$submissionsByExerciseId[$record->exerciseid];
             $count = $exerciseBest['count'];
             $best = $exerciseBest['best'];

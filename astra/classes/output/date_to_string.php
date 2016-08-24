@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\output;
+namespace mod_astra\output;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -11,7 +11,7 @@ defined('MOODLE_INTERNAL') || die;
  * 
  * Example
  * Preparing context variables before rendering:
- * $context->toDateStr = new \mod_stratumtwo\output\date_to_string();
+ * $context->toDateStr = new \mod_astra\output\date_to_string();
  * $context->timestamp = time();
  * 
  * In the Mustache template:

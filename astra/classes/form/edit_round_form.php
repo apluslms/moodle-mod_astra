@@ -1,6 +1,6 @@
 <?php
 
-namespace mod_stratumtwo\form;
+namespace mod_astra\form;
 
 defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->libdir/formslib.php");
@@ -38,7 +38,7 @@ class edit_round_form extends \moodleform {
     public static function add_fields_before_intro($mform) {
         global $CFG;
         
-        $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
+        $mod = \mod_astra_exercise_round::MODNAME; // for get_string()
         
         // Adding the standard "name" field.
         $mform->addElement('text', 'name', get_string('roundname', $mod),
@@ -59,13 +59,13 @@ class edit_round_form extends \moodleform {
      * @param $mform form instance
      */
     public static function add_fields_after_intro($mform) {
-        $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
+        $mod = \mod_astra_exercise_round::MODNAME; // for get_string()
         
         // exercise round status
         $mform->addElement('select', 'status', get_string('status', $mod), array(
-                \mod_stratumtwo_exercise_round::STATUS_READY => get_string('statusready', $mod),
-                \mod_stratumtwo_exercise_round::STATUS_HIDDEN => get_string('statushidden', $mod),
-                \mod_stratumtwo_exercise_round::STATUS_MAINTENANCE => get_string('statusmaintenance', $mod),
+                \mod_astra_exercise_round::STATUS_READY => get_string('statusready', $mod),
+                \mod_astra_exercise_round::STATUS_HIDDEN => get_string('statushidden', $mod),
+                \mod_astra_exercise_round::STATUS_MAINTENANCE => get_string('statusmaintenance', $mod),
         ));
         
         // order amongst rounds
@@ -148,15 +148,15 @@ class edit_round_form extends \moodleform {
         global $CFG;
         
         $mform = $this->_form;
-        $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
+        $mod = \mod_astra_exercise_round::MODNAME; // for get_string()
         // All the addRule validation rules must match the limits in the DB schema !!!
-        // (table stratumtwo in the file stratumtwo/db/install.xml)
+        // (table astra in the file astra/db/install.xml)
         
         self::add_fields_before_intro($mform);
         
         // Adding the "intro" and "introformat" fields (HTML editor)
         if ($this->editRoundId) {
-            list($course, $cm) = \get_course_and_cm_from_instance($this->editRoundId, \mod_stratumtwo_exercise_round::TABLE);
+            list($course, $cm) = \get_course_and_cm_from_instance($this->editRoundId, \mod_astra_exercise_round::TABLE);
             $context = \context_module::instance($cm->id);
         } else {
             $context = \context_course::instance($this->courseid);
@@ -202,7 +202,7 @@ class edit_round_form extends \moodleform {
      * @return errors array indexed by form field names
      */
     public static function common_validation($data, $files, $courseid, $editRoundId = 0) {
-        $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
+        $mod = \mod_astra_exercise_round::MODNAME; // for get_string()
         $errors = array();
         
         // if point values are given, they cannot be negative
@@ -238,7 +238,7 @@ class edit_round_form extends \moodleform {
         }
 
         // check that remote keys of exercise rounds are unique within a course
-        foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
+        foreach (\mod_astra_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
             if ($editRoundId != $exround->getId() && $data['remotekey'] == $exround->getRemoteKey()) {
                 $errors['remotekey'] = get_string('duplicateroundremotekey', $mod);
             }
@@ -248,7 +248,7 @@ class edit_round_form extends \moodleform {
     }
     
     public function validation($data, $files) {
-        $mod = \mod_stratumtwo_exercise_round::MODNAME; // for get_string()
+        $mod = \mod_astra_exercise_round::MODNAME; // for get_string()
         $errors = parent::validation($data, $files);
     
         $errors = \array_merge($errors, self::common_validation($data, $files, $this->courseid, $this->editRoundId));

@@ -1,6 +1,6 @@
 <?php
 
-namespace mod_stratumtwo\export;
+namespace mod_astra\export;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -17,11 +17,11 @@ class all_students_course_summary {
     
     protected $courseId;
     protected $exerciseIds;
-    protected $exercises; // mod_stratumtwo_exercise objects
+    protected $exercises; // mod_astra_exercise objects
     protected $studentUserIds;
     protected $submittedBefore;
     protected $includeSubmissions;
-    protected $categories; // mod_stratumtwo_category objects
+    protected $categories; // mod_astra_category objects
     
     protected $submissionsByExercise;
     protected $categoryTotalsByStudent;
@@ -61,46 +61,46 @@ class all_students_course_summary {
         if ($exerciseIds === null) {
             // all exercises in the course (including hidden if $includeHidden is true)
             // get categories first
-            $this->categories = \mod_stratumtwo_category::getCategoriesInCourse($courseId, $includeHidden);
+            $this->categories = \mod_astra_category::getCategoriesInCourse($courseId, $includeHidden);
             if (empty($this->categories)) {
                 $exerciseRecords = array();
             } else {
                 // category visibility was checked, check exercise status here if necessary
                 $exerciseRecords = $DB->get_records_sql(
-                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE) .
+                    \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_exercise::TABLE) .
                     ' WHERE lob.categoryid IN ('. implode(',', array_keys($this->categories)) .')' .
                         ($includeHidden ? '' : ' AND lob.status != :exstatus'),
-                        array('exstatus' => \mod_stratumtwo_learning_object::STATUS_HIDDEN));
+                        array('exstatus' => \mod_astra_learning_object::STATUS_HIDDEN));
             }
-            $roundRecords = $DB->get_records(\mod_stratumtwo_exercise_round::TABLE, array('course' => $courseId));
+            $roundRecords = $DB->get_records(\mod_astra_exercise_round::TABLE, array('course' => $courseId));
             
             $this->exerciseIds = array();
             $this->exercises = array();
             foreach ($exerciseRecords as $rec) {
                 // check that the round is not hidden, if necessary
-                if ($includeHidden || $roundRecords[$rec->roundid]->status != \mod_stratumtwo_exercise_round::STATUS_HIDDEN) {
+                if ($includeHidden || $roundRecords[$rec->roundid]->status != \mod_astra_exercise_round::STATUS_HIDDEN) {
                     $this->exerciseIds[] = $rec->lobjectid;
-                    $this->exercises[$rec->lobjectid] = new \mod_stratumtwo_exercise($rec);
+                    $this->exercises[$rec->lobjectid] = new \mod_astra_exercise($rec);
                 }
             }
             
         } else if (!empty($exerciseIds)) {
             // cannot have an empty array with the SQL IN operator
             $exerciseRecords = $DB->get_records_sql(
-                    \mod_stratumtwo_learning_object::getSubtypeJoinSQL(\mod_stratumtwo_exercise::TABLE) .
+                    \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_exercise::TABLE) .
                     ' WHERE lob.id IN ('. implode(',', $exerciseIds) .')');
             $this->exercises = array();
             foreach ($exerciseRecords as $rec) {
-                $this->exercises[$rec->lobjectid] = new \mod_stratumtwo_exercise($rec);
+                $this->exercises[$rec->lobjectid] = new \mod_astra_exercise($rec);
             }
             
             $catIds = \array_map(function($ex) {
                 return $ex->categoryid;
             }, $exerciseRecords);
-            $catRecords = $DB->get_records_list(\mod_stratumtwo_category::TABLE, 'id', $catIds);
+            $catRecords = $DB->get_records_list(\mod_astra_category::TABLE, 'id', $catIds);
             $this->categories = array();
             foreach ($catRecords as $id => $rec) {
-                $this->categories[$id] = new \mod_stratumtwo_category($rec);
+                $this->categories[$id] = new \mod_astra_category($rec);
             }
         } else {
             $this->exercises = array();
@@ -128,7 +128,7 @@ class all_students_course_summary {
         }
         if ($this->includeSubmissions == self::SUBMISSIONS_ONLY_ERROR) {
             $where .= ' AND s.status = ?';
-            $params[] = \mod_stratumtwo_submission::STATUS_ERROR;
+            $params[] = \mod_astra_submission::STATUS_ERROR;
         }
         $sbmsDataColumn = '';
         if ($includeSubmissionData) {
@@ -141,10 +141,10 @@ class all_students_course_summary {
         $allSubmissions = $DB->get_recordset_sql(
             "SELECT s.id, s.status, s.submissiontime, s.exerciseid, s.submitter, s.grade, s.hash, u.idnumber, u.username, 
                     lob.remotekey, round.remotekey AS roundkey $sbmsDataColumn 
-               FROM {". \mod_stratumtwo_submission::TABLE .'} s
+               FROM {". \mod_astra_submission::TABLE .'} s
                JOIN {user} u ON s.submitter = u.id
-               JOIN {'. \mod_stratumtwo_learning_object::TABLE .'} lob ON s.exerciseid = lob.id
-               JOIN {'. \mod_stratumtwo_exercise_round::TABLE .'} round ON lob.roundid = round.id
+               JOIN {'. \mod_astra_learning_object::TABLE .'} lob ON s.exerciseid = lob.id
+               JOIN {'. \mod_astra_exercise_round::TABLE .'} round ON lob.roundid = round.id
               WHERE ' . $where . 'ORDER BY s.submissiontime ASC',
                 $params);
         foreach ($allSubmissions as $sbmsRecord) {
@@ -158,7 +158,7 @@ class all_students_course_summary {
             if (!isset($submissionsByExercise[$sbmsRecord->remotekey])) {
                 $submissionsByExercise[$sbmsRecord->remotekey] = array();
             }
-            $sbms = new \mod_stratumtwo_submission($sbmsRecord);
+            $sbms = new \mod_astra_submission($sbmsRecord);
             
             if (!isset($submissionsByExercise[$sbmsRecord->remotekey][$sbmsRecord->submitter])) {
                 if (empty($sbmsRecord->idnumber) || $sbmsRecord->idnumber === '(null)') {

@@ -6,8 +6,8 @@ defined('MOODLE_INTERNAL') || die();
  * and one category. An exercise has a service URL that is used to connect to
  * the exercise service. An exercise has max points and minimum points to pass.
  */
-class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
-    const TABLE = 'stratumtwo_exercises'; // database table name
+class mod_astra_exercise extends mod_astra_learning_object {
+    const TABLE = 'astra_exercises'; // database table name
     
     public function getMaxSubmissions() {
         return $this->record->maxsubmissions;
@@ -72,11 +72,11 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         // all submitted files to this exercise (in Moodle file API) (file itemid is a submission id)
         $fs = \get_file_storage();
         $fs->delete_area_files_select(context_module::instance($this->getExerciseRound()->getCourseModule()->id)->id,
-                mod_stratumtwo_exercise_round::MODNAME, mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA,
-                'IN (SELECT id FROM {'. mod_stratumtwo_submission::TABLE .'} WHERE exerciseid = :stratumexerciseid)',
-                array('stratumexerciseid' => $this->getId()));
+                mod_astra_exercise_round::MODNAME, mod_astra_submission::SUBMITTED_FILES_FILEAREA,
+                'IN (SELECT id FROM {'. mod_astra_submission::TABLE .'} WHERE exerciseid = :astraexerciseid)',
+                array('astraexerciseid' => $this->getId()));
         // all submissions to this exercise
-        $DB->delete_records(mod_stratumtwo_submission::TABLE, array(
+        $DB->delete_records(mod_astra_submission::TABLE, array(
             'exerciseid' => $this->getId(),
         ));
         
@@ -101,10 +101,10 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
     public function deleteGradebookItem() {
         global $CFG;
         require_once($CFG->libdir.'/gradelib.php');
-        return grade_update('mod/'. mod_stratumtwo_exercise_round::TABLE,
+        return grade_update('mod/'. mod_astra_exercise_round::TABLE,
                 $this->getExerciseRound()->getCourse()->courseid,
                 'mod',
-                mod_stratumtwo_exercise_round::TABLE,
+                mod_astra_exercise_round::TABLE,
                 $this->getExerciseRound()->getId(),
                 $this->getGradebookItemNumber(),
                 null, array('deleted' => 1));
@@ -113,7 +113,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
     /**
      * Return the best submission of the student to this exercise.
      * @param int $userid Moodle user ID of the student
-     * @return mod_stratumtwo_submission the best submission, or null if there is
+     * @return mod_astra_submission the best submission, or null if there is
      * no submission
      */
     public function getBestSubmissionForStudent($userid) {
@@ -123,7 +123,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         // order by submissiontime, earlier first
         $bestSubmission = null;
         foreach ($submissions as $s) {
-            $sbms = new mod_stratumtwo_submission($s);
+            $sbms = new mod_astra_submission($s);
             // assume that the grade of a submission is zero if it was not accepted
             // due to submission limit or deadline
             if ($bestSubmission === null || $sbms->getGrade() > $bestSubmission->getGrade()) {
@@ -146,14 +146,14 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         
         if ($excludeErrors) {
             // exclude submissions with status error
-            $count = $DB->count_records_select(mod_stratumtwo_submission::TABLE,
+            $count = $DB->count_records_select(mod_astra_submission::TABLE,
                     'exerciseid = ? AND submitter = ? AND status != ?', array(
                             $this->getId(),
                             $userid,
-                            mod_stratumtwo_submission::STATUS_ERROR,
+                            mod_astra_submission::STATUS_ERROR,
                     ), "COUNT('id')");
         } else {
-            $count = $DB->count_records(mod_stratumtwo_submission::TABLE, array(
+            $count = $DB->count_records(mod_astra_submission::TABLE, array(
                     'exerciseid' => $this->getId(),
                     'submitter'  => $userid,
             ));
@@ -174,14 +174,14 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         
         if ($excludeErrors) {
             // exclude submissions with status error
-            $submissions = $DB->get_recordset_select(mod_stratumtwo_submission::TABLE,
+            $submissions = $DB->get_recordset_select(mod_astra_submission::TABLE,
                     'exerciseid = ? AND submitter = ? AND status != ?', array(
                             $this->getId(),
                             $userid,
-                            mod_stratumtwo_submission::STATUS_ERROR,
+                            mod_astra_submission::STATUS_ERROR,
                     ), $orderBy);
         } else {
-            $submissions = $DB->get_recordset(mod_stratumtwo_submission::TABLE, array(
+            $submissions = $DB->get_recordset(mod_astra_submission::TABLE, array(
                 'exerciseid' => $this->getId(),
                 'submitter'  => $userid,
             ), $orderBy);
@@ -204,13 +204,13 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         
         if ($excludeErrors) {
             // exclude submissions with status error
-            $submissions = $DB->get_recordset_select(mod_stratumtwo_submission::TABLE,
+            $submissions = $DB->get_recordset_select(mod_astra_submission::TABLE,
                     'exerciseid = ? AND status != ?', array(
                             $this->getId(),
-                            mod_stratumtwo_submission::STATUS_ERROR,
+                            mod_astra_submission::STATUS_ERROR,
                     ), $orderBy, fields);
         } else {
-            $submissions = $DB->get_recordset(mod_stratumtwo_submission::TABLE, array(
+            $submissions = $DB->get_recordset(mod_astra_submission::TABLE, array(
                     'exerciseid' => $this->getId(),
             ), $orderBy, $fields);
         }
@@ -250,14 +250,14 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         $courseid = $this->getExerciseRound()->getCourse()->courseid;
         
         // create gradebook item
-        $res = grade_update('mod/'. mod_stratumtwo_exercise_round::TABLE, $courseid, 'mod',
-                mod_stratumtwo_exercise_round::TABLE, $this->record->roundid,
+        $res = grade_update('mod/'. mod_astra_exercise_round::TABLE, $courseid, 'mod',
+                mod_astra_exercise_round::TABLE, $this->record->roundid,
                 $this->getGradebookItemNumber(), null, $item);
         
         // parameters to find the grade item from DB
         $grade_item_params = array(
                 'itemtype'     => 'mod',
-                'itemmodule'   => mod_stratumtwo_exercise_round::TABLE,
+                'itemmodule'   => mod_astra_exercise_round::TABLE,
                 'iteminstance' => $this->record->roundid,
                 'itemnumber'   => $this->getGradebookItemNumber(),
                 'courseid'     => $courseid,
@@ -266,7 +266,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         $DB->set_field('grade_items', 'gradepass', $this->getPointsToPass(), $grade_item_params);
         $gi = grade_item::fetch($grade_item_params);
         if ($gi) {
-            $gi->update('mod/'. mod_stratumtwo_exercise_round::TABLE);
+            $gi->update('mod/'. mod_astra_exercise_round::TABLE);
         }
         
         return $res;
@@ -283,7 +283,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         // The Moodle API returns the exercise round and exercise grades all at once
         // since they use different item numbers with the same Moodle course module.
         $grades = grade_get_grades($this->getExerciseRound()->getCourse()->courseid, 'mod',
-                mod_stratumtwo_exercise_round::TABLE,
+                mod_astra_exercise_round::TABLE,
                 $this->getExerciseRound()->getId(),
                 $userid);
         return (int) $grades->items[$this->getGradebookItemNumber()]->grades[$userid]->grade;
@@ -311,26 +311,26 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         
         // transform integer grades to objects (if the first array value is integer)
         if (is_int(reset($grades))) {
-            $grades = mod_stratumtwo_exercise_round::gradeArrayToGradeObjects($grades);
+            $grades = mod_astra_exercise_round::gradeArrayToGradeObjects($grades);
         }
         
-        return grade_update('mod/'. mod_stratumtwo_exercise_round::TABLE,
+        return grade_update('mod/'. mod_astra_exercise_round::TABLE,
                 $this->getExerciseRound()->getCourse()->courseid, 'mod',
-                mod_stratumtwo_exercise_round::TABLE,
+                mod_astra_exercise_round::TABLE,
                 $this->getExerciseRound()->getId(),
                 $this->getGradebookItemNumber(), $grades, null);
     }
     
     /**
      * Write grades for each student in this exercise to Moodle gradebook.
-     * The grades are read from the database tables of Stratum2 plugin.
+     * The grades are read from the database tables of the plugin.
      * 
      * @return array grade objects written to gradebook, indexed by user IDs
      */
     public function writeAllGradesToGradebook() {
         global $DB;
         // get all user IDs of the students that have submitted to this exercise
-        $table = mod_stratumtwo_submission::TABLE;
+        $table = mod_astra_submission::TABLE;
         $submitters = $DB->get_recordset_sql('SELECT DISTINCT submitter FROM {'. $table .'} WHERE exerciseid = ?',
                 array($this->getId()));
         $grades = array(); // grade objects indexed by user IDs
@@ -362,7 +362,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
      */
     public function getTotalSubmitterCount() {
         global $DB;
-        return $DB->count_records_select(mod_stratumtwo_submission::TABLE,
+        return $DB->count_records_select(mod_astra_submission::TABLE,
                 'exerciseid = ?',
                 array($this->getId()),
                 'COUNT(DISTINCT submitter)');
@@ -378,7 +378,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         // latest submission first
         $submissions = $this->getSubmissionsForStudent($userid, false, 'submissiontime DESC');
         foreach ($submissions as $record) {
-            $sbms = new mod_stratumtwo_submission($record);
+            $sbms = new mod_astra_submission($record);
             $ctx[] = $sbms->getTemplateContext();
         }
         $submissions->close();
@@ -395,7 +395,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
     public function getExerciseTemplateContext(stdClass $user = null,
             $includeTotalSubmitterCount = true, $includeCourseModule = true) {
         $ctx = parent::getTemplateContext($includeCourseModule);
-        $ctx->submissionlisturl = \mod_stratumtwo\urls\urls::submissionList($this);
+        $ctx->submissionlisturl = \mod_astra\urls\urls::submissionList($this);
         
         $ctx->max_points = $this->getMaxPoints();
         $ctx->max_submissions = $this->getMaxSubmissions();
@@ -408,7 +408,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
                 $ctx->submit_limit_deviation = 0;
             }
             
-            $dl_deviation = mod_stratumtwo_deadline_deviation::findDeviation($this->getId(), $user->id);
+            $dl_deviation = mod_astra_deadline_deviation::findDeviation($this->getId(), $user->id);
             if ($dl_deviation !== null) {
                 $ctx->deadline = $dl_deviation->getNewDeadline();
                 $ctx->dl_extended_minutes = $dl_deviation->getExtraTime();
@@ -426,8 +426,8 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
         $ctx->allow_assistant_viewing = $this->isAssistantViewingAllowed();
         $context = context_module::instance($this->getExerciseRound()->getCourseModule()->id);
         $ctx->can_view_submissions = ($ctx->allow_assistant_viewing && 
-                has_capability('mod/stratumtwo:viewallsubmissions', $context)) || 
-            has_capability('mod/stratumtwo:addinstance', $context); // editing teacher can always view
+                has_capability('mod/astra:viewallsubmissions', $context)) || 
+            has_capability('mod/astra:addinstance', $context); // editing teacher can always view
         
         return $ctx;
     }
@@ -446,7 +446,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
     protected function buildServiceUrl($submissionUrl, $uid, $submissionOrdinalNumber) {
         $query_data = array(
                 'submission_url' => $submissionUrl,
-                'post_url' => \mod_stratumtwo\urls\urls::newSubmissionHandler($this),
+                'post_url' => \mod_astra\urls\urls::newSubmissionHandler($this),
                 'max_points' => $this->getMaxPoints(),
                 'uid' => $uid,
                 'ordinal_number' => $submissionOrdinalNumber,
@@ -455,14 +455,14 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
     }
     
     public function getLoadUrl($userid, $submissionOrdinalNumber) {
-        return $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncNewSubmission($this, $userid),
+        return $this->buildServiceUrl(\mod_astra\urls\urls::asyncNewSubmission($this, $userid),
                 $userid, $submissionOrdinalNumber);
     }
     
     /**
      * Upload the submission to the exercise service for grading and store the results
      * if the submission is graded synchronously.
-     * @param \mod_stratumtwo_submission $submission
+     * @param \mod_astra_submission $submission
      * @param bool $noPenalties
      * @param array $files submitted files. Associative array of stdClass objects that have fields
      * filename (original base name), filepath (full file path in Moodle, e.g. under /tmp)
@@ -471,11 +471,11 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
      * adds them to the upload automatically.
      * @param bool $deleteFiles if true and $files is a non-empty array, the files are
      * deleted here from the file system
-     * @throws mod_stratumtwo\protocol\remote_page_exception if there are errors
+     * @throws mod_astra\protocol\remote_page_exception if there are errors
      * in connecting to the server
      * @throws Exception if there are errors in handling the files
      */
-    public function uploadSubmissionToService(\mod_stratumtwo_submission $submission, $noPenalties = false,
+    public function uploadSubmissionToService(\mod_astra_submission $submission, $noPenalties = false,
             array $files = null, $deleteFiles = false) {
         $sbmsData = $submission->getSubmissionData();
         if ($sbmsData !== null)
@@ -486,40 +486,40 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
             $files = $submission->prepareSubmissionFilesForUpload();
         }
         
-        $courseConfig = mod_stratumtwo_course_config::getForCourseId(
+        $courseConfig = mod_astra_course_config::getForCourseId(
                 $submission->getExercise()->getExerciseRound()->getCourse()->courseid);
         $api_key = ($courseConfig ? $courseConfig->getApiKey() : null);
         
-        $serviceUrl = $this->buildServiceUrl(\mod_stratumtwo\urls\urls::asyncGradeSubmission($submission),
+        $serviceUrl = $this->buildServiceUrl(\mod_astra\urls\urls::asyncGradeSubmission($submission),
                 $submission->getRecord()->submitter, $submission->getCounter());
         try {
-            $remotePage = new \mod_stratumtwo\protocol\remote_page(
+            $remotePage = new \mod_astra\protocol\remote_page(
                     $serviceUrl, true, $sbmsData, $files, $api_key);
-        } catch (\mod_stratumtwo\protocol\remote_page_exception $e) {
+        } catch (\mod_astra\protocol\remote_page_exception $e) {
             if ($deleteFiles) {
                 foreach ($files as $f) {
                     @unlink($f->filepath);
                 }
             }
             // error logging
-            if ($e instanceof \mod_stratumtwo\protocol\stratum_connection_exception) {
-                $event = \mod_stratumtwo\event\stratum_connection_failed::create(array(
+            if ($e instanceof \mod_astra\protocol\service_connection_exception) {
+                $event = \mod_astra\event\service_connection_failed::create(array(
                         'context' => context_module::instance($this->getExerciseRound()->getCourseModule()->id),
                         'other' => array(
                                 'error' => $e->getMessage(),
                                 'url' => $serviceUrl,
-                                'objtable' => \mod_stratumtwo_submission::TABLE,
+                                'objtable' => \mod_astra_submission::TABLE,
                                 'objid' => $submission->getId(),
                         )
                 ));
                 $event->trigger();
-            } else if ($e instanceof \mod_stratumtwo\protocol\stratum_server_exception) {
-                $event = \mod_stratumtwo\event\stratum_server_failed::create(array(
+            } else if ($e instanceof \mod_astra\protocol\exercise_service_exception) {
+                $event = \mod_astra\event\exercise_service_failed::create(array(
                         'context' => context_module::instance($this->getExerciseRound()->getCourseModule()->id),
                         'other' => array(
                                 'error' => $e->getMessage(),
                                 'url' => $serviceUrl,
-                                'objtable' => \mod_stratumtwo_submission::TABLE,
+                                'objtable' => \mod_astra_submission::TABLE,
                                 'objid' => $submission->getId(),
                         )
                 ));
@@ -539,7 +539,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
     
     public function getMaxSubmissionsForStudent(stdClass $user) {
         $max = $this->getMaxSubmissions(); // zero means no limit
-        $deviation = mod_stratumtwo_submission_limit_deviation::findDeviation($this->getId(), $user->id);
+        $deviation = mod_astra_submission_limit_deviation::findDeviation($this->getId(), $user->id);
         if ($deviation !== null && $max !== 0) {
             return $max + $deviation->getExtraSubmissions();
         }
@@ -561,7 +561,7 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
             return true;
         if ($exround->hasStarted($when)) {
             // check deviations
-            $deviation = mod_stratumtwo_deadline_deviation::findDeviation($this->getId(), $user->id);
+            $deviation = mod_astra_deadline_deviation::findDeviation($this->getId(), $user->id);
             if ($deviation !== null && $when <= $deviation->getNewLateSubmissionDeadline()) {
                 return true;
             }
@@ -571,8 +571,8 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
     
     public function isSubmissionAllowed(stdClass $user) {
         $context = context_module::instance($this->getExerciseRound()->getCourseModule()->id);
-        if (has_capability('mod/stratumtwo:addinstance', $context, $user) ||
-                has_capability('mod/stratumtwo:viewallsubmissions', $context, $user)) {
+        if (has_capability('mod/astra:addinstance', $context, $user) ||
+                has_capability('mod/astra:viewallsubmissions', $context, $user)) {
             // allow always for teachers
             return true;
         }
@@ -592,9 +592,9 @@ class mod_stratumtwo_exercise extends mod_stratumtwo_learning_object {
      * @return string
      */
     public function getAsyncHash($userid) {
-        require_once(dirname(dirname(__FILE__)) . '/stratum_settings.php');
+        require_once(dirname(dirname(__FILE__)) . '/astra_settings.php');
         
         $identifier = "$userid." . $this->getId();
-        return \hash_hmac('sha256', $identifier, STRATUMTWO_SECRET_KEY);
+        return \hash_hmac('sha256', $identifier, ASTRA_SECRET_KEY);
     }
 }

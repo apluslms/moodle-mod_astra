@@ -4,8 +4,8 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Student-specific submission limit deviation (extension) to an exercise.
  */
-class mod_stratumtwo_submission_limit_deviation extends mod_stratumtwo_deviation_rule {
-    const TABLE = 'stratumtwo_maxsbms_devs';
+class mod_astra_submission_limit_deviation extends mod_astra_deviation_rule {
+    const TABLE = 'astra_maxsbms_devs';
     
     public function getExtraSubmissions() {
         return (int) $this->record->extrasubmissions;
@@ -14,7 +14,7 @@ class mod_stratumtwo_submission_limit_deviation extends mod_stratumtwo_deviation
     public function getTemplateContext() {
         $ctx = parent::getTemplateContext();
         $ctx->extra_submissions = $this->getExtraSubmissions();
-        $ctx->remove_url = \mod_stratumtwo\urls\urls::deleteSubmissionLimitDeviation($this);
+        $ctx->remove_url = \mod_astra\urls\urls::deleteSubmissionLimitDeviation($this);
         return $ctx;
     }
     

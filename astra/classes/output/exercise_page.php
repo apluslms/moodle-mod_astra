@@ -1,5 +1,5 @@
 <?php
-namespace mod_stratumtwo\output;
+namespace mod_astra\output;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -15,8 +15,8 @@ class exercise_page implements \renderable, \templatable {
     protected $errorMsg;
     protected $page_requires;
     
-    public function __construct(\mod_stratumtwo_exercise_round $exround,
-            \mod_stratumtwo_learning_object $learningObject,
+    public function __construct(\mod_astra_exercise_round $exround,
+            \mod_astra_learning_object $learningObject,
             \stdClass $user, \page_requirements_manager $page_requires,
             $errorMsg = null) {
         $this->exround = $exround;
@@ -24,7 +24,7 @@ class exercise_page implements \renderable, \templatable {
         $this->user = $user;
         $this->page_requires = $page_requires; // from $PAGE->requires
         if ($learningObject->isSubmittable()) {
-            $this->exerciseSummary = new \mod_stratumtwo\summary\user_exercise_summary($learningObject, $user);
+            $this->exerciseSummary = new \mod_astra\summary\user_exercise_summary($learningObject, $user);
         } else {
             $this->exerciseSummary = null;
         }
@@ -34,9 +34,9 @@ class exercise_page implements \renderable, \templatable {
     /**
      * Copy CSS and JS requirements from the remote page head (with data-aplus attributes)
      * to the Moodle page.
-     * @param \mod_stratumtwo\protocol\remote_page $remotePage
+     * @param \mod_astra\protocol\remote_page $remotePage
      */
-    protected function setMoodlePageRequirements(\mod_stratumtwo\protocol\remote_page $remotePage) {
+    protected function setMoodlePageRequirements(\mod_astra\protocol\remote_page $remotePage) {
         foreach ($remotePage->getInjectedCSS_URLs() as $cssUrl) {
             // absolute (external) URL must be passed as moodle_url instance
             $this->page_requires->css(new \moodle_url($cssUrl));
@@ -62,16 +62,16 @@ class exercise_page implements \renderable, \templatable {
     public function export_for_template(\renderer_base $output) {
         $data = new \stdClass();
         $ctx = \context_module::instance($this->exround->getCourseModule()->id);
-        $data->is_course_staff = \has_capability('mod/stratumtwo:viewallsubmissions', $ctx);
-        $data->is_editing_teacher = \has_capability('mod/stratumtwo:addinstance', $ctx);
+        $data->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $ctx);
+        $data->is_editing_teacher = \has_capability('mod/astra:addinstance', $ctx);
         if ($this->learningObject->isSubmittable()) {
             $data->is_manual_grader = 
-                ($this->learningObject->isAssistantGradingAllowed() && \has_capability('mod/stratumtwo:grademanually', $ctx)) ||
+                ($this->learningObject->isAssistantGradingAllowed() && \has_capability('mod/astra:grademanually', $ctx)) ||
                 $data->is_editing_teacher;
             $data->can_inspect = ($this->learningObject->isAssistantViewingAllowed() && $data->is_course_staff) ||
                 $data->is_editing_teacher;
         } else {
-            $data->is_manual_grader = \has_capability('mod/stratumtwo:grademanually', $ctx);
+            $data->is_manual_grader = \has_capability('mod/astra:grademanually', $ctx);
             $data->can_inspect = $data->is_course_staff;
         }
         
@@ -84,8 +84,8 @@ class exercise_page implements \renderable, \templatable {
                 $this->setMoodlePageRequirements($remotePage->remote_page);
                 unset($remotePage->remote_page);
                 $data->page = $remotePage; // has content field
-            } catch (\mod_stratumtwo\protocol\remote_page_exception $e) {
-                $data->error = \get_string('serviceconnectionfailed', \mod_stratumtwo_exercise_round::MODNAME);
+            } catch (\mod_astra\protocol\remote_page_exception $e) {
+                $data->error = \get_string('serviceconnectionfailed', \mod_astra_exercise_round::MODNAME);
                 $page = new \stdClass();
                 $page->content = '';
                 $data->page = $page;
@@ -109,13 +109,13 @@ class exercise_page implements \renderable, \templatable {
         } else {
             $data->chapter = $this->learningObject->getTemplateContext(false);
             if ($this->learningObject->shouldGenerateTableOfContents()) {
-                $data->round_toc = \mod_stratumtwo\output\exercise_round_page::getRoundTableOfContentsContext($this->exround);
+                $data->round_toc = \mod_astra\output\exercise_round_page::getRoundTableOfContentsContext($this->exround);
             } else {
                 $data->round_toc = false;
             }
         }
         
-        $data->toDateStr = new \mod_stratumtwo\output\date_to_string();
+        $data->toDateStr = new \mod_astra\output\date_to_string();
         
         return $data;
         // It should return an stdClass with properties that are only made of simple types:

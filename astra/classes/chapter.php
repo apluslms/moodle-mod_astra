@@ -6,8 +6,8 @@ defined('MOODLE_INTERNAL') || die();
  * into the content. The content is downloaded from the exercise service.
  * The chapter itself has no grading or submissions associated with it.
  */
-class mod_stratumtwo_chapter extends mod_stratumtwo_learning_object {
-    const TABLE = 'stratumtwo_chapters';
+class mod_astra_chapter extends mod_astra_learning_object {
+    const TABLE = 'astra_chapters';
     
     public function shouldGenerateTableOfContents() {
         return (bool) $this->record->generatetoc;

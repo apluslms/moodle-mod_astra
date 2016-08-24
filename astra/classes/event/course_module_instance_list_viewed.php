@@ -1,13 +1,13 @@
 <?php
 
-namespace mod_stratumtwo\event;
+namespace mod_astra\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_stratumtwo instance list viewed event class.
+ * The mod_astra instance list viewed event class.
  *
- * @package    mod_stratumtwo
+ * @package    mod_astra
  * @copyright  2016 Aalto SCI CS dept.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

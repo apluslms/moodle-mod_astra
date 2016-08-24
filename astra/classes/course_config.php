@@ -2,10 +2,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Course-wide Stratum2 settings.
+ * Course-wide Astra settings.
  */
-class mod_stratumtwo_course_config extends mod_stratumtwo_database_object {
-    const TABLE = 'stratumtwo_course_settings';
+class mod_astra_course_config extends mod_astra_database_object {
+    const TABLE = 'astra_course_settings';
     
     // numbering of exercise rounds
     const MODULE_NUMBERING_NONE          = 0;
