@@ -5,9 +5,9 @@ require_once(dirname(dirname(__FILE__)) .'/async/async_lib.php');
 
 /**
  * Unit tests for async grading.
- * @group mod_stratumtwo
+ * @group mod_astra
  */
-class mod_stratumtwo_async_grading_testcase extends advanced_testcase {
+class mod_astra_async_grading_testcase extends advanced_testcase {
     
     use exercise_test_data;
     
@@ -28,14 +28,14 @@ class mod_stratumtwo_async_grading_testcase extends advanced_testcase {
         );
         $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
         $_SERVER['REQUEST_METHOD'] = 'POST';
-        $json = stratumtwo_async_submission_handler($this->exercises[0], $this->student,
+        $json = astra_async_submission_handler($this->exercises[0], $this->student,
                 $grading_post_data, $this->submissions[0]);
         
         $this->assertTrue($json['success']);
         $this->assertEmpty($json['errors']);
         
-        $sbms = mod_stratumtwo_submission::createFromId($this->submissions[0]->getId());
-        $this->assertEquals(mod_stratumtwo_submission::STATUS_READY, $sbms->getStatus());
+        $sbms = mod_astra_submission::createFromId($this->submissions[0]->getId());
+        $this->assertEquals(mod_astra_submission::STATUS_READY, $sbms->getStatus());
         $this->assertEquals($grading_post_data['max_points'], $sbms->getGrade());
         $this->assertEquals($grading_post_data['feedback'], $sbms->getFeedback());
     }
@@ -50,14 +50,14 @@ class mod_stratumtwo_async_grading_testcase extends advanced_testcase {
         );
         $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
         $_SERVER['REQUEST_METHOD'] = 'POST';
-        $json = stratumtwo_async_submission_handler($this->exercises[1], $this->student,
+        $json = astra_async_submission_handler($this->exercises[1], $this->student,
                 $grading_post_data);
         
         $this->assertTrue($json['success']);
         $this->assertEmpty($json['errors']);
         
         $toSbms = function($record) {
-            return new mod_stratumtwo_submission($record);
+            return new mod_astra_submission($record);
         };
         
         $submissions = $this->exercises[1]->getSubmissionsForStudent($this->student->id);
@@ -66,7 +66,7 @@ class mod_stratumtwo_async_grading_testcase extends advanced_testcase {
         
         $this->assertEquals(1, count($submissions_array));
         $sbms = $submissions_array[0];
-        $this->assertEquals(mod_stratumtwo_submission::STATUS_READY, $sbms->getStatus());
+        $this->assertEquals(mod_astra_submission::STATUS_READY, $sbms->getStatus());
         $this->assertEquals($grading_post_data['points'], $sbms->getGrade());
         $this->assertEquals($grading_post_data['feedback'], $sbms->getFeedback());
     }
@@ -76,7 +76,7 @@ class mod_stratumtwo_async_grading_testcase extends advanced_testcase {
         
         $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
         $_SERVER['REQUEST_METHOD'] = 'GET';
-        $json = stratumtwo_async_submission_handler($this->exercises[0], $this->student, null);
+        $json = astra_async_submission_handler($this->exercises[0], $this->student, null);
         
         $this->assertEquals(10, $json['max_points']);
         $this->assertEquals(3, $json['max_submissions']);

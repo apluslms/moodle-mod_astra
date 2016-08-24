@@ -9,14 +9,14 @@ $course = get_course($cid);
 
 require_login($course, false);
 $context = context_course::instance($cid);
-require_capability('mod/stratumtwo:addinstance', $context); // editing teacher
+require_capability('mod/astra:addinstance', $context); // editing teacher
 
 $PAGE->set_pagelayout('incourse');
-$PAGE->set_url(\mod_stratumtwo\urls\urls::exportPassedList($cid, true));
+$PAGE->set_url(\mod_astra\urls\urls::exportPassedList($cid, true));
 //$PAGE->set_title('Download course passed list');
 //$PAGE->set_heading(format_string($course->fullname));
 
-$export = new \mod_stratumtwo\export\export_data($cid);
+$export = new \mod_astra\export\export_data($cid);
 $passed_list = $export->course_passed_list();
 $passed_str = '';
 foreach ($passed_list as $student) {

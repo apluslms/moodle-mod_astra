@@ -21,35 +21,35 @@ Context variables:
 
 <div class="panel panel-primary">
     <div class="panel-heading">
-        <h4 class="panel-title">{{#str}} submissioninfo, mod_stratumtwo {{/str}}</h4>
+        <h4 class="panel-title">{{#str}} submissioninfo, mod_astra {{/str}}</h4>
     </div>
     <div class="panel-body">
         <dl>
-            <dt>{{#str}} submittedon, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} submittedon, mod_astra {{/str}}</dt>
             <dd>{{# toDateStr }}{{ submission.submission_time }}{{/ toDateStr }}</dd>
 
-            <dt>{{#str}} status, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} status, mod_astra {{/str}}</dt>
             <dd>
                 <span class="label label-{{# submission.is_graded }}success{{/ submission.is_graded }}{{^ submission.is_graded }}default{{/ submission.is_graded }}">
                     {{ submission.state }}
                 </span>
             </dd>
 
-            <dt>{{#str}} grade, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} grade, mod_astra {{/str}}</dt>
             <dd>
                 {{ submission.points }} / {{ exercise.max_points }}
                 {{# is_course_staff }}
-                <br />({{#str}} forstafforiginal, mod_stratumtwo {{/str}} {{ submission.service_points }} / {{ submission.service_max_points }})
+                <br />({{#str}} forstafforiginal, mod_astra {{/str}} {{ submission.service_points }} / {{ submission.service_max_points }})
                 {{/ is_course_staff }}
             </dd>
 
             {{# submission.late_penalty_applied }}
-            <dt>{{#str}} includeslatepenalty, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} includeslatepenalty, mod_astra {{/str}}</dt>
             <dd>-{{ submission.late_penalty_applied_percent }} %</dd>
             {{/ submission.late_penalty_applied }}
 
             <dt>
-                {{#str}} submitters, mod_stratumtwo {{/str}}
+                {{#str}} submitters, mod_astra {{/str}}
             </dt>
             <dd>{{ submission.submitter_name }}</dd>
         </dl>

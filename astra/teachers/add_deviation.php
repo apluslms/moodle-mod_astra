@@ -10,11 +10,11 @@ $courseid = required_param('course', PARAM_INT); // Course ID
 $type     = required_param('type', PARAM_ALPHA); // dl or submitlimit
 
 if ($type == 'dl') {
-    $page_url = \mod_stratumtwo\urls\urls::addDeadlineDeviation($courseid, true);
-    $title = get_string('addnewdldeviations', mod_stratumtwo_exercise_round::MODNAME);
+    $page_url = \mod_astra\urls\urls::addDeadlineDeviation($courseid, true);
+    $title = get_string('addnewdldeviations', mod_astra_exercise_round::MODNAME);
 } elseif ($type == 'submitlimit') {
-    $page_url = \mod_stratumtwo\urls\urls::addSubmissionLimitDeviation($courseid, true);
-    $title = get_string('addnewsbmslimitdeviations', mod_stratumtwo_exercise_round::MODNAME);
+    $page_url = \mod_astra\urls\urls::addSubmissionLimitDeviation($courseid, true);
+    $title = get_string('addnewsbmslimitdeviations', mod_astra_exercise_round::MODNAME);
 } else {
     print_error('missingparam', '', '', 'type');
 }
@@ -23,9 +23,9 @@ $course = get_course($courseid);
 
 require_login($course, false);
 $context = context_course::instance($courseid);
-require_capability('mod/stratumtwo:addinstance', $context); // editing teacher
+require_capability('mod/astra:addinstance', $context); // editing teacher
 
-//stratumtwo_page_require($PAGE); // Bootstrap CSS etc.
+//astra_page_require($PAGE); // Bootstrap CSS etc.
 // Print the page header.
 $PAGE->set_pagelayout('incourse');
 $PAGE->set_url($page_url);
@@ -33,12 +33,12 @@ $PAGE->set_title($title);
 $PAGE->set_heading(format_string($course->fullname));
 
 // navbar
-stratumtwo_deviations_navbar_add($PAGE, $courseid, $title, $page_url, 'adddeviation');
+astra_deviations_navbar_add($PAGE, $courseid, $title, $page_url, 'adddeviation');
 /*
 // A+ search-select widget disabled since Bootstrap CSS/JS does not work well enough in Moodle.
 // require AMD Javascript for search-select widget and enable it
 $amd_js = <<<'EOT'
-require(['jquery', 'mod_stratumtwo/aplus_searchselect'], function($) {
+require(['jquery', 'mod_astra/aplus_searchselect'], function($) {
     $('.search-select').aplusSearchSelect();
 });
 EOT;
@@ -47,18 +47,18 @@ $PAGE->requires->js_amd_inline($amd_js);
 
 $formAction = "add_deviation.php?course=$courseid&type=$type";
 if ($type == 'dl') {
-    $form = new \mod_stratumtwo\form\add_deadline_deviation_form($courseid, $formAction);
+    $form = new \mod_astra\form\add_deadline_deviation_form($courseid, $formAction);
 } else {
     /// submit limit
-    $form = new \mod_stratumtwo\form\add_submit_limit_deviation_form($courseid, $formAction);
+    $form = new \mod_astra\form\add_submit_limit_deviation_form($courseid, $formAction);
 }
 
 if ($form->is_cancelled()) {
-    redirect(\mod_stratumtwo\urls\urls::deviations($courseid, true));
+    redirect(\mod_astra\urls\urls::deviations($courseid, true));
     exit(0);
 }
 
-$output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
+$output = $PAGE->get_renderer(mod_astra_exercise_round::MODNAME);
 echo $output->header();
 echo $output->heading($title);
 
@@ -71,21 +71,21 @@ if ($fromform = $form->get_data()) {
     } else {
         // parse text input of student ids/usernames and make an array of Moodle user IDs
         list($submitterIds, $ignored) = 
-            \mod_stratumtwo\form\add_deadline_deviation_form::parseSubmittersText($fromform->submittertext);
+            \mod_astra\form\add_deadline_deviation_form::parseSubmittersText($fromform->submittertext);
     }
     
     foreach ($fromform->exerciseid as $exid) {
         foreach ($submitterIds as $submitter) {
             if ($type == 'dl') {
-                $res = mod_stratumtwo_deadline_deviation::createNew($exid, $submitter,
+                $res = mod_astra_deadline_deviation::createNew($exid, $submitter,
                         $fromform->extraminutes, $fromform->withoutlatepenalty);
             } else {
-                $res = mod_stratumtwo_submission_limit_deviation::createNew($exid, $submitter, $fromform->extrasubmissions);
+                $res = mod_astra_submission_limit_deviation::createNew($exid, $submitter, $fromform->extrasubmissions);
             }
             if (!$res) {
-                $exercise = mod_stratumtwo_exercise::createFromId($exid);
+                $exercise = mod_astra_exercise::createFromId($exid);
                 $user = $DB->get_record('user', array('id' => $submitter));
-                $text = $exercise->getName() .', '. mod_stratumtwo_deviation_rule::submitterName($user);
+                $text = $exercise->getName() .', '. mod_astra_deviation_rule::submitterName($user);
                 if ($res === null) {
                     // user already had deviation in the exercise
                     $existed[] = $text;
@@ -98,28 +98,28 @@ if ($fromform = $form->get_data()) {
     }
     
     if (!empty($existed)) {
-        echo '<p>'. get_string('deviationsexisted', mod_stratumtwo_exercise_round::MODNAME) .'</p>';
+        echo '<p>'. get_string('deviationsexisted', mod_astra_exercise_round::MODNAME) .'</p>';
         echo html_writer::alist($existed);
     }
     if (!empty($errors)) {
-        echo '<p>'. get_string('deviationscreationerror', mod_stratumtwo_exercise_round::MODNAME) .'</p>';
+        echo '<p>'. get_string('deviationscreationerror', mod_astra_exercise_round::MODNAME) .'</p>';
         echo html_writer::alist($errors);
     }
     if (empty($existed) && empty($errors)) {
         // success
-        echo '<p>'. get_string('deviationscreatesuccess', mod_stratumtwo_exercise_round::MODNAME) .'</p>';
+        echo '<p>'. get_string('deviationscreatesuccess', mod_astra_exercise_round::MODNAME) .'</p>';
     }
-    echo '<p><a href="'.\mod_stratumtwo\urls\urls::deviations($courseid).'">'.
-            get_string('back', mod_stratumtwo_exercise_round::MODNAME) .'</a></p>';
+    echo '<p><a href="'.\mod_astra\urls\urls::deviations($courseid).'">'.
+            get_string('back', mod_astra_exercise_round::MODNAME) .'</a></p>';
     
 } else {
     $form->display();
     /*
     // A+ search select widget requires a hidden HTML definition for the widget
-    $remove    = get_string('remove', mod_stratumtwo_exercise_round::MODNAME);
-    $search    = get_string('search', mod_stratumtwo_exercise_round::MODNAME);
-    $searchfor = get_string('searchfor', mod_stratumtwo_exercise_round::MODNAME);
-    $nomatches = get_string('nomatches', mod_stratumtwo_exercise_round::MODNAME);
+    $remove    = get_string('remove', mod_astra_exercise_round::MODNAME);
+    $search    = get_string('search', mod_astra_exercise_round::MODNAME);
+    $searchfor = get_string('searchfor', mod_astra_exercise_round::MODNAME);
+    $nomatches = get_string('nomatches', mod_astra_exercise_round::MODNAME);
     
     $search_select_widget_html = <<<EOT
 <div id="search-select-widget" class="hide">

@@ -4,9 +4,9 @@ require_once(dirname(__FILE__) .'/exercise_test_data.php');
 
 /**
  * Unit tests for exercise.
- * @group mod_stratumtwo
+ * @group mod_astra
  */
-class mod_stratumtwo_exercise_testcase extends advanced_testcase {
+class mod_astra_exercise_testcase extends advanced_testcase {
     
     use exercise_test_data;
     
@@ -25,13 +25,13 @@ class mod_stratumtwo_exercise_testcase extends advanced_testcase {
         
         $this->assertTrue($this->exercises[0]->studentHasSubmissionsLeft($this->student));
         
-        $third_sbms = mod_stratumtwo_submission::createFromId(
-                mod_stratumtwo_submission::createNewSubmission($this->exercises[0], $this->student->id));
+        $third_sbms = mod_astra_submission::createFromId(
+                mod_astra_submission::createNewSubmission($this->exercises[0], $this->student->id));
         
         $this->assertFalse($this->exercises[0]->studentHasSubmissionsLeft($this->student));
         
         // add submit limit deviation
-        mod_stratumtwo_submission_limit_deviation::createNew($this->exercises[0]->getId(), $this->student->id, 1);
+        mod_astra_submission_limit_deviation::createNew($this->exercises[0]->getId(), $this->student->id, 1);
         
         $this->assertTrue($this->exercises[0]->studentHasSubmissionsLeft($this->student));
     }
@@ -46,7 +46,7 @@ class mod_stratumtwo_exercise_testcase extends advanced_testcase {
         $this->assertTrue($this->exercises[0]->studentHasAccess($this->student, $this->round1->getLateSubmissionDeadline() - 3600));
         
         // add deadline deviation
-        mod_stratumtwo_deadline_deviation::createNew($this->exercises[0]->getId(), $this->student->id, 60, true);
+        mod_astra_deadline_deviation::createNew($this->exercises[0]->getId(), $this->student->id, 60, true);
         
         $this->assertFalse($this->exercises[0]->studentHasAccess($this->student, $this->round1->getOpeningTime() - 3600));
         $this->assertTrue($this->exercises[0]->studentHasAccess($this->student, $this->round1->getClosingTime() + 3600));
@@ -64,7 +64,7 @@ class mod_stratumtwo_exercise_testcase extends advanced_testcase {
         $this->resetAfterTest(true);
         
         $toSbms = function($record) {
-            return new mod_stratumtwo_submission($record);
+            return new mod_astra_submission($record);
         };
         
         $submissions = $this->exercises[0]->getSubmissionsForStudent($this->student->id, false, 'submissiontime ASC, status ASC');
@@ -129,17 +129,17 @@ class mod_stratumtwo_exercise_testcase extends advanced_testcase {
         
         $ex = $this->exercises[0];
         $rec = $ex->getRecord();
-        $rec->status = mod_stratumtwo_learning_object::STATUS_MAINTENANCE;
+        $rec->status = mod_astra_learning_object::STATUS_MAINTENANCE;
         $rec->ordernum = 9;
         $rec->name = 'New exercise';
         $rec->maxpoints = 88;
         
         $ex->save();
-        $ex = mod_stratumtwo_learning_object::createFromId($ex->getId());
+        $ex = mod_astra_learning_object::createFromId($ex->getId());
         
         $this->assertEquals('1.9 New exercise', $ex->getName());
         $this->assertEquals(9, $ex->getOrder());
-        $this->assertEquals(mod_stratumtwo_learning_object::STATUS_MAINTENANCE, $ex->getStatus());
+        $this->assertEquals(mod_astra_learning_object::STATUS_MAINTENANCE, $ex->getStatus());
         $this->assertEquals(88, $ex->getMaxPoints());
     }
     
@@ -152,27 +152,27 @@ class mod_stratumtwo_exercise_testcase extends advanced_testcase {
         $this->exercises[0]->deleteInstance();
         
         // exercises (learning objects), child objects
-        $this->assertFalse($DB->get_record(mod_stratumtwo_learning_object::TABLE, array('id' => $this->exercises[0]->getId())));
-        $this->assertFalse($DB->get_record(mod_stratumtwo_exercise::TABLE, array('id' => $this->exercises[0]->getSubtypeId())));
+        $this->assertFalse($DB->get_record(mod_astra_learning_object::TABLE, array('id' => $this->exercises[0]->getId())));
+        $this->assertFalse($DB->get_record(mod_astra_exercise::TABLE, array('id' => $this->exercises[0]->getSubtypeId())));
         
-        $this->assertEquals(0, $DB->count_records(mod_stratumtwo_learning_object::TABLE, array('parentid' => $this->exercises[0]->getId())));
-        $this->assertFalse($DB->get_record(mod_stratumtwo_exercise::TABLE, array('id' => $this->exercises[1]->getSubtypeId())));
-        $this->assertFalse($DB->get_record(mod_stratumtwo_exercise::TABLE, array('id' => $this->exercises[2]->getSubtypeId())));
-        $this->assertFalse($DB->get_record(mod_stratumtwo_exercise::TABLE, array('id' => $this->exercises[3]->getSubtypeId())));
-        $this->assertEquals(0, $DB->count_records(mod_stratumtwo_learning_object::TABLE, array('parentid' => $this->exercises[2]->getId())));
-        $this->assertEquals(0, $DB->count_records(mod_stratumtwo_chapter::TABLE)); // no chapters created in setUp
+        $this->assertEquals(0, $DB->count_records(mod_astra_learning_object::TABLE, array('parentid' => $this->exercises[0]->getId())));
+        $this->assertFalse($DB->get_record(mod_astra_exercise::TABLE, array('id' => $this->exercises[1]->getSubtypeId())));
+        $this->assertFalse($DB->get_record(mod_astra_exercise::TABLE, array('id' => $this->exercises[2]->getSubtypeId())));
+        $this->assertFalse($DB->get_record(mod_astra_exercise::TABLE, array('id' => $this->exercises[3]->getSubtypeId())));
+        $this->assertEquals(0, $DB->count_records(mod_astra_learning_object::TABLE, array('parentid' => $this->exercises[2]->getId())));
+        $this->assertEquals(0, $DB->count_records(mod_astra_chapter::TABLE)); // no chapters created in setUp
         
         // submisssions, submitted files
         $exerciseIds = implode(',', array($this->exercises[0]->getId(), $this->exercises[1]->getId(),
                 $this->exercises[2]->getId(), $this->exercises[3]->getId()));
-        $this->assertEquals(0, $DB->count_records_select(mod_stratumtwo_submission::TABLE, "exerciseid IN ($exerciseIds)"));
+        $this->assertEquals(0, $DB->count_records_select(mod_astra_submission::TABLE, "exerciseid IN ($exerciseIds)"));
         $fs = get_file_storage();
         $this->assertTrue($fs->is_area_empty(context_module::instance($this->round1->getCourseModule()->id)->id,
-                mod_stratumtwo_exercise_round::MODNAME, mod_stratumtwo_submission::SUBMITTED_FILES_FILEAREA,
+                mod_astra_exercise_round::MODNAME, mod_astra_submission::SUBMITTED_FILES_FILEAREA,
                 false, false));
         
         // gradebook items
-        $grade_items = grade_get_grades($this->course->id, 'mod', mod_stratumtwo_exercise_round::TABLE,
+        $grade_items = grade_get_grades($this->course->id, 'mod', mod_astra_exercise_round::TABLE,
                 $this->round1->getId(), null)->items;
         $this->assertFalse(isset($grade_items[$this->exercises[0]->getGradebookItemNumber()]));
         $this->assertFalse(isset($grade_items[$this->exercises[1]->getGradebookItemNumber()]));
@@ -181,6 +181,6 @@ class mod_stratumtwo_exercise_testcase extends advanced_testcase {
         $this->assertEquals(20, $grade_items[0]->grademax); // round max points in gradebook
         
         // round max points
-        $this->assertEquals(20, $DB->get_field(mod_stratumtwo_exercise_round::TABLE, 'grade', array('id' => $this->round1->getId())));
+        $this->assertEquals(20, $DB->get_field(mod_astra_exercise_round::TABLE, 'grade', array('id' => $this->round1->getId())));
     }
 }

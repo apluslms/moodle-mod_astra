@@ -31,13 +31,13 @@ Blocks that child templates should override:
   <ul class="nav nav-tabs">
       <li class="menu-exercise">
           <a href="{{{ exercise.url }}}">
-              {{#str}} exercisedescription, mod_stratumtwo {{/str}}
+              {{#str}} exercisedescription, mod_astra {{/str}}
           </a>
       </li>
       <li class="dropdown menu-submission">
           <a class="dropdown-toggle" data-toggle="dropdown" data-target="#" href="#" role="button"
               aria-haspopup="true" aria-expanded="false">
-              {{#str}} mysubmissions, mod_stratumtwo {{/str}}
+              {{#str}} mysubmissions, mod_astra {{/str}}
               <span class="caret"></span>
           </a>
           <ul class="dropdown-menu">
@@ -46,13 +46,13 @@ Blocks that child templates should override:
                   <a href="{{{ url }}}">
                       {{ nth }}.
                       {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
-                      {{> mod_stratumtwo/_points_badge }}
+                      {{> mod_astra/_points_badge }}
                   </a>
               </li>
               {{/ submissions }}
               {{^ submissions }}
               <li>
-                  <a href="#">{{#str}} nosubmissionsyet, mod_stratumtwo {{/str}}</a>
+                  <a href="#">{{#str}} nosubmissionsyet, mod_astra {{/str}}</a>
               </li>
               {{/ submissions }}
           </ul>
@@ -64,20 +64,20 @@ Blocks that child templates should override:
               {{# submission }}
               <a href="{{{ submission.inspecturl }}}" class="btn btn-default btn-xs">
                   <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
-                  {{#str}} inspectsubmission, mod_stratumtwo {{/str}}
+                  {{#str}} inspectsubmission, mod_astra {{/str}}
               </a>
               {{/ submission }}
               {{/ can_inspect }}
               {{# is_editing_teacher }}
               <a href="{{{ exercise.editurl }}}" class="btn btn-default btn-xs">
                   <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-                  {{#str}} editexercise, mod_stratumtwo {{/str}}
+                  {{#str}} editexercise, mod_astra {{/str}}
               </a>
               {{/ is_editing_teacher }}
               {{# is_manual_grader }}
               <a href="{{{ exercise.submissionlisturl }}}" class="btn btn-default btn-xs">
                   <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
-                  {{#str}} viewallsubmissions, mod_stratumtwo {{/str}}
+                  {{#str}} viewallsubmissions, mod_astra {{/str}}
               </a>
               {{/ is_manual_grader }}
           </p>
@@ -87,7 +87,7 @@ Blocks that child templates should override:
   {{/ submissionsnavbar }}
   
   {{# error }}
-    {{> mod_stratumtwo/_error_alert }}
+    {{> mod_astra/_error_alert }}
   {{/ error }}
 
   {{$ exercisecontent }}{{/ exercisecontent }}
@@ -97,7 +97,7 @@ Blocks that child templates should override:
 
     {{$ exerciseinfo }}
     <div id="exercise-info" {{!data-url="{ exercise|url:'exercise-info' }"}}>
-        {{>  mod_stratumtwo/_exercise_info }}
+        {{>  mod_astra/_exercise_info }}
     </div>
     {{/ exerciseinfo }}
 
@@ -119,7 +119,7 @@ Blocks that child templates should override:
 </div>
 
 {{#js}}
-require(['jquery', 'mod_stratumtwo/twbootstrap', 'mod_stratumtwo/aplus_filemodal'], function($) {
+require(['jquery', 'mod_astra/twbootstrap', 'mod_astra/aplus_filemodal'], function($) {
   /* enable Bootstrap tooltips */
   $(function() {
     $('[data-toggle="tooltip"]').tooltip();
@@ -130,7 +130,7 @@ require(['jquery', 'mod_stratumtwo/twbootstrap', 'mod_stratumtwo/aplus_filemodal
   
   /* set active tab in the exercise page navbar */
   var body_id = $('body').attr('id');
-  // e.g. page-mod-stratumtwo-exercise
+  // e.g. page-mod-astra-exercise
   if (body_id) {
     var arr = body_id.split('-');
     var page = arr[arr.length - 1];

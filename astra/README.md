@@ -1,7 +1,7 @@
 Moodle plugin for accessing A+ style exercise services
 ======================================================
 
-This Moodle plugin (mod_stratumtwo) implements most of the functionality
+This Moodle plugin (mod_astra) implements most of the functionality
 available in the A+ system (https://github.com/Aalto-LeTech/a-plus), thus
 courses that have been running on A+ with automatically assessed exercises can
 be run in Moodle with this plugin. This plugin does not connect to an A+ server
@@ -26,33 +26,33 @@ Features in A+ that have NOT been implemented in this Moodle plugin
 - LTI exercise: exercise that connects to the exercise service using the LTI protocol.
 
 
-Moodle block plugin: block_stratumtwo_setup
+Moodle block plugin: block_astra_setup
 -------------------------------------------
 
 The Moodle plugin is bundled with a small Moodle block plugin. The block plugin
 is used to provide links to course administrative tasks for teachers. The block
 is not visible to students and the block plugin itself does not implement any
-functionality (everything is implemented in mod_stratumtwo).
+functionality (everything is implemented in mod_astra).
 
 
 Installation
 ============
 
 Assume moodledir is the path to the Moodle installation in the server.
-The mod plugin directory stratumtwo is copied to moodledir/mod/ directory and
-the block plugin block_stratumtwo_setup is copied to moodledir/blocks/ directory.
+The mod plugin directory astra is copied to moodledir/mod/ directory and
+the block plugin block_astra_setup is copied to moodledir/blocks/ directory.
 Thus, the plugin files (version.php etc.) should be under the following directories:
-moodledir/mod/stratumtwo/
-moodledir/blocks/stratumtwo_setup/
+moodledir/mod/astra/
+moodledir/blocks/astra_setup/
 
 After copying the files, an admin needs to visit the Moodle admin pages
 in the web browser and upgrade the database, as usual when installing plugins.
 
-mod_stratumtwo needs a secret key defined in the source code. If the code is
+mod_astra needs a secret key defined in the source code. If the code is
 pulled from a (Git) repository, the default key is not safe to use in production
 servers. The secret key should be 50-100 characters long and consist of printable
-ASCII characters. It is defined in the PHP file `stratumtwo/stratum_settings.php`
-as a constant `STRATUMTWO_SECRET_KEY`. One way to generate a new random key using
+ASCII characters. It is defined in the PHP file `astra/astra_settings.php`
+as a constant `ASTRA_SECRET_KEY`. One way to generate a new random key using
 a Linux shell is the following command: 
 `$ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-99};echo;`
 The new key should be copy-pasted into the PHP file, replacing the old value.
@@ -64,7 +64,7 @@ HTTPS connection to the exercise service. This file is used to verify the certif
 provided by the exercise service. If the verification fails, the HTTPS connection
 also fails, as the other endpoint of the connection is considered untrusted.
 The CA file should be named `exservice_CA.pem` and it is installed in Moodle
-in the path `moodledir/mod/stratumtwo/exservice_CA.pem`.
+in the path `moodledir/mod/astra/exservice_CA.pem`.
 
 
 Code organization
@@ -108,7 +108,7 @@ Code organization
 - teachers: PHP scripts for numerous tasks for teachers
 - templates: Mustache templates, part of the Moodle output API
 - tests: PHPUnit tests that use the Moodle test API
-- PHP scripts under stratumtwo directory correspond to pages that the user sees
+- PHP scripts under astra directory correspond to pages that the user sees
 - lib.php defines functions that Moodle requires from all module/activity plugins
 - mod_form.php defines a form that is used to create/edit activity instances.
   In this plugin, the teacher should use the separate teachers pages instead of

@@ -25,20 +25,20 @@ Context variables:
 <p>
     <a class="btn btn-primary btn-xs" href="{{{ add_new_dl_deviation_url }}}">
         <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
-        {{#str}} addnewdldeviations, mod_stratumtwo {{/str}}
+        {{#str}} addnewdldeviations, mod_astra {{/str}}
     </a>
 </p>
 <div class="panel panel-primary">
     <div class="panel-heading">
-        <h3 class="panel-title">{{#str}} dldeviations, mod_stratumtwo {{/str}}</h3>
+        <h3 class="panel-title">{{#str}} dldeviations, mod_astra {{/str}}</h3>
     </div>
     <table class="table table-striped table-bordered table-condensed">
         <tr>
-            <th>{{#str}} submitter, mod_stratumtwo {{/str}}</th>
-            <th>{{#str}} exercisename, mod_stratumtwo {{/str}}</th>
-            <th>{{#str}} extraminutes, mod_stratumtwo {{/str}}</th>
-            <th>{{#str}} withoutlatepenalty, mod_stratumtwo {{/str}}</th>
-            <th>{{#str}} actions, mod_stratumtwo {{/str}}</th>
+            <th>{{#str}} submitter, mod_astra {{/str}}</th>
+            <th>{{#str}} exercisename, mod_astra {{/str}}</th>
+            <th>{{#str}} extraminutes, mod_astra {{/str}}</th>
+            <th>{{#str}} withoutlatepenalty, mod_astra {{/str}}</th>
+            <th>{{#str}} actions, mod_astra {{/str}}</th>
         </tr>
         {{# dl_deviations }}
         <tr>
@@ -50,7 +50,7 @@ Context variables:
                 <form method="post" action="{{{ remove_url }}}">
                     <button type="submit" class="btn btn-default btn-xs">
                         <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                        {{#str}} remove, mod_stratumtwo {{/str}}
+                        {{#str}} remove, mod_astra {{/str}}
                     </button>
                 </form>
             </td>
@@ -58,7 +58,7 @@ Context variables:
         {{/ dl_deviations }}
         {{^ dl_deviations }}
         <tr>
-            <td colspan="4">{{#str}} nodldeviations, mod_stratumtwo {{/str}}</td>
+            <td colspan="4">{{#str}} nodldeviations, mod_astra {{/str}}</td>
         </tr>
         {{/ dl_deviations }}
     </table>
@@ -68,19 +68,19 @@ Context variables:
 <p>
     <a class="btn btn-primary btn-xs" href="{{{ add_new_sbms_limit_url }}}">
         <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
-        {{#str}} addnewsbmslimitdeviations, mod_stratumtwo {{/str}}
+        {{#str}} addnewsbmslimitdeviations, mod_astra {{/str}}
     </a>
 </p>
 <div class="panel panel-primary">
     <div class="panel-heading">
-        <h3 class="panel-title">{{#str}} submitlimitdeviations, mod_stratumtwo {{/str}}</h3>
+        <h3 class="panel-title">{{#str}} submitlimitdeviations, mod_astra {{/str}}</h3>
     </div>
     <table class="table table-striped table-bordered table-condensed">
         <tr>
-            <th>{{#str}} submitter, mod_stratumtwo {{/str}}</th>
-            <th>{{#str}} exercisename, mod_stratumtwo {{/str}}</th>
-            <th>{{#str}} extrasubmissions, mod_stratumtwo {{/str}}</th>
-            <th>{{#str}} actions, mod_stratumtwo {{/str}}</th>
+            <th>{{#str}} submitter, mod_astra {{/str}}</th>
+            <th>{{#str}} exercisename, mod_astra {{/str}}</th>
+            <th>{{#str}} extrasubmissions, mod_astra {{/str}}</th>
+            <th>{{#str}} actions, mod_astra {{/str}}</th>
         </tr>
         {{# sbms_limit_deviations }}
         <tr>
@@ -91,7 +91,7 @@ Context variables:
                 <form method="post" action="{{{ remove_url }}}">
                     <button type="submit" class="btn btn-default btn-xs">
                         <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                        {{#str}} remove, mod_stratumtwo {{/str}}
+                        {{#str}} remove, mod_astra {{/str}}
                     </button>
                 </form>
             </td>
@@ -99,7 +99,7 @@ Context variables:
         {{/ sbms_limit_deviations }}
         {{^ sbms_limit_deviations }}
         <tr>
-            <td colspan="4">{{#str}} nosbmslimitdeviations, mod_stratumtwo {{/str}}</td>
+            <td colspan="4">{{#str}} nosbmslimitdeviations, mod_astra {{/str}}</td>
         </tr>
         {{/ sbms_limit_deviations }}
     </table>

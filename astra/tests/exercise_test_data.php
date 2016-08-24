@@ -20,7 +20,7 @@ trait exercise_test_data {
         $this->student2 = $this->getDataGenerator()->create_user();
         
         // create 2 exercise rounds
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_stratumtwo');
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_astra');
         $round_data = array(
                 'course' => $this->course->id,
                 'name' => '1. Test round 1',
@@ -28,14 +28,14 @@ trait exercise_test_data {
                 'openingtime' => time(),
                 'closingtime' => time() + 3600 * 24 * 7,
                 'ordernum' => 1,
-                'status' => mod_stratumtwo_exercise_round::STATUS_READY,
+                'status' => mod_astra_exercise_round::STATUS_READY,
                 'pointstopass' => 0,
                 'latesbmsallowed' => 1,
                 'latesbmsdl' => time() + 3600 * 24 * 14,
                 'latesbmspenalty' => 0.4,
         );
         $record = $generator->create_instance($round_data); // stdClass record
-        $this->round1 = new mod_stratumtwo_exercise_round($record);
+        $this->round1 = new mod_astra_exercise_round($record);
         $round_data = array(
                 'course' => $this->course->id,
                 'name' => '2. Test round 2',
@@ -43,19 +43,19 @@ trait exercise_test_data {
                 'openingtime' => time(),
                 'closingtime' => time() + 3600 * 24 * 7,
                 'ordernum' => 2,
-                'status' => mod_stratumtwo_exercise_round::STATUS_READY,
+                'status' => mod_astra_exercise_round::STATUS_READY,
                 'pointstopass' => 0,
                 'latesbmsallowed' => 1,
                 'latesbmsdl' => time() + 3600 * 24 * 14,
                 'latesbmspenalty' => 0.4,
         );
         $record = $generator->create_instance($round_data); // stdClass record
-        $this->round2 = new mod_stratumtwo_exercise_round($record);
+        $this->round2 = new mod_astra_exercise_round($record);
     
         // create category
-        $this->category = mod_stratumtwo_category::createFromId(mod_stratumtwo_category::createNew((object) array(
+        $this->category = mod_astra_category::createFromId(mod_astra_category::createNew((object) array(
                 'course' => $this->course->id,
-                'status' => mod_stratumtwo_category::STATUS_READY,
+                'status' => mod_astra_category::STATUS_READY,
                 'name' => 'Testing exercises',
                 'pointstopass' => 0,
         )));
@@ -71,20 +71,20 @@ trait exercise_test_data {
         
         // create submissions
         $this->submissions = array();
-        $this->submissions[] = mod_stratumtwo_submission::createFromId(
-                mod_stratumtwo_submission::createNewSubmission($this->exercises[0], $this->student->id));
-        $this->submissions[] = mod_stratumtwo_submission::createFromId(
-                mod_stratumtwo_submission::createNewSubmission($this->exercises[0], $this->student->id,
-                        null, mod_stratumtwo_submission::STATUS_ERROR));
-        $this->submissions[] = mod_stratumtwo_submission::createFromId(
-                mod_stratumtwo_submission::createNewSubmission($this->exercises[0], $this->student2->id));
+        $this->submissions[] = mod_astra_submission::createFromId(
+                mod_astra_submission::createNewSubmission($this->exercises[0], $this->student->id));
+        $this->submissions[] = mod_astra_submission::createFromId(
+                mod_astra_submission::createNewSubmission($this->exercises[0], $this->student->id,
+                        null, mod_astra_submission::STATUS_ERROR));
+        $this->submissions[] = mod_astra_submission::createFromId(
+                mod_astra_submission::createNewSubmission($this->exercises[0], $this->student2->id));
     }
     
-    protected function add_exercise(array $data, mod_stratumtwo_exercise_round $round, mod_stratumtwo_category $category) {
+    protected function add_exercise(array $data, mod_astra_exercise_round $round, mod_astra_category $category) {
         static $counter = 0;
         ++$counter;
         $defaults = array(
-                'status' => mod_stratumtwo_learning_object::STATUS_READY,
+                'status' => mod_astra_learning_object::STATUS_READY,
                 'parentid' => null,
                 'ordernum' => $counter,
                 'remotekey' => "testexercise$counter",

@@ -29,7 +29,7 @@ Context variables:
       {{# is_course_staff }}
         <a class="btn btn-default btn-xs" href="{{{ url }}}">
           <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
-          {{#str}} earlyaccess, mod_stratumtwo {{/str}}
+          {{#str}} earlyaccess, mod_astra {{/str}}
         </a>
       {{/ is_course_staff }}
     {{/ has_started }}
@@ -38,7 +38,7 @@ Context variables:
 {{# has_children }}
   <ul class="toc">
       {{# children }}
-        {{> mod_stratumtwo/_lobject_toc_item }}
+        {{> mod_astra/_lobject_toc_item }}
       {{/ children }}
   </ul>
 {{/ has_children }}

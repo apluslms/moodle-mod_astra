@@ -7,7 +7,7 @@ Context variables:
 * not_started (bool) true if the exercise round has not opened yet
 }}
 
-{{< mod_stratumtwo/exercise_base }}
+{{< mod_astra/exercise_base }}
 
 {{! remove submissions navbar, a chapter does not accept submissions }}
 {{$ submissionsnavbar }}
@@ -16,10 +16,10 @@ Context variables:
 {{$ exercisecontent }}
 <div id="exercise">
     {{# not_started }}
-      <p>{{#str}} notopenedyet, mod_stratumtwo {{/str}}</p>
+      <p>{{#str}} notopenedyet, mod_astra {{/str}}</p>
     {{/ not_started }}
     {{# status_maintenance }}
-      <p>{{#str}} undermaintenance, mod_stratumtwo {{/str}}</p>
+      <p>{{#str}} undermaintenance, mod_astra {{/str}}</p>
     {{/ status_maintenance }}
 </div>
 {{/ exercisecontent }}
@@ -28,4 +28,4 @@ Context variables:
 {{$ exerciseinfo }}
 {{/ exerciseinfo }}
 
-{{/ mod_stratumtwo/exercise_base }}
+{{/ mod_astra/exercise_base }}

@@ -2,9 +2,9 @@
 
 /**
  * Unit tests for exercise round.
- * @group mod_stratumtwo
+ * @group mod_astra
  */
-class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
+class mod_astra_exercise_round_testcase extends advanced_testcase {
     
     private $course;
     private $round1_data;
@@ -17,7 +17,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
     
     public function add_round1() {
         // create an exercise round
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_stratumtwo');
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_astra');
         $this->round1_data = array(
                 'course' => $this->course->id,
                 'name' => '1. Test round 1',
@@ -25,7 +25,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
                 'openingtime' => time(),
                 'closingtime' => time() + 3600 * 24 * 7,
                 'ordernum' => 1,
-                'status' => mod_stratumtwo_exercise_round::STATUS_READY,
+                'status' => mod_astra_exercise_round::STATUS_READY,
                 'pointstopass' => 0,
                 'latesbmsallowed' => 1,
                 'latesbmsdl' => time() + 3600 * 24 * 14,
@@ -39,7 +39,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         
         $this->add_course();
         $roundRecord1 = $this->add_round1();
-        $exround = new mod_stratumtwo_exercise_round($roundRecord1);
+        $exround = new mod_astra_exercise_round($roundRecord1);
         
         $this->assertEquals($roundRecord1->cmid, $exround->getCourseModule()->id);
         $this->assertEquals($this->course->id, $exround->getCourse()->courseid);
@@ -50,7 +50,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         
         $this->add_course();
         $roundRecord1 = $this->add_round1();
-        $exround = new mod_stratumtwo_exercise_round($roundRecord1);
+        $exround = new mod_astra_exercise_round($roundRecord1);
         
         $this->assertEquals($this->round1_data['name'], $exround->getName());
         $this->assertEquals($this->round1_data['status'], $exround->getStatus());
@@ -84,17 +84,17 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
     
     public function test_updateNameWithOrder() {
         $this->assertEquals('1. Hello world',
-                mod_stratumtwo_exercise_round::updateNameWithOrder('2. Hello world', 1, mod_stratumtwo_course_config::MODULE_NUMBERING_ARABIC));
+                mod_astra_exercise_round::updateNameWithOrder('2. Hello world', 1, mod_astra_course_config::MODULE_NUMBERING_ARABIC));
         $this->assertEquals('1. Hello world',
-                mod_stratumtwo_exercise_round::updateNameWithOrder('Hello world', 1, mod_stratumtwo_course_config::MODULE_NUMBERING_ARABIC));
+                mod_astra_exercise_round::updateNameWithOrder('Hello world', 1, mod_astra_course_config::MODULE_NUMBERING_ARABIC));
         $this->assertEquals('10. Hello world',
-                mod_stratumtwo_exercise_round::updateNameWithOrder('III Hello world', 10, mod_stratumtwo_course_config::MODULE_NUMBERING_ARABIC));
+                mod_astra_exercise_round::updateNameWithOrder('III Hello world', 10, mod_astra_course_config::MODULE_NUMBERING_ARABIC));
         $this->assertEquals('II Hello world',
-                mod_stratumtwo_exercise_round::updateNameWithOrder('2. Hello world', 2, mod_stratumtwo_course_config::MODULE_NUMBERING_ROMAN));
+                mod_astra_exercise_round::updateNameWithOrder('2. Hello world', 2, mod_astra_course_config::MODULE_NUMBERING_ROMAN));
         $this->assertEquals('Hello world',
-                mod_stratumtwo_exercise_round::updateNameWithOrder('2. Hello world', 3, mod_stratumtwo_course_config::MODULE_NUMBERING_HIDDEN_ARABIC));
+                mod_astra_exercise_round::updateNameWithOrder('2. Hello world', 3, mod_astra_course_config::MODULE_NUMBERING_HIDDEN_ARABIC));
         $this->assertEquals('12. VXYii XXX', // name contains characters that are used in roman numbers
-                mod_stratumtwo_exercise_round::updateNameWithOrder('X VXYii XXX', 12, mod_stratumtwo_course_config::MODULE_NUMBERING_ARABIC));
+                mod_astra_exercise_round::updateNameWithOrder('X VXYii XXX', 12, mod_astra_course_config::MODULE_NUMBERING_ARABIC));
     }
     
     public function test_create_round() {
@@ -111,32 +111,32 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
                 'openingtime' => time(),
                 'closingtime' => time() + 3600 * 24 * 7,
                 'ordernum' => 1,
-                'status' => mod_stratumtwo_exercise_round::STATUS_READY,
+                'status' => mod_astra_exercise_round::STATUS_READY,
                 'pointstopass' => 0,
                 'latesbmsallowed' => 1,
                 'latesbmsdl' => time() + 3600 * 24 * 14,
                 'latesbmspenalty' => 0.4,
         );
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_stratumtwo');
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_astra');
         $record = $generator->create_instance($this->round1_data);
         $roundId = $record->id;
         
         $this->assertNotEquals(0, $roundId);
-        $roundRecord = $DB->get_record(mod_stratumtwo_exercise_round::TABLE, array('id' => $roundId));
+        $roundRecord = $DB->get_record(mod_astra_exercise_round::TABLE, array('id' => $roundId));
         $this->assertTrue($roundRecord !== false);
-        $exround = new mod_stratumtwo_exercise_round($roundRecord);
+        $exround = new mod_astra_exercise_round($roundRecord);
         $this->assertEquals($this->round1_data['name'], $exround->getName());
         
         // test gradebook
-        $grade_items = grade_get_grades($this->course->id, 'mod', mod_stratumtwo_exercise_round::TABLE, $roundId, null)->items;
+        $grade_items = grade_get_grades($this->course->id, 'mod', mod_astra_exercise_round::TABLE, $roundId, null)->items;
         // gradebook has no grade item when the max points are zero
         $this->assertFalse(isset($grade_items[0])); // round should use itemnumber 0
         
         // test calendar event
         $event = $DB->get_record('event', array(
-                'modulename' => mod_stratumtwo_exercise_round::TABLE,
+                'modulename' => mod_astra_exercise_round::TABLE,
                 'instance' => $roundId,
-                'eventtype' => mod_stratumtwo_exercise_round::EVENT_DL_TYPE,
+                'eventtype' => mod_astra_exercise_round::EVENT_DL_TYPE,
         ));
         $this->assertTrue($event !== false);
         $this->assertEquals(1, $event->visible);
@@ -159,29 +159,29 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
                 'openingtime' => time(),
                 'closingtime' => time() + 3600 * 24 * 7,
                 'ordernum' => 1,
-                'status' => mod_stratumtwo_exercise_round::STATUS_READY,
+                'status' => mod_astra_exercise_round::STATUS_READY,
                 'pointstopass' => 0,
                 'latesbmsallowed' => 1,
                 'latesbmsdl' => time() + 3600 * 24 * 14,
                 'latesbmspenalty' => 0.4,
         );
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_stratumtwo');
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_astra');
         $record = $generator->create_instance($this->round1_data);
         $roundId = $record->id;
-        $roundRecord = $DB->get_record(mod_stratumtwo_exercise_round::TABLE, array('id' => $roundId));
+        $roundRecord = $DB->get_record(mod_astra_exercise_round::TABLE, array('id' => $roundId));
         $this->assertTrue($roundRecord !== false);
-        $exround = new mod_stratumtwo_exercise_round($roundRecord);
+        $exround = new mod_astra_exercise_round($roundRecord);
         
         // create category and exercise
         $categoryRecord = (object) array(
                 'course' => $this->course->id,
-                'status' => mod_stratumtwo_category::STATUS_READY,
+                'status' => mod_astra_category::STATUS_READY,
                 'name' => 'Test category',
                 'pointstopass' => 0,
         );
-        $category = mod_stratumtwo_category::createFromId(mod_stratumtwo_category::createNew($categoryRecord));
+        $category = mod_astra_category::createFromId(mod_astra_category::createNew($categoryRecord));
         $exerciseRecord = (object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_READY,
+                'status' => mod_astra_learning_object::STATUS_READY,
                 'parentid' => null,
                 'ordernum' => 1,
                 'remotekey' => 'testexercise',
@@ -195,14 +195,14 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         
         // test that exercise was created
         $this->assertTrue($exercise !== null);
-        $fetchedLobjRecord = $DB->get_record(mod_stratumtwo_learning_object::TABLE, array('id' => $exercise->getId()));
+        $fetchedLobjRecord = $DB->get_record(mod_astra_learning_object::TABLE, array('id' => $exercise->getId()));
         $this->assertTrue($fetchedLobjRecord !== false);
-        $fetchedExRecord = $DB->get_record(mod_stratumtwo_exercise::TABLE, array('id' => $exercise->getSubtypeId()));
+        $fetchedExRecord = $DB->get_record(mod_astra_exercise::TABLE, array('id' => $exercise->getSubtypeId()));
         $this->assertTrue($fetchedExRecord !== false);
         
         // test gradebook
         $this->assertTrue($exercise->getGradebookItemNumber() > 0); // zero reserved for round
-        $grade_items = grade_get_grades($this->course->id, 'mod', mod_stratumtwo_exercise_round::TABLE, $roundId, null)->items;
+        $grade_items = grade_get_grades($this->course->id, 'mod', mod_astra_exercise_round::TABLE, $roundId, null)->items;
         $this->assertTrue(isset($grade_items[$exercise->getGradebookItemNumber()]));
         $item = $grade_items[$exercise->getGradebookItemNumber()];
         $this->assertEquals($exercise->getGradebookItemNumber(), $item->itemnumber);
@@ -222,12 +222,12 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         $this->assertFalse($grade_items[0]->hidden);
         
         // round max points should have increased
-        $this->assertEquals($exerciseRecord->maxpoints, $DB->get_field(mod_stratumtwo_exercise_round::TABLE, 'grade',
+        $this->assertEquals($exerciseRecord->maxpoints, $DB->get_field(mod_astra_exercise_round::TABLE, 'grade',
                 array('id' => $roundId), MUST_EXIST));
         
         // create a chapter
         $chapterRecord = (object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_READY,
+                'status' => mod_astra_learning_object::STATUS_READY,
                 'parentid' => null,
                 'ordernum' => 2,
                 'remotekey' => 'testchapter',
@@ -239,18 +239,18 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         
         // test that exercise was created
         $this->assertTrue($chapter !== null);
-        $fetchedLobjRecord = $DB->get_record(mod_stratumtwo_learning_object::TABLE, array('id' => $chapter->getId()));
+        $fetchedLobjRecord = $DB->get_record(mod_astra_learning_object::TABLE, array('id' => $chapter->getId()));
         $this->assertTrue($fetchedLobjRecord !== false);
-        $fetchedChRecord = $DB->get_record(mod_stratumtwo_chapter::TABLE, array('id' => $chapter->getSubtypeId()));
+        $fetchedChRecord = $DB->get_record(mod_astra_chapter::TABLE, array('id' => $chapter->getSubtypeId()));
         $this->assertTrue($fetchedChRecord !== false);
         
         // round max points should not have changed
-        $this->assertEquals($exerciseRecord->maxpoints, $DB->get_field(mod_stratumtwo_exercise_round::TABLE, 'grade',
+        $this->assertEquals($exerciseRecord->maxpoints, $DB->get_field(mod_astra_exercise_round::TABLE, 'grade',
                 array('id' => $roundId), MUST_EXIST));
         
         // create a hidden exercise
         $exerciseRecord2 = (object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_HIDDEN,
+                'status' => mod_astra_learning_object::STATUS_HIDDEN,
                 'parentid' => null,
                 'ordernum' => 3,
                 'remotekey' => 'testexercise2',
@@ -262,7 +262,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         );
         $exercise2 = $exround->createNewExercise($exerciseRecord2, $category);
         // round max points should not have changed
-        $this->assertEquals($exerciseRecord->maxpoints, $DB->get_field(mod_stratumtwo_exercise_round::TABLE, 'grade',
+        $this->assertEquals($exerciseRecord->maxpoints, $DB->get_field(mod_astra_exercise_round::TABLE, 'grade',
                 array('id' => $roundId), MUST_EXIST));
     }
     
@@ -275,7 +275,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         // create a course and a round
         $this->add_course();
         $record = $this->add_round1();
-        $exround = mod_stratumtwo_exercise_round::createFromId($record->id);
+        $exround = mod_astra_exercise_round::createFromId($record->id);
         
         // change some values and save
         $exround->setName('PHP round');
@@ -284,13 +284,13 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         $exround->save();
         
         // test that database row was updated
-        $this->assertEquals('PHP round', $DB->get_field(mod_stratumtwo_exercise_round::TABLE, 'name', array('id' => $record->id)));
-        $this->assertEquals(5, $DB->get_field(mod_stratumtwo_exercise_round::TABLE, 'ordernum', array('id' => $record->id)));
-        $this->assertEquals(mod_stratumtwo_exercise_round::STATUS_READY, // not changed
-                $DB->get_field(mod_stratumtwo_exercise_round::TABLE, 'status', array('id' => $record->id)));
+        $this->assertEquals('PHP round', $DB->get_field(mod_astra_exercise_round::TABLE, 'name', array('id' => $record->id)));
+        $this->assertEquals(5, $DB->get_field(mod_astra_exercise_round::TABLE, 'ordernum', array('id' => $record->id)));
+        $this->assertEquals(mod_astra_exercise_round::STATUS_READY, // not changed
+                $DB->get_field(mod_astra_exercise_round::TABLE, 'status', array('id' => $record->id)));
         
         // test gradebook
-        $grade_items = grade_get_grades($this->course->id, 'mod', mod_stratumtwo_exercise_round::TABLE, $record->id, null)->items;
+        $grade_items = grade_get_grades($this->course->id, 'mod', mod_astra_exercise_round::TABLE, $record->id, null)->items;
         // gradebook has no grade item when the max points are zero
         $this->assertFalse(isset($grade_items[0])); // round should use itemnumber 0
         //$this->assertTrue(isset($grade_items[0])); // round should use itemnumber 0
@@ -298,9 +298,9 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         
         // test event
         $event = $DB->get_record('event', array(
-                'modulename' => mod_stratumtwo_exercise_round::TABLE,
+                'modulename' => mod_astra_exercise_round::TABLE,
                 'instance' => $record->id,
-                'eventtype' => mod_stratumtwo_exercise_round::EVENT_DL_TYPE,
+                'eventtype' => mod_astra_exercise_round::EVENT_DL_TYPE,
         ));
         $this->assertTrue($event !== false);
         $this->assertEquals(1, $event->visible);
@@ -313,17 +313,17 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         // create a course and a round
         $this->add_course();
         $record = $this->add_round1();
-        $exround = mod_stratumtwo_exercise_round::createFromId($record->id);
+        $exround = mod_astra_exercise_round::createFromId($record->id);
         
         // create learning objects
-        $category = mod_stratumtwo_category::createFromId(mod_stratumtwo_category::createNew((object) array(
+        $category = mod_astra_category::createFromId(mod_astra_category::createNew((object) array(
                 'course' => $this->course->id,
-                'status' => mod_stratumtwo_category::STATUS_READY,
+                'status' => mod_astra_category::STATUS_READY,
                 'name' => 'Test category',
                 'pointstopass' => 0,
         )));
         $exercise1 = $exround->createNewExercise((object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_READY,
+                'status' => mod_astra_learning_object::STATUS_READY,
                 'parentid' => null,
                 'ordernum' => 1,
                 'remotekey' => 'testexercise',
@@ -335,7 +335,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         ), $category);
         
         $chapter2 = $exround->createNewChapter((object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_READY,
+                'status' => mod_astra_learning_object::STATUS_READY,
                 'parentid' => null,
                 'ordernum' => 2,
                 'remotekey' => 'testchapter',
@@ -345,7 +345,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         ), $category);
         
         $exercise21 = $exround->createNewExercise((object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_UNLISTED,
+                'status' => mod_astra_learning_object::STATUS_UNLISTED,
                 'parentid' => $chapter2->getId(),
                 'ordernum' => 1,
                 'remotekey' => 'testexercise21',
@@ -357,7 +357,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         ), $category);
         
         $exercise211 = $exround->createNewExercise((object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_READY,
+                'status' => mod_astra_learning_object::STATUS_READY,
                 'parentid' => $exercise21->getId(),
                 'ordernum' => 1,
                 'remotekey' => 'testexercise211',
@@ -369,7 +369,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         ), $category);
         
         $exercise22 = $exround->createNewExercise((object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_UNLISTED,
+                'status' => mod_astra_learning_object::STATUS_UNLISTED,
                 'parentid' => $chapter2->getId(),
                 'ordernum' => 2,
                 'remotekey' => 'testexercise22',
@@ -398,17 +398,17 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         // create a course and a round
         $this->add_course();
         $record = $this->add_round1();
-        $exround = mod_stratumtwo_exercise_round::createFromId($record->id);
+        $exround = mod_astra_exercise_round::createFromId($record->id);
         
         // create learning objects
-        $category = mod_stratumtwo_category::createFromId(mod_stratumtwo_category::createNew((object) array(
+        $category = mod_astra_category::createFromId(mod_astra_category::createNew((object) array(
                 'course' => $this->course->id,
-                'status' => mod_stratumtwo_category::STATUS_READY,
+                'status' => mod_astra_category::STATUS_READY,
                 'name' => 'Test category',
                 'pointstopass' => 0,
         )));
         $exercise1 = $exround->createNewExercise((object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_READY,
+                'status' => mod_astra_learning_object::STATUS_READY,
                 'parentid' => null,
                 'ordernum' => 1,
                 'remotekey' => 'testexercise',
@@ -420,7 +420,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         ), $category);
         
         $chapter2 = $exround->createNewChapter((object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_READY,
+                'status' => mod_astra_learning_object::STATUS_READY,
                 'parentid' => null,
                 'ordernum' => 2,
                 'remotekey' => 'testchapter',
@@ -430,7 +430,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         ), $category);
         
         $exercise21 = $exround->createNewExercise((object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_UNLISTED,
+                'status' => mod_astra_learning_object::STATUS_UNLISTED,
                 'parentid' => $chapter2->getId(),
                 'ordernum' => 1,
                 'remotekey' => 'testexercise21',
@@ -442,7 +442,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         ), $category);
         
         $exercise211 = $exround->createNewExercise((object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_READY,
+                'status' => mod_astra_learning_object::STATUS_READY,
                 'parentid' => $exercise21->getId(),
                 'ordernum' => 1,
                 'remotekey' => 'testexercise211',
@@ -454,7 +454,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         ), $category);
         
         $exercise22 = $exround->createNewExercise((object) array(
-                'status' => mod_stratumtwo_learning_object::STATUS_UNLISTED,
+                'status' => mod_astra_learning_object::STATUS_UNLISTED,
                 'parentid' => $chapter2->getId(),
                 'ordernum' => 2,
                 'remotekey' => 'testexercise22',
@@ -472,19 +472,19 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         $exround->deleteInstance();
         
         // test that round and exercises have been deleted
-        $this->assertFalse($DB->get_record(mod_stratumtwo_exercise_round::TABLE, array('id' => $exround->getId())));
-        $this->assertEquals(0, $DB->count_records(mod_stratumtwo_exercise::TABLE));
-        $this->assertEquals(0, $DB->count_records(mod_stratumtwo_learning_object::TABLE, array('roundid' => $record->id)));
-        $this->assertEquals(0, $DB->count_records(mod_stratumtwo_chapter::TABLE));
+        $this->assertFalse($DB->get_record(mod_astra_exercise_round::TABLE, array('id' => $exround->getId())));
+        $this->assertEquals(0, $DB->count_records(mod_astra_exercise::TABLE));
+        $this->assertEquals(0, $DB->count_records(mod_astra_learning_object::TABLE, array('roundid' => $record->id)));
+        $this->assertEquals(0, $DB->count_records(mod_astra_chapter::TABLE));
         
         // gradebook and events
-        $grade_items = grade_get_grades($this->course->id, 'mod', mod_stratumtwo_exercise_round::TABLE, $record->id, null)->items;
+        $grade_items = grade_get_grades($this->course->id, 'mod', mod_astra_exercise_round::TABLE, $record->id, null)->items;
         $this->assertFalse(isset($grade_items[0]));
         
         $this->assertEquals(0, $DB->count_records('event', array(
-                'modulename' => mod_stratumtwo_exercise_round::TABLE,
+                'modulename' => mod_astra_exercise_round::TABLE,
                 'instance' => $record->id,
-                'eventtype' => mod_stratumtwo_exercise_round::EVENT_DL_TYPE,
+                'eventtype' => mod_astra_exercise_round::EVENT_DL_TYPE,
         )));
     }
     
@@ -497,15 +497,15 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         
         // create exercise rounds
         $numRounds = 5;
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_stratumtwo');
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_astra');
         $rounds = array();
         for ($i = 1; $i <= $numRounds; ++$i) {
             if ($i == 3) {
-                $status = mod_stratumtwo_exercise_round::STATUS_HIDDEN;
+                $status = mod_astra_exercise_round::STATUS_HIDDEN;
             } else if ($i == 4) {
-                $status = mod_stratumtwo_exercise_round::STATUS_MAINTENANCE;
+                $status = mod_astra_exercise_round::STATUS_MAINTENANCE;
             } else {
-                $status = mod_stratumtwo_exercise_round::STATUS_READY;
+                $status = mod_astra_exercise_round::STATUS_READY;
             }
             $round = array(
                 'course' => $this->course->id,
@@ -531,7 +531,7 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
                 'openingtime' => time(),
                 'closingtime' => time() + 3600 * 24 * 7,
                 'ordernum' => 1,
-                'status' => mod_stratumtwo_exercise_round::STATUS_MAINTENANCE,
+                'status' => mod_astra_exercise_round::STATUS_MAINTENANCE,
                 'pointstopass' => 0,
                 'latesbmsallowed' => 1,
                 'latesbmsdl' => time() + 3600 * 24 * 14,
@@ -540,18 +540,18 @@ class mod_stratumtwo_exercise_round_testcase extends advanced_testcase {
         $rounds[] = $generator->create_instance($round); // stdClass record
         
         // test
-        $course1_rounds = mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->course->id, false);
+        $course1_rounds = mod_astra_exercise_round::getExerciseRoundsInCourse($this->course->id, false);
         $this->assertEquals($numRounds - 1, count($course1_rounds)); // one round is hidden
         $this->assertEquals($rounds[0]->id, $course1_rounds[0]->getId());
         $this->assertEquals($rounds[1]->id, $course1_rounds[1]->getId());
         $this->assertEquals($rounds[3]->id, $course1_rounds[2]->getId());
         $this->assertEquals($rounds[4]->id, $course1_rounds[3]->getId());
         
-        $course1_rounds_with_hidden = mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($this->course->id, true);
+        $course1_rounds_with_hidden = mod_astra_exercise_round::getExerciseRoundsInCourse($this->course->id, true);
         $this->assertEquals($numRounds, count($course1_rounds_with_hidden));
         $this->assertEquals($rounds[2]->id, $course1_rounds_with_hidden[2]->getId());
         
-        $course2_rounds_with_hidden = mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($anotherCourse->id, true);
+        $course2_rounds_with_hidden = mod_astra_exercise_round::getExerciseRoundsInCourse($anotherCourse->id, true);
         $this->assertEquals(1, count($course2_rounds_with_hidden));
         $this->assertEquals($rounds[count($rounds) - 1]->id, $course2_rounds_with_hidden[0]->getId());
     }

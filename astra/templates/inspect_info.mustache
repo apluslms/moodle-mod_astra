@@ -20,47 +20,47 @@ Context variables:
 
 <div class="panel panel-default">
     <div class="panel-heading">
-        <h3 class="panel-title">{{#str}} submitteddata, mod_stratumtwo {{/str}}</h3>
+        <h3 class="panel-title">{{#str}} submitteddata, mod_astra {{/str}}</h3>
     </div>
     <div class="panel-body">
         <dl>
-            <dt>{{#str}} submitters, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} submitters, mod_astra {{/str}}</dt>
             <dd>{{ submitter_name }}</dd>
-            <dt>{{#str}} status, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} status, mod_astra {{/str}}</dt>
             <dd>{{ status }}</dd>
-            <dt>{{#str}} submissiontime, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} submissiontime, mod_astra {{/str}}</dt>
             <dd>{{# toDateStr }}{{ submission_time }}{{/ toDateStr }}</dd>
-            <dt>{{#str}} grade, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} grade, mod_astra {{/str}}</dt>
             <dd>{{ points }} / {{ exercise.max_points }}</dd>
             {{# late_penalty_applied }}
-            <dt>{{#str}} includeslatepenalty, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} includeslatepenalty, mod_astra {{/str}}</dt>
             <dd>-{{ late_penalty_applied_percent }}%</dd>
             {{/ late_penalty_applied }}
         </dl>
 
-        <h4>{{#str}} submittedfiles, mod_stratumtwo {{/str}}</h4>
+        <h4>{{#str}} submittedfiles, mod_astra {{/str}}</h4>
 
         <ul class="list-unstyled">
             {{# files }}
             <li>
                 <span class="glyphicon glyphicon-file"></span>
-                {{> mod_stratumtwo/_file_link }}
+                {{> mod_astra/_file_link }}
             </li>
             {{/ files }}
             {{^ files }}
             <li>
-                {{#str}} nofiles, mod_stratumtwo {{/str}}
+                {{#str}} nofiles, mod_astra {{/str}}
             </li>
             {{/ files }}
         </ul>
 
-        <h4>{{#str}} submittedvalues, mod_stratumtwo {{/str}}</h4>
+        <h4>{{#str}} submittedvalues, mod_astra {{/str}}</h4>
 
 <pre>
 {{{ submission_data }}}
 </pre>
 
-        <h4>{{#str}} gradingdata, mod_stratumtwo {{/str}}</h4>
+        <h4>{{#str}} gradingdata, mod_astra {{/str}}</h4>
 
 <pre>
 {{{ grading_data }}}

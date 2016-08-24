@@ -1,7 +1,7 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 
-class mod_stratumtwo_generator extends testing_module_generator {
+class mod_astra_generator extends testing_module_generator {
 
     public function create_instance($record = null, array $options = null) {
         $record = (object)(array)$record;
@@ -10,7 +10,7 @@ class mod_stratumtwo_generator extends testing_module_generator {
             'name' => 'Round',
             'introformat' => FORMAT_HTML,
             'ordernum' => 1,
-            'status' => mod_stratumtwo_exercise_round::STATUS_READY,
+            'status' => mod_astra_exercise_round::STATUS_READY,
             'grade' => 0,
             'pointstopass' => 0,
             'openingtime' => time(),

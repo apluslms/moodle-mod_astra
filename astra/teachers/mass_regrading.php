@@ -8,24 +8,24 @@ $course = get_course($cid);
 
 require_login($course, false);
 $context = context_course::instance($cid);
-require_capability('mod/stratumtwo:addinstance', $context); // editing teacher
+require_capability('mod/astra:addinstance', $context); // editing teacher
 
-$title = get_string('massregrading', mod_stratumtwo_exercise_round::MODNAME);
+$title = get_string('massregrading', mod_astra_exercise_round::MODNAME);
 
 $PAGE->set_pagelayout('incourse');
-$PAGE->set_url(\mod_stratumtwo\urls\urls::massRegrading($cid, true));
+$PAGE->set_url(\mod_astra\urls\urls::massRegrading($cid, true));
 $PAGE->set_title(format_string($title));
 $PAGE->set_heading(format_string($course->fullname));
 
 // navbar
 $courseNav = $PAGE->navigation->find($cid, navigation_node::TYPE_COURSE);
 $massNav = $courseNav->add($title,
-        \mod_stratumtwo\urls\urls::massRegrading($cid, true),
+        \mod_astra\urls\urls::massRegrading($cid, true),
         navigation_node::TYPE_CUSTOM, null, 'massregrading');
 $massNav->make_active();
 
 // output starts
-$form = new \mod_stratumtwo\form\export_results_form($cid, 'regradesubmissions',
+$form = new \mod_astra\form\export_results_form($cid, 'regradesubmissions',
         'mass_regrading.php?course='. $cid);
 if ($form->is_cancelled()) {
     // Handle form cancel operation, if cancel button is present on form
@@ -33,13 +33,13 @@ if ($form->is_cancelled()) {
     exit(0);
 }
 
-$output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
+$output = $PAGE->get_renderer(mod_astra_exercise_round::MODNAME);
 echo $output->header();
 echo $output->heading($title);
 
 if ($fromform = $form->get_data()) {
     // form submitted, prepare parameters for the adhoc task
-    $exerciseIds = \mod_stratumtwo\form\export_results_form::parse_exercises($fromform);
+    $exerciseIds = \mod_astra\form\export_results_form::parse_exercises($fromform);
 
     if (empty($fromform->selectstudents)) {
         $studentUserIds = null;
@@ -54,7 +54,7 @@ if ($fromform = $form->get_data()) {
     }
 
     // create adhoc task, set custom data, add to queue
-    $regrade_task = new \mod_stratumtwo\task\mass_regrading_task();
+    $regrade_task = new \mod_astra\task\mass_regrading_task();
     $regrade_task->set_custom_data(array(
             'exercise_ids' => $exerciseIds,
             'student_user_ids' => $studentUserIds,
@@ -69,12 +69,12 @@ if ($fromform = $form->get_data()) {
         // creating the task failed
         $msgKey = 'massregrtaskerror';
     }
-    echo '<p>'. get_string($msgKey, mod_stratumtwo_exercise_round::MODNAME) .'</p>';
+    echo '<p>'. get_string($msgKey, mod_astra_exercise_round::MODNAME) .'</p>';
 
 } else {
     // this branch is executed if the form is submitted but the data doesn't validate
     // and the form should be redisplayed, or on the first display of the form.
-    echo '<p>'. get_string('massregradingdesc', mod_stratumtwo_exercise_round::MODNAME) .'</p>';
+    echo '<p>'. get_string('massregradingdesc', mod_astra_exercise_round::MODNAME) .'</p>';
 
     $form->display();
 }

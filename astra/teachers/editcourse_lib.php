@@ -5,21 +5,21 @@ defined('MOODLE_INTERNAL') || die();
 tables (default prefix to table names is mdl_)
 course_sections  visible topic sections in the course page
 course_modules  activity added to the course
-modules  activity module name mapping to ids (e.g. stratumtwo -> 27)
+modules  activity module name mapping to ids (e.g. astra -> 27)
 
-Tables starting with stratumtwo are defined in mod/stratumtwo/db/install.xml
+Tables starting with astra are defined in mod/astra/db/install.xml
 */
 
-/** Sort Stratum2 exercise round activities in the given Moodle course section.
- * The exercise rounds are sorted according to Stratum2 settings
+/** Sort Astra exercise round activities in the given Moodle course section.
+ * The exercise rounds are sorted according to Astra settings
  * (smaller ordernum comes first).
- * Non-Stratum2 activities are kept before all Stratum2 activities.
+ * Non-Astra activities are kept before all Astra activities.
  * @param int $courseid Moodle course ID
  * @param int $course_section section number (0-N) in the course,
  * sorting affects only the activities in this section
  * @return void
  */
-function stratumtwo_sort_activities_in_section($courseid, $course_section) {
+function astra_sort_activities_in_section($courseid, $course_section) {
     global $DB;
     $section_row = $DB->get_record('course_sections', array(
         'course'  => $courseid,
@@ -30,19 +30,19 @@ function stratumtwo_sort_activities_in_section($courseid, $course_section) {
     }
     // course module records
     $course_modinfo = get_fast_modinfo($courseid)->cms; // indexes are course module ids
-    // Stratum2 exercise round records in the course
-    $stratumtwos = $DB->get_records(\mod_stratumtwo_exercise_round::TABLE, array('course' => $courseid));
+    // Astra exercise round records in the course
+    $astras = $DB->get_records(\mod_astra_exercise_round::TABLE, array('course' => $courseid));
 
     // sorting callback function for sorting an array of course module ids
-    // (only Stratum modules allowed in the array)
+    // (only Astra modules allowed in the array)
     // Order: assignment 1 is less than asgn 2, asgn 1 subassignments follow asgn 1
     // immediately before asgn 2, in alphabetical order of subasgn names
-    $sortfunc = function($cmid1, $cmid2) use ($course_modinfo, $stratumtwos) {
+    $sortfunc = function($cmid1, $cmid2) use ($course_modinfo, $astras) {
         $cm1 = $course_modinfo[$cmid1];
         $cm2 = $course_modinfo[$cmid2];
-        // figure out Stratum2 round order numbers
-        $order1 = $stratumtwos[$cm1->instance]->ordernum;
-        $order2 = $stratumtwos[$cm2->instance]->ordernum;
+        // figure out Astra round order numbers
+        $order1 = $astras[$cm1->instance]->ordernum;
+        $order2 = $astras[$cm2->instance]->ordernum;
 
         // must return an integer less than, equal to, or greater than zero if the
         // first argument is considered to be respectively less than, equal to, or
@@ -61,21 +61,21 @@ function stratumtwo_sort_activities_in_section($courseid, $course_section) {
         }
     };
 
-    $non_stratum_modules = array(); // cm ids
-    $stratum_modules = array();
+    $non_astra_modules = array(); // cm ids
+    $astra_modules = array();
     // cm ids in the section
     $course_module_ids = explode(',', trim($section_row->sequence));
     foreach ($course_module_ids as $cm_id) {
         $cm = $course_modinfo[$cm_id];
-        if ($cm->modname == \mod_stratumtwo_exercise_round::TABLE) {
-            $stratum_modules[] = $cm_id;
+        if ($cm->modname == \mod_astra_exercise_round::TABLE) {
+            $astra_modules[] = $cm_id;
         } else {
-            $non_stratum_modules[] = $cm_id;
+            $non_astra_modules[] = $cm_id;
         }
     }
-    usort($stratum_modules, $sortfunc); // sort Stratum2 exercise round activities
-    // add non-stratum modules to the beginning
-    $section_cm_ids = array_merge($non_stratum_modules, $stratum_modules);
+    usort($astra_modules, $sortfunc); // sort Astra exercise round activities
+    // add non-astra modules to the beginning
+    $section_cm_ids = array_merge($non_astra_modules, $astra_modules);
     // write the new section ordering (sequence) to DB
     $new_section_sequence = implode(',', $section_cm_ids);
     $DB->set_field('course_sections', 'sequence', $new_section_sequence,
@@ -85,11 +85,11 @@ function stratumtwo_sort_activities_in_section($courseid, $course_section) {
 /**
  * Renumber (visible) exercise rounds and exercises.
  * @param int $courseid Moodle course ID
- * @param int $moduleNumberingStyle module numbering constant from mod_stratumtwo_course_config
+ * @param int $moduleNumberingStyle module numbering constant from mod_astra_course_config
  * @param bool $numberExercisesIgnoringModules if true, exercises are numbered from 1 to N over
  * all rounds instead of starting each round with 1
  */
-function stratumtwo_renumber_rounds_and_exercises($courseid,
+function astra_renumber_rounds_and_exercises($courseid,
         $moduleNumberingStyle, $numberExercisesIgnoringModules = false) {
     // derived from A+ (a-plus/course/tree.py)
     $traverse = function($lobject, $start) use (&$traverse) {
@@ -105,10 +105,10 @@ function stratumtwo_renumber_rounds_and_exercises($courseid,
     
     $roundOrder = 0;
     $exerciseOrder = 0;
-    foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
+    foreach (\mod_astra_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
         $roundOrder += 1;
         $exround->setOrder($roundOrder);
-        $name = \mod_stratumtwo_exercise_round::updateNameWithOrder($exround->getName(),
+        $name = \mod_astra_exercise_round::updateNameWithOrder($exround->getName(),
                 $roundOrder, $moduleNumberingStyle);
         $exround->setName($name);
         $exround->save();
@@ -129,11 +129,11 @@ function stratumtwo_renumber_rounds_and_exercises($courseid,
 /**
  * Rename exercise rounds using their ordinal numbers and the given numbering style.
  * @param int $courseid Moodle course ID
- * @param int $moduleNumberingStyle module numbering constant from mod_stratumtwo_course_config
+ * @param int $moduleNumberingStyle module numbering constant from mod_astra_course_config
  */
-function stratumtwo_rename_rounds_with_numbers($courseid, $moduleNumberingStyle) {
-    foreach (\mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
-        $name = \mod_stratumtwo_exercise_round::updateNameWithOrder($exround->getName(),
+function astra_rename_rounds_with_numbers($courseid, $moduleNumberingStyle) {
+    foreach (\mod_astra_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
+        $name = \mod_astra_exercise_round::updateNameWithOrder($exround->getName(),
                 $exround->getOrder(), $moduleNumberingStyle);
         $exround->setName($name);
         $exround->save();
@@ -145,8 +145,8 @@ function stratumtwo_rename_rounds_with_numbers($courseid, $moduleNumberingStyle)
  * in the database.
  * @param int $courseid Moodle course ID in which exercises are updated
  */
-function stratumtwo_update_exercise_gradebook_item_names($courseid) {
-    foreach (mod_stratumtwo_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
+function astra_update_exercise_gradebook_item_names($courseid) {
+    foreach (mod_astra_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
         foreach ($exround->getExercises(false, false) as $ex) {
             // exercise name and order is read from the database,
             // gradebook item is updated and the new name is then visible in the gradebook
@@ -156,16 +156,16 @@ function stratumtwo_update_exercise_gradebook_item_names($courseid) {
 }
 
 /**
- * Return an array of course section numbers (0-N) that contain Stratum2 exercise rounds.
+ * Return an array of course section numbers (0-N) that contain Astra exercise rounds.
  * @param int $courseid Moodle course ID
  * @return array of section numbers
  */
-function stratumtwo_find_course_sections_with_stratum_ex($courseid) {
+function astra_find_course_sections_with_astra_ex($courseid) {
     global $DB;
     
     $sql = "SELECT DISTINCT section FROM {course_sections} WHERE id IN (" .
             "SELECT DISTINCT section FROM {course_modules} WHERE course = ? AND module = " .
-           "(SELECT id FROM {modules} WHERE name = '". \mod_stratumtwo_exercise_round::TABLE ."'))";
+           "(SELECT id FROM {modules} WHERE name = '". \mod_astra_exercise_round::TABLE ."'))";
     $section_records = $DB->get_records_sql($sql, array($courseid));
     $sections = array();
     foreach ($section_records as $sec) {
@@ -181,10 +181,10 @@ function stratumtwo_find_course_sections_with_stratum_ex($courseid) {
  * @param bool $active
  * @return navigation_node
  */
-function stratumtwo_edit_course_navbar(moodle_page $page, $courseid, $active = true) {
+function astra_edit_course_navbar(moodle_page $page, $courseid, $active = true) {
     $courseNav = $page->navigation->find($courseid, navigation_node::TYPE_COURSE);
-    $editNav = $courseNav->add(get_string('editcourse', mod_stratumtwo_exercise_round::MODNAME),
-            \mod_stratumtwo\urls\urls::editCourse($courseid, true),
+    $editNav = $courseNav->add(get_string('editcourse', mod_astra_exercise_round::MODNAME),
+            \mod_astra\urls\urls::editCourse($courseid, true),
             navigation_node::TYPE_CUSTOM, null, 'editcourse');
     if ($active) {
         $editNav->make_active();
@@ -201,8 +201,8 @@ function stratumtwo_edit_course_navbar(moodle_page $page, $courseid, $active = t
  * @param string $navkey navbar key for the new page
  * @return navigation_node
  */
-function stratumtwo_edit_course_navbar_add(moodle_page $page, $courseid, $title, moodle_url $url, $navkey) {
-    $editCourseNav = stratumtwo_edit_course_navbar($page, $courseid, false);
+function astra_edit_course_navbar_add(moodle_page $page, $courseid, $title, moodle_url $url, $navkey) {
+    $editCourseNav = astra_edit_course_navbar($page, $courseid, false);
     $nav = $editCourseNav->add($title, $url, navigation_node::TYPE_CUSTOM, null, $navkey);
     $nav->make_active();
     return $nav;
@@ -215,10 +215,10 @@ function stratumtwo_edit_course_navbar_add(moodle_page $page, $courseid, $title,
  * @param bool $active
  * @return navigation_node
  */
-function stratumtwo_deviations_navbar(moodle_page $page, $courseid, $active = true) {
+function astra_deviations_navbar(moodle_page $page, $courseid, $active = true) {
     $courseNav = $page->navigation->find($courseid, navigation_node::TYPE_COURSE);
-    $deviNav = $courseNav->add(get_string('deviations', mod_stratumtwo_exercise_round::MODNAME),
-            \mod_stratumtwo\urls\urls::deviations($courseid, true),
+    $deviNav = $courseNav->add(get_string('deviations', mod_astra_exercise_round::MODNAME),
+            \mod_astra\urls\urls::deviations($courseid, true),
             navigation_node::TYPE_CUSTOM, null, 'deviations');
     if ($active) {
         $deviNav->make_active();
@@ -234,8 +234,8 @@ function stratumtwo_deviations_navbar(moodle_page $page, $courseid, $active = tr
  * @param moodle_url $url
  * @param string $navkey
  */
-function stratumtwo_deviations_navbar_add(moodle_page $page, $courseid, $title, moodle_url $url, $navkey) {
-    $deviNav = stratumtwo_deviations_navbar($page, $courseid, false);
+function astra_deviations_navbar_add(moodle_page $page, $courseid, $title, moodle_url $url, $navkey) {
+    $deviNav = astra_deviations_navbar($page, $courseid, false);
     $nav = $deviNav->add($title, $url, navigation_node::TYPE_CUSTOM, null, $navkey);
     $nav->make_active();
     return $nav;

@@ -1,6 +1,6 @@
 <?php
 /**
- * Capability definitions for the stratumtwo module
+ * Capability definitions for the astra module
  *
  * The capabilities are loaded into the database table when the module is
  * installed or updated. Whenever the capability definitions are updated,
@@ -24,7 +24,7 @@
  *
  * The variable name for the capability definitions array is $capabilities
  *
- * @package    mod_stratumtwo
+ * @package    mod_astra
  * @copyright  2016 Aalto SCI CS dept.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -35,8 +35,8 @@ Moodle core expects an addinstance capability for each module ('mod/<modname>:ad
 View capability is recommended for each module ('mod/<modname>:view' capability to control visibility).
 */
 $capabilities = array(
-    // add new stratumtwo instances to a course, and edit/delete instances
-    'mod/stratumtwo:addinstance' => array(
+    // add new astra instances to a course, and edit/delete instances
+    'mod/astra:addinstance' => array(
         'riskbitmask' => RISK_SPAM | RISK_XSS | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
@@ -47,8 +47,8 @@ $capabilities = array(
         'clonepermissionsfrom' => 'moodle/course:manageactivities',
     ),
 
-    // view an instance of stratumtwo
-    'mod/stratumtwo:view' => array(
+    // view an instance of astra
+    'mod/astra:view' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -59,8 +59,8 @@ $capabilities = array(
         ),
     ),
     
-    // submit a new solution to a Stratum2 exercise
-    'mod/stratumtwo:submit' => array(
+    // submit a new solution to an exercise
+    'mod/astra:submit' => array(
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -72,9 +72,9 @@ $capabilities = array(
         ), 
     ),
     
-    // view a list of all submissions to Stratum2 exercises and
+    // view a list of all submissions to exercises and
     // inspect invividual submissions (submitted files and grading results)
-    'mod/stratumtwo:viewallsubmissions' => array(
+    'mod/astra:viewallsubmissions' => array(
         'captype' => 'read',
         'riskbitmask' => RISK_PERSONAL,
         'contextlevel' => CONTEXT_MODULE,
@@ -87,7 +87,7 @@ $capabilities = array(
 
     // edit the feedback and grade of a submission manually (both assistant feedback and
     // machine-generated feedback)
-    'mod/stratumtwo:grademanually' => array(
+    'mod/astra:grademanually' => array(
         'captype' => 'write',
         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_DATALOSS,
         'contextlevel' => CONTEXT_MODULE,

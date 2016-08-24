@@ -13,7 +13,7 @@ Context variables:
     object has the fields required by _round_toc.mustache
 }}
 
-{{< mod_stratumtwo/exercise_base }}
+{{< mod_astra/exercise_base }}
 
 {{! remove submissions navbar, a chapter does not accept submissions }}
 {{$ submissionsnavbar }}
@@ -21,8 +21,8 @@ Context variables:
 
 {{$ exercisecontent }}
 {{# round_toc }}
-  <h4>{{#str}} toc, mod_stratumtwo {{/str}}</h4>
-  {{> mod_stratumtwo/_round_toc }}
+  <h4>{{#str}} toc, mod_astra {{/str}}</h4>
+  {{> mod_astra/_round_toc }}
 {{/ round_toc }}
 
 <div id="exercise" data-aplus-chapter="{{{ chapter.url }}}">
@@ -31,14 +31,14 @@ Context variables:
 
 <div id="submit-progress" class="hide progress">
   <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;">
-    {{#str}} postingsubmission, mod_stratumtwo {{/str}}
+    {{#str}} postingsubmission, mod_astra {{/str}}
   </div>
 </div>
 
 <div id="loading-indicator" class="hide progress"
-  data-msg-load="{{#str}} loadingexercise, mod_stratumtwo {{/str}}"
-  data-msg-submit="{{#str}} postingsubmission, mod_stratumtwo {{/str}}"
-  data-msg-error="{{#str}} exercisecommerror, mod_stratumtwo {{/str}}">
+  data-msg-load="{{#str}} loadingexercise, mod_astra {{/str}}"
+  data-msg-submit="{{#str}} postingsubmission, mod_astra {{/str}}"
+  data-msg-error="{{#str}} exercisecommerror, mod_astra {{/str}}">
   <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
 </div>
 {{/ exercisecontent }}
@@ -47,7 +47,7 @@ Context variables:
 {{$ exerciseinfo }}
 {{/ exerciseinfo }}
 
-{{/ mod_stratumtwo/exercise_base }}
+{{/ mod_astra/exercise_base }}
 
 <div id="embed-modal" class="modal" role="dialog">
   <div class="modal-dialog modal-lg">
@@ -55,7 +55,7 @@ Context variables:
       <div class="modal-body"></div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">
-          {{#str}} close, mod_stratumtwo {{/str}}
+          {{#str}} close, mod_astra {{/str}}
         </button>
       </div>
     </div>
@@ -63,7 +63,7 @@ Context variables:
 </div>
 
 {{#js}}
-require(['jquery', 'mod_stratumtwo/aplus_chapter'], function($) {
+require(['jquery', 'mod_astra/aplus_chapter'], function($) {
   // Construct the page chapter element.
   $('#exercise').aplusChapter();
   

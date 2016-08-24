@@ -13,12 +13,12 @@ Context variables:
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="active">
       <a href="#round-summary-tab" aria-controls="round-summary-tab" role="tab" data-toggle="tab">
-        {{#str}} exerciseresults, mod_stratumtwo {{/str}}
+        {{#str}} exerciseresults, mod_astra {{/str}}
       </a>
     </li>
     <li role="presentation">
       <a href="#round-toc-tab" aria-controls="round-toc-tab" role="tab" data-toggle="tab">
-        {{#str}} toc, mod_stratumtwo {{/str}}
+        {{#str}} toc, mod_astra {{/str}}
       </a>
     </li>
   </ul>
@@ -27,13 +27,13 @@ Context variables:
   <div class="tab-content">
   
   <div role="tabpanel" class="tab-pane active" id="round-summary-tab">
-    {{> mod_stratumtwo/exercise_round }}
+    {{> mod_astra/exercise_round }}
   </div> <!-- close tab-pane -->
   
   <div role="tabpanel" class="tab-pane" id="round-toc-tab">
-  <h3>{{#str}} toc, mod_stratumtwo {{/str}}</h3>
+  <h3>{{#str}} toc, mod_astra {{/str}}</h3>
   {{# toc }}
-    {{> mod_stratumtwo/_round_toc }}
+    {{> mod_astra/_round_toc }}
   {{/ toc }}
   </div> <!-- close tab-pane -->
 
@@ -42,7 +42,7 @@ Context variables:
 </div>
 
 {{#js}}
-require(['jquery', 'mod_stratumtwo/twbootstrap'], function($) {
+require(['jquery', 'mod_astra/twbootstrap'], function($) {
   /* enable Bootstrap tooltips */
   $(function() {
     $('[data-toggle="tooltip"]').tooltip();

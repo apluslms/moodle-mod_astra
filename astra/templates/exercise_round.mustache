@@ -25,11 +25,11 @@ Context variables:
   aria-expanded="{{# course_module.open }}true{{/ course_module.open }}{{^ course_module.open }}false{{/ course_module.open }}" aria-controls="#module{{ course_module.id }}">
   <h3 class="panel-title">
     {{# module_summary }}
-      {{> mod_stratumtwo/_points_badge }}
+      {{> mod_astra/_points_badge }}
     {{/ module_summary }}
     {{# course_module.not_started }}
     <span class="badge pull-right">
-      {{#str}} opens, mod_stratumtwo {{/str}} {{# toDateStr }}{{ course_module.openingtime }}{{/ toDateStr }}
+      {{#str}} opens, mod_astra {{/str}} {{# toDateStr }}{{ course_module.openingtime }}{{/ toDateStr }}
     </span>
     {{/ course_module.not_started }}
     <span class="caret" aria-hidden="true"></span>
@@ -45,34 +45,34 @@ Context variables:
       <br />
       <em>
         {{#str}}
-        latealloweduntil, mod_stratumtwo, {{# toDateStr }}{{ course_module.late_submission_deadline }}{{/ toDateStr }}
+        latealloweduntil, mod_astra, {{# toDateStr }}{{ course_module.late_submission_deadline }}{{/ toDateStr }}
         {{/str}}
         {{# course_module.show_late_submission_point_worth }}
-        {{#str}} latepointsworth, mod_stratumtwo, {{ course_module.late_submission_point_worth }} {{/str}}
+        {{#str}} latepointsworth, mod_astra, {{ course_module.late_submission_point_worth }} {{/str}}
         {{/ course_module.show_late_submission_point_worth }}
       </em>
       {{/ course_module.late_submissions_allowed }}
 
       {{# course_module.show_required_points }}
       <br />
-      {{#str}} pointsrequiredtopass, mod_stratumtwo, {{ course_module.points_to_pass }} {{/str}}
+      {{#str}} pointsrequiredtopass, mod_astra, {{ course_module.points_to_pass }} {{/str}}
       {{/ course_module.show_required_points }}
     </p>
 
     {{# course_module.status_maintenance }}
     <p>
-      {{#str}} undermaintenance, mod_stratumtwo {{/str}}
+      {{#str}} undermaintenance, mod_astra {{/str}}
     </p>
     {{/ course_module.status_maintenance }}
     {{^ course_module.status_maintenance }}
       {{^ course_module.not_started }}
         {{# module_summary }}
-          {{> mod_stratumtwo/_points_progress }}
+          {{> mod_astra/_points_progress }}
         {{/ module_summary }}
         {{{ course_module.introduction }}}
       {{/ course_module.not_started }}
       {{# course_module.not_started }}
-        <p>{{#str}} notopenedyet, mod_stratumtwo {{/str}}</p>
+        <p>{{#str}} notopenedyet, mod_astra {{/str}}</p>
       {{/ course_module.not_started }}
     {{/ course_module.status_maintenance }}
   </div>
@@ -83,9 +83,9 @@ Context variables:
       <tr class="category-row" data-category="{{ id }}">
         <td>{{ name }}</td>
         {{# course_module.is_course_staff }}
-        <td>{{#str}} coursestaff, mod_stratumtwo {{/str}}</td>
+        <td>{{#str}} coursestaff, mod_astra {{/str}}</td>
         {{/ course_module.is_course_staff }}
-        <td class="col-md-2">{{#str}} points, mod_stratumtwo {{/str}}</td>
+        <td class="col-md-2">{{#str}} points, mod_astra {{/str}}</td>
       </tr>
       {{# exercise_summaries }}
       <tr data-category="{{ id }}">
@@ -107,20 +107,20 @@ Context variables:
           {{# course_module.not_started }}
           <a class="btn btn-default btn-xs" href="{{{ exercise.url }}}">
             <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
-            {{#str}} earlyaccess, mod_stratumtwo {{/str}}
+            {{#str}} earlyaccess, mod_astra {{/str}}
           </a>
           {{/ course_module.not_started }}
           {{# exercise.can_view_submissions }}
           <a class="btn btn-default btn-xs" href="{{{ exercise.submissionlisturl }}}">
             <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
-            {{#str}} viewsubmissions, mod_stratumtwo {{/str}}
+            {{#str}} viewsubmissions, mod_astra {{/str}}
           </a>
           {{/ exercise.can_view_submissions }}
         </td>
         {{/ course_module.is_course_staff }}
         <td>
           {{# exercise_summary }}
-            {{> mod_stratumtwo/_points_badge }}
+            {{> mod_astra/_points_badge }}
           {{/ exercise_summary }}
         </td>
       </tr>

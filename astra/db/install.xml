@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/stratumtwo/db" VERSION="20163003" COMMENT="XMLDB file for Moodle mod/stratumtwo"
+<XMLDB PATH="mod/astra/db" VERSION="20160824" COMMENT="XMLDB file for Moodle mod/astra"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="stratumtwo" COMMENT="Store all Stratum exercise rounds (Moodle activity instances) in this table. (Rounds are called course modules in A+.)">
+    <TABLE NAME="astra" COMMENT="Store all Astra exercise rounds (Moodle activity instances) in this table. (Rounds are called course modules in A+.)">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course id that this Stratum activity belongs to."/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course id that this Astra activity belongs to."/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name that is displayed to users."/>
         <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false" 
                COMMENT="General introduction of the activity (exercise round). Used by Moodle feature MOD_INTRO."/>
@@ -19,7 +19,7 @@
         <FIELD NAME="status" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
                COMMENT="Ready = 0. Hidden = 1. Maintenance = 2."/>
         <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
-               COMMENT="The maximum grade. Can be negative to indicate the use of a scale (scales not used in Stratum). It is called grade, not maxgrade or maxpoints due to Moodle compatibility."/>
+               COMMENT="The maximum grade. Can be negative to indicate the use of a scale (scales not used in Astra). It is called grade, not maxgrade or maxpoints due to Moodle compatibility."/>
         <FIELD NAME="remotekey" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" 
                COMMENT="Unique module key in the exercise service server. (In exercise service course configuration, it is called 'key'.)"/>
         <FIELD NAME="pointstopass" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Min points to pass the exercise round."/>
@@ -43,7 +43,7 @@
       </INDEXES>
     </TABLE>
     
-    <TABLE NAME="stratumtwo_categories" COMMENT="Each learning object belongs to a category.">
+    <TABLE NAME="astra_categories" COMMENT="Each learning object belongs to a category.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -62,7 +62,7 @@
       </INDEXES>
     </TABLE>
     
-    <TABLE NAME="stratumtwo_lobjects" COMMENT="Learning objects: base class table for exercises and chapters. Each object belongs to a round.">
+    <TABLE NAME="astra_lobjects" COMMENT="Learning objects: base class table for exercises and chapters. Each object belongs to a round.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Ready = 0. Hidden = 1. Maintenance = 2. Unlisted = 3."/>
@@ -81,9 +81,9 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="categoryid" TYPE="foreign" FIELDS="categoryid" REFTABLE="stratumtwo_categories" REFFIELDS="id"/>
-        <KEY NAME="roundid" TYPE="foreign" FIELDS="roundid" REFTABLE="stratumtwo" REFFIELDS="id"/>
-        <KEY NAME="parentid" TYPE="foreign" FIELDS="parentid" REFTABLE="stratumtwo_lobjects" REFFIELDS="id" 
+        <KEY NAME="categoryid" TYPE="foreign" FIELDS="categoryid" REFTABLE="astra_categories" REFFIELDS="id"/>
+        <KEY NAME="roundid" TYPE="foreign" FIELDS="roundid" REFTABLE="astra" REFFIELDS="id"/>
+        <KEY NAME="parentid" TYPE="foreign" FIELDS="parentid" REFTABLE="astra_lobjects" REFFIELDS="id" 
              COMMENT="Foreign key to another learning object."/>
       </KEYS>
       <INDEXES>
@@ -91,7 +91,7 @@
       </INDEXES>
     </TABLE>
     
-    <TABLE NAME="stratumtwo_exercises" COMMENT="Exercise that accepts submissions and sends them to the serviceurl for grading.">
+    <TABLE NAME="astra_exercises" COMMENT="Exercise that accepts submissions and sends them to the serviceurl for grading.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"
                COMMENT="Primary key required by Moodle, otherwise unnecessary since lobjectid functions as a unique key."/>
@@ -114,14 +114,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="lobjectid" TYPE="foreign" FIELDS="lobjectid" REFTABLE="stratumtwo_lobjects" REFFIELDS="id"/>
+        <KEY NAME="lobjectid" TYPE="foreign" FIELDS="lobjectid" REFTABLE="astra_lobjects" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="lobjectid" UNIQUE="true" FIELDS="lobjectid" COMMENT="One-to-one relationship between exercises and learning objects base table."/>
       </INDEXES>
     </TABLE>
     
-    <TABLE NAME="stratumtwo_chapters" COMMENT="Course chapters offer and organize material as one-page chapters. Exercises can be embedded in chapters.">
+    <TABLE NAME="astra_chapters" COMMENT="Course chapters offer and organize material as one-page chapters. Exercises can be embedded in chapters.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"
                COMMENT="Primary key required by Moodle, otherwise unnecessary since lobjectid functions as a unique key."/>
@@ -132,14 +132,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="lobjectid" TYPE="foreign" FIELDS="lobjectid" REFTABLE="stratumtwo_lobjects" REFFIELDS="id"/>
+        <KEY NAME="lobjectid" TYPE="foreign" FIELDS="lobjectid" REFTABLE="astra_lobjects" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="lobjectid" UNIQUE="true" FIELDS="lobjectid" COMMENT="One-to-one relationship between chapters and learning objects base table."/>
       </INDEXES>
     </TABLE>
     
-    <TABLE NAME="stratumtwo_submissions" COMMENT="Submissions to exercises.">
+    <TABLE NAME="astra_submissions" COMMENT="Submissions to exercises.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
@@ -175,19 +175,19 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="stratumtwo_exercises" REFFIELDS="lobjectid"/>
+        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="astra_exercises" REFFIELDS="lobjectid"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="hash" UNIQUE="false" FIELDS="hash" COMMENT="Unique false because there is a random chance it is not unique."/>
       </INDEXES>
     </TABLE>
     
-    <TABLE NAME="stratumtwo_course_settings" COMMENT="Course-wide settings concerning Stratum2 exercises">
+    <TABLE NAME="astra_course_settings" COMMENT="Course-wide settings concerning Astra exercises">
       <FIELDS>
         <FIELD NAME="id" LENGTH="10" SEQUENCE="true" TYPE="int" NOTNULL="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Moodle course ID"/>
         <FIELD NAME="apikey" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" 
-               COMMENT="Secret API key needed to authorize the use of the Stratum server HTTP course API."/>
+               COMMENT="Secret API key needed to authorize the use of the HTTP course API in the exercise service server."/>
         <FIELD NAME="configurl" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"
                COMMENT="Configuration URL from which the course exercises configuration is downloaded for automatic setup."/>
         <FIELD NAME="sectionnum" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"
@@ -205,7 +205,7 @@
       </INDEXES>
     </TABLE>
     
-    <TABLE NAME="stratumtwo_dl_deviations" COMMENT="Student-specific deviations/extensions to exercise deadlines.">
+    <TABLE NAME="astra_dl_deviations" COMMENT="Student-specific deviations/extensions to exercise deadlines.">
       <FIELDS>
         <FIELD NAME="id" LENGTH="10" SEQUENCE="true" TYPE="int" NOTNULL="true"/>
         <FIELD NAME="submitter" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
@@ -219,14 +219,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="stratumtwo_exercises" REFFIELDS="lobjectid"/>
+        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="astra_exercises" REFFIELDS="lobjectid"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="submitter" UNIQUE="false" FIELDS="submitter"/>
       </INDEXES>
     </TABLE>
     
-    <TABLE NAME="stratumtwo_maxsbms_devs" COMMENT="Student-specific deviations/extensions to exercise max submissions limits.">
+    <TABLE NAME="astra_maxsbms_devs" COMMENT="Student-specific deviations/extensions to exercise max submissions limits.">
       <FIELDS>
         <FIELD NAME="id" LENGTH="10" SEQUENCE="true" TYPE="int" NOTNULL="true"/>
         <FIELD NAME="submitter" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" 
@@ -238,7 +238,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="stratumtwo_exercises" REFFIELDS="lobjectid"/>
+        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="astra_exercises" REFFIELDS="lobjectid"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="submitter" UNIQUE="false" FIELDS="submitter"/>

@@ -5,7 +5,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Defines message providers (types of messages being sent)
  *
- * @package mod_stratumtwo
+ * @package mod_astra
  * @copyright 2016 Aalto SCI CS dept.
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

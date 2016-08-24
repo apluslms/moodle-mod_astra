@@ -19,53 +19,53 @@ Context variables:
 }}
 
 <div class="well">
-    <p>{{#str}} earnedpoints, mod_stratumtwo {{/str}}</p>
+    <p>{{#str}} earnedpoints, mod_astra {{/str}}</p>
     <p><strong class="h2">
         {{ summary.points }}
         <small>
             / {{ exercise.max_points }}
             {{# summary.penaltyapplied }}
             <span class="badge">
-                {{#str}} late, mod_stratumtwo {{/str}} -{{ summary.penaltyappliedpercent }} %
+                {{#str}} late, mod_astra {{/str}} -{{ summary.penaltyappliedpercent }} %
             </span>
             {{/ summary.penaltyapplied }}
         </small>
     </strong></p>
     {{# summary }}
-      {{> mod_stratumtwo/_points_progress }}
+      {{> mod_astra/_points_progress }}
     {{/ summary }}
 </div>
 
 <div class="panel panel-primary">
     <div class="panel-heading">
-        <h4 class="panel-title">{{#str}} exerciseinfo, mod_stratumtwo {{/str}}</h4>
+        <h4 class="panel-title">{{#str}} exerciseinfo, mod_astra {{/str}}</h4>
     </div>
     <div class="panel-body">
         <dl>
-            <dt>{{#str}} yoursubmissions, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} yoursubmissions, mod_astra {{/str}}</dt>
             <dd>
                 {{ summary.submission_count }}
                 {{# exercise.max_submissions }}
                 / {{ exercise.max_submissions_for_user }}
                 {{# exercise.submit_limit_deviation }}
-                  <small>{{#str}} youhaveextrasubmissions, mod_stratumtwo, {{ exercise.submit_limit_deviation }} {{/str}}</small>
+                  <small>{{#str}} youhaveextrasubmissions, mod_astra, {{ exercise.submit_limit_deviation }} {{/str}}</small>
                 {{/ exercise.submit_limit_deviation }}
                 {{/ exercise.max_submissions }}
             </dd>
 
             {{# exercise.points_to_pass }}
-            <dt>{{#str}} pointsrequired, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} pointsrequired, mod_astra {{/str}}</dt>
             <dd>{{ exercise.points_to_pass }}</dd>
             {{/ exercise.points_to_pass }}
 
-            <dt>{{#str}} deadline, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} deadline, mod_astra {{/str}}</dt>
             <dd>{{# toDateStr }}{{ exercise.deadline }}{{/ toDateStr }}
             {{# exercise.dl_extended_minutes }}
-              <small>{{#str}} withyourextension, mod_stratumtwo {{/str}}</small>
+              <small>{{#str}} withyourextension, mod_astra {{/str}}</small>
             {{/ exercise.dl_extended_minutes }}
             </dd>
 
-            <dt>{{#str}} totalnumberofsubmitters, mod_stratumtwo {{/str}}</dt>
+            <dt>{{#str}} totalnumberofsubmitters, mod_astra {{/str}}</dt>
             <dd>{{ exercise.total_submitter_count }}</dd>
 
             {{! comment "Disabled: If average is required implement more efficient query for it."

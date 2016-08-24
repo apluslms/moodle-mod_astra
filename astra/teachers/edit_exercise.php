@@ -1,5 +1,5 @@
 <?php
-/** Page for manual editing/creation of a Stratum2 learning object (exercise/chapter).
+/** Page for manual editing/creation of an Astra learning object (exercise/chapter).
  */
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // defines MOODLE_INTERNAL for libraries
 require_once(dirname(__FILE__) .'/editcourse_lib.php');
@@ -9,25 +9,25 @@ $roundid  = optional_param('round', 0, PARAM_INT); // exercise round ID, if crea
 $type     = optional_param('type', '', PARAM_ALPHA); // exercise or chapter, if creating new
 
 if ($id) {
-    $learningObject = mod_stratumtwo_learning_object::createFromId($id);
+    $learningObject = mod_astra_learning_object::createFromId($id);
     $lobjectRecord = $learningObject->getRecord();
     $exround = $learningObject->getExerciseRound();
-    $page_url = \mod_stratumtwo\urls\urls::editExercise($learningObject, true);
+    $page_url = \mod_astra\urls\urls::editExercise($learningObject, true);
     $form_action = 'edit_exercise.php?id='. $id;
     if ($learningObject->isSubmittable()) {
-        $heading = get_string('editexercise', mod_stratumtwo_exercise_round::MODNAME);
+        $heading = get_string('editexercise', mod_astra_exercise_round::MODNAME);
     } else {
-        $heading = get_string('editchapter', mod_stratumtwo_exercise_round::MODNAME);
+        $heading = get_string('editchapter', mod_astra_exercise_round::MODNAME);
     }
 } else if ($roundid && ($type == 'exercise' || $type == 'chapter')) {
-    $exround = mod_stratumtwo_exercise_round::createFromId($roundid);
+    $exround = mod_astra_exercise_round::createFromId($roundid);
     $form_action = "edit_exercise.php?round=$roundid&type=$type";
     if ($type == 'exercise') {
-        $heading = get_string('createexercise', mod_stratumtwo_exercise_round::MODNAME);
-        $page_url = \mod_stratumtwo\urls\urls::createExercise($exround, true);
+        $heading = get_string('createexercise', mod_astra_exercise_round::MODNAME);
+        $page_url = \mod_astra\urls\urls::createExercise($exround, true);
     } else {
-        $heading = get_string('createchapter', mod_stratumtwo_exercise_round::MODNAME);
-        $page_url = \mod_stratumtwo\urls\urls::createChapter($exround, true);
+        $heading = get_string('createchapter', mod_astra_exercise_round::MODNAME);
+        $page_url = \mod_astra\urls\urls::createChapter($exround, true);
     }
 } else {
     // missing parameter: cannot create new or modify existing
@@ -39,7 +39,7 @@ $course = get_course($courseid);
 
 require_login($course, false);
 $context = context_course::instance($courseid);
-require_capability('mod/stratumtwo:addinstance', $context);
+require_capability('mod/astra:addinstance', $context);
 
 // Print the page header.
 $PAGE->set_pagelayout('incourse');
@@ -48,23 +48,23 @@ $PAGE->set_title(format_string($heading));
 $PAGE->set_heading(format_string($course->fullname));
 
 // navbar
-stratumtwo_edit_course_navbar_add($PAGE, $courseid,
+astra_edit_course_navbar_add($PAGE, $courseid,
         $heading, $page_url, 'editexercise');
 
 // Output starts here.
 // gotcha: moodle forms should be initialized before $OUTPUT->header
 if (($id && $learningObject->isSubmittable()) || $type == 'exercise') {
-    $form = new \mod_stratumtwo\form\edit_exercise_form($exround, $id, $form_action);
+    $form = new \mod_astra\form\edit_exercise_form($exround, $id, $form_action);
 } else {
-    $form = new \mod_stratumtwo\form\edit_chapter_form($exround, $id, $form_action);
+    $form = new \mod_astra\form\edit_chapter_form($exround, $id, $form_action);
 }
 if ($form->is_cancelled()) {
     // Handle form cancel operation, if cancel button is present on form
-    redirect(\mod_stratumtwo\urls\urls::editCourse($courseid, true));
+    redirect(\mod_astra\urls\urls::editCourse($courseid, true));
     exit(0);
 }
 
-$output = $PAGE->get_renderer(mod_stratumtwo_exercise_round::MODNAME);
+$output = $PAGE->get_renderer(mod_astra_exercise_round::MODNAME);
 
 echo $output->header();
 echo $output->heading($heading);
@@ -84,7 +84,7 @@ if ($fromform = $form->get_data()) {
             // if the round of an exercise changes, gradebook requires additional changes
             if ($fromform->roundid == $lobjectRecord->roundid) { // round not changed 
                 $fromform->gradeitemnumber = $lobjectRecord->gradeitemnumber; // keep the old value
-                $updatedExercise = new mod_stratumtwo_exercise($fromform);
+                $updatedExercise = new mod_astra_exercise($fromform);
                 $updatedExercise->save($updatedExercise->isHidden() ||
                         $updatedExercise->getExerciseRound()->isHidden() || $updatedExercise->getCategory()->isHidden());
                 
@@ -95,9 +95,9 @@ if ($fromform = $form->get_data()) {
                 $learningObject->deleteGradebookItem();
                 
                 // gradeitemnumber must be unique in the new round
-                $newRound = mod_stratumtwo_exercise_round::createFromId($fromform->roundid);
+                $newRound = mod_astra_exercise_round::createFromId($fromform->roundid);
                 $fromform->gradeitemnumber = $newRound->getNewGradebookItemNumber();
-                $newExercise = new mod_stratumtwo_exercise($fromform);
+                $newExercise = new mod_astra_exercise($fromform);
                 $newExercise->save($newExercise->isHidden() ||
                         $newExercise->getExerciseRound()->isHidden() || $newExercise->getCategory()->isHidden());
                 // save() updates gradebook item (creates new item), unless hidden
@@ -108,14 +108,14 @@ if ($fromform = $form->get_data()) {
             }
         } else {
             // chapters do not have any grading, so the gradebook requires no special changes
-            $updatedChapter = new mod_stratumtwo_chapter($fromform);
+            $updatedChapter = new mod_astra_chapter($fromform);
             $updatedChapter->save();
         }
-        $message = get_string('lobjecteditsuccess', mod_stratumtwo_exercise_round::MODNAME);
+        $message = get_string('lobjecteditsuccess', mod_astra_exercise_round::MODNAME);
         
     } else { // create new
-        $category = mod_stratumtwo_category::createFromId($fromform->categoryid);
-        $exround = mod_stratumtwo_exercise_round::createFromId($fromform->roundid);
+        $category = mod_astra_category::createFromId($fromform->categoryid);
+        $exround = mod_astra_exercise_round::createFromId($fromform->roundid);
         if ($type == 'exercise') {
             $learningObject = $exround->createNewExercise($fromform, $category);
         } else {
@@ -123,16 +123,16 @@ if ($fromform = $form->get_data()) {
         }
         if ($learningObject !== null) {
             // success
-            $message = get_string('lobjcreatesuccess', mod_stratumtwo_exercise_round::MODNAME);
+            $message = get_string('lobjcreatesuccess', mod_astra_exercise_round::MODNAME);
         } else {
-            $message = get_string('lobjcreatefailure', mod_stratumtwo_exercise_round::MODNAME);
+            $message = get_string('lobjcreatefailure', mod_astra_exercise_round::MODNAME);
         }
     }
     
     echo '<p>'. $message .'</p>';
     echo '<p>'.
-            html_writer::link(\mod_stratumtwo\urls\urls::editCourse($courseid, true),
-              get_string('backtocourseedit', mod_stratumtwo_exercise_round::MODNAME)) .
+            html_writer::link(\mod_astra\urls\urls::editCourse($courseid, true),
+              get_string('backtocourseedit', mod_astra_exercise_round::MODNAME)) .
          '</p>';
     
 } else {

@@ -7,7 +7,7 @@ require_once(dirname(dirname(__FILE__)).'/locallib.php');
 
 $id = required_param('id', PARAM_INT); // submission ID
 
-$submission = mod_stratumtwo_submission::createFromId($id);
+$submission = mod_astra_submission::createFromId($id);
 $exercise = $submission->getExercise();
 $exround = $exercise->getExerciseRound();
 $cm = $exround->getCourseModule();
@@ -16,16 +16,16 @@ $course = get_course($exround->getCourse()->courseid);
 
 require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
-require_capability('mod/stratumtwo:grademanually', $context);
-if (!$exercise->isAssistantGradingAllowed() && !has_capability('mod/stratumtwo:addinstance', $context)) {
+require_capability('mod/astra:grademanually', $context);
+if (!$exercise->isAssistantGradingAllowed() && !has_capability('mod/astra:addinstance', $context)) {
     // assistant grading not allowed and the user is not an editing teacher
-    throw new moodle_exception('assistgradingnotallowed', mod_stratumtwo_exercise_round::MODNAME,
-            \mod_stratumtwo\urls\urls::exercise($exercise));
+    throw new moodle_exception('assistgradingnotallowed', mod_astra_exercise_round::MODNAME,
+            \mod_astra\urls\urls::exercise($exercise));
 }
 
 
-$PAGE->set_url(\mod_stratumtwo\urls\urls::resubmitToService($submission, true));
-$PAGE->set_title(get_string('resubmittoservice', mod_stratumtwo_exercise_round::MODNAME));
+$PAGE->set_url(\mod_astra\urls\urls::resubmitToService($submission, true));
+$PAGE->set_title(get_string('resubmittoservice', mod_astra_exercise_round::MODNAME));
 $PAGE->set_heading(format_string($course->fullname));
 
 // resubmit the submission
@@ -33,5 +33,5 @@ $PAGE->set_heading(format_string($course->fullname));
 // an error message to the user.
 $exercise->uploadSubmissionToService($submission);
 
-redirect(\mod_stratumtwo\urls\urls::inspectSubmission($submission, true));
+redirect(\mod_astra\urls\urls::inspectSubmission($submission, true));
 exit(0);
