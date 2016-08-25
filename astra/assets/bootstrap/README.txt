@@ -10,7 +10,6 @@ container-fluid to bs3-container-fluid
 (because Moodle uses its own container class for styling and most pages 
 already use that container)
 
-Bootstrap Javascript is only used as an AMD module under the directory
-astra/amd. The Bootstrap JS code is wrapped in an AMD module definition
-there. There is one hack to make dropdowns work in Moodle on line 318 in
-astra/amd/src/twbootstrap.js.
+Bootstrap3 Javascript is not used. Instead, Bootstrap2 JS is used from
+the theme_bootstrapbase (Moodle core theme). The theme includes the Bootstrap2
+AMD module automatically in every page footer.

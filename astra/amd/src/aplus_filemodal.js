@@ -9,7 +9,7 @@
  * 
  * @module mod_astra/aplus_filemodal
  */
-define(['jquery', 'mod_astra/highlight', 'mod_astra/twbootstrap'], function(jQuery, hljs) {
+define(['jquery', 'mod_astra/highlight', 'theme_bootstrapbase/bootstrap'], function(jQuery, hljs) {
 /**
  * Open submitted file in a modal.
  */

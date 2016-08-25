@@ -11,7 +11,7 @@
  * 
  * @module mod_astra/aplus_chapter
  */
-define(['jquery', 'mod_astra/twbootstrap'], function(jQuery) {
+define(['jquery', 'theme_bootstrapbase/bootstrap'], function(jQuery) {
 
 /**
  * Chapter element containing number of exercise elements.
