@@ -8,7 +8,7 @@ Context variables:
         status_ready (bool), status_maintenance (bool), introduction (HTML string)
         show_required_points (bool, status ready and points to pass > 0), points_to_pass,
         expired (bool, has been closed), open (bool), not_started (bool, has not been opened yet),
-        is_course_staff (bool)
+        is_course_staff (bool), url (string)
 * module_summary stdClass (summary of the student's status in the exercise round)
         fields that are required by _points_badge.mustache
 * toDateStr callable Function that converts a Unix timestamp to a date string
@@ -20,9 +20,7 @@ Context variables:
 
 }}
 <div class="panel panel-primary module-panel{{# course_module.expired }} module-expired{{/ course_module.expired }}">
-  <a class="panel-heading{{^ course_module.open }} collapsed{{/ course_module.open }}"
-  role="button" href="#module{{ course_module.id }}" data-toggle="collapse"
-  aria-expanded="{{# course_module.open }}true{{/ course_module.open }}{{^ course_module.open }}false{{/ course_module.open }}" aria-controls="#module{{ course_module.id }}">
+  <a class="panel-heading" href="{{{ course_module.url }}}">
   <h3 class="panel-title">
     {{# module_summary }}
       {{> mod_astra/_points_badge }}
@@ -32,11 +30,10 @@ Context variables:
       {{#str}} opens, mod_astra {{/str}} {{# toDateStr }}{{ course_module.openingtime }}{{/ toDateStr }}
     </span>
     {{/ course_module.not_started }}
-    <span class="caret" aria-hidden="true"></span>
     {{ course_module.name }}
   </h3>
   </a>
-<div class="collapse{{# course_module.open }} in{{/ course_module.open }}" id="module{{ course_module.id }}">
+<div id="module{{ course_module.id }}">
   <div class="panel-body">
     <p>
       {{# toDateStr }}{{ course_module.openingtime }}{{/ toDateStr }} &ndash; {{# toDateStr }}{{ course_module.closingtime }}{{/ toDateStr }}
