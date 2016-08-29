@@ -12,12 +12,12 @@ class urls {
         return $CFG->wwwroot .'/mod/'. \mod_astra_exercise_round::TABLE;
     }
     
-    private static function buildUrl($path, array $query, $asMoodleUrl = false) {
+    private static function buildUrl($path, array $query, $asMoodleUrl = false, $escaped = true) {
         $url = new \moodle_url(self::baseURL() . $path, $query);
         if ($asMoodleUrl) {
             return $url;
         } else {
-            return $url->out(); // string
+            return $url->out($escaped); // string
         }
     }
     
@@ -103,7 +103,7 @@ class urls {
                 'id' => $sbms->getId(),
                 'hash' => $sbms->getHash(),
         );
-        return self::buildUrl('/async/grade_submission.php', $query, $asMdlUrl);
+        return self::buildUrl('/async/grade_submission.php', $query, $asMdlUrl, false);
     }
     
     public static function asyncNewSubmission(\mod_astra_exercise $ex, $userid, $asMdlUrl = false) {
@@ -113,7 +113,7 @@ class urls {
                 'hash' => $ex->getAsyncHash($userid),
                 'userid' => $userid,
         );
-        return self::buildUrl('/async/new_submission.php', $query, $asMdlUrl);
+        return self::buildUrl('/async/new_submission.php', $query, $asMdlUrl, false);
     }
     
     public static function editCategory(\mod_astra_category $cat, $asMdlUrl = false) {
