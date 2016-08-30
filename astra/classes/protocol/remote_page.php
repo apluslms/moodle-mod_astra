@@ -209,6 +209,7 @@ class remote_page {
                 $submission->grade($servicePoints, $serviceMaxPoints, $feedback, null, $noPenalties);
             } else {
                 $submission->setWaiting();
+                $submission->setFeedback($feedback);
                 $submission->save();
             }
         } else {
