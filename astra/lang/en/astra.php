@@ -329,6 +329,7 @@ $string['eventsubmitted'] = 'Student submitted a new solution';
 $string['eventserviceconnectionfailed'] = 'Connection to exercise service failed';
 $string['eventexerciseservicefailed'] = 'Exercise service failed';
 $string['eventexerciseviewed'] = 'Student viewed an Astra exercise';
+$string['eventasyncgradingfailed'] = 'Asynchronous grading failed';
 
 // capabilities
 $string['astra:addinstance'] = 'Add a new Astra exercise (round), and edit/delete them';

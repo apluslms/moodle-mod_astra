@@ -22,6 +22,14 @@ $exerciseRecord = $DB->get_record_sql(mod_astra_learning_object::getSubtypeJoinS
         array($id),
         IGNORE_MISSING);
 if ($exerciseRecord === false) {
+    $event = \mod_astra\event\async_grading_failed::create(array(
+        'context' => context_system::instance(),
+        'other' => array(
+            'error' => 'Async creation of new graded submission failed: request had invalid learning object ID (supplied '. $id .')',
+        ),
+    ));
+    $event->trigger();
+    
     http_response_code(404);
     exit(0);
 }
@@ -29,12 +37,29 @@ $exercise = new mod_astra_exercise($exerciseRecord);
 
 $user = $DB->get_record('user', array('id' => $userid), '*', IGNORE_MISSING);
 if ($user === false) {
+    $event = \mod_astra\event\async_grading_failed::create(array(
+        'context' => context_module::instance($exercise->getExerciseRound()->getCourseModule()->id),
+        'other' => array(
+            'error' => 'Async creation of new graded submission failed: request had invalid userid ('. $userid .')',
+        ),
+    ));
+    $event->trigger();
+    
     http_response_code(404);
     exit(0);
 }
 
 $validHash = $exercise->getAsyncHash($userid);
 if ($hash != $validHash) {
+    $event = \mod_astra\event\async_grading_failed::create(array(
+        'context' => context_module::instance($exercise->getExerciseRound()->getCourseModule()->id),
+        'relateduserid' => $user->id,
+        'other' => array(
+            'error' => 'Async creation of new graded submission failed: request had invalid hash (supplied '. $hash .')',
+        ),
+    ));
+    $event->trigger();
+    
     http_response_code(404);
     exit(0);
 }

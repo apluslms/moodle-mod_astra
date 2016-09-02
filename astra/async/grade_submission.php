@@ -21,6 +21,14 @@ $submissionRecord = $DB->get_record(mod_astra_submission::TABLE, array(
         'hash' => $hash,
 ), '*', IGNORE_MISSING);
 if ($submissionRecord === false) {
+    $event = \mod_astra\event\async_grading_failed::create(array(
+        'context' => context_system::instance(),
+        'other' => array(
+            'error' => 'Async grading of submission failed: request had invalid submission ID ('. $id .')',
+        ),
+    ));
+    $event->trigger();
+    
     http_response_code(404);
     exit(0);
 }
@@ -31,6 +39,14 @@ $exerciseRecord = $DB->get_record_sql(mod_astra_learning_object::getSubtypeJoinS
         array($submissionRecord->exerciseid),
         IGNORE_MISSING);
 if ($exerciseRecord === false) {
+    $event = \mod_astra\event\async_grading_failed::create(array(
+        'context' => context_system::instance(),
+        'other' => array(
+            'error' => 'Async grading of submission failed: exercise ID of the submission is invalid',
+        ),
+    ));
+    $event->trigger();
+    
     http_response_code(404);
     exit(0);
 }
