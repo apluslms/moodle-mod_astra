@@ -510,10 +510,31 @@ class mod_astra_exercise_round extends mod_astra_database_object {
                     'itemnumber'   => 0,
                     'courseid'     => $this->record->course,
             );
+            
+            $grade_item = $DB->get_record('grade_items', $grade_item_params);
+            $update = new \stdClass();
+            $update->id = $grade_item->id;
             // set min points to pass
-            $DB->set_field('grade_items', 'gradepass', $this->getPointsToPass(), $grade_item_params);
+            $update->gradepass = $this->getPointsToPass();
+            // set zero coefficient so that the course total is not affected by rounds
+            // (round grades are only sums of the exercise grades in the round)
+            $update->aggregationcoef2 = 0.0;
+            $update->weightoverride = 1;
+            $DB->update_record('grade_items', $update);
+            
+            // must run the update method of the grade item to see changes
             $gi = grade_item::fetch($grade_item_params);
             $gi->update('mod/'. self::TABLE);
+            
+            // If some students already have grades for the round in the gradebook,
+            // the changed coefficient may not be taken into account unless
+            // the course final grades are computed again. The API function
+            // grade_regrade_final_grades($this->record->course);
+            // is very heavy and should not be called here since the call must not
+            // be repeated for each round when automatically updating course configuration
+            // (auto setup). For now, we assume that the grade_regrade_final_grades
+            // call is not needed since nobody has grades when the grade item is
+            // initially created and its coefficient is then set to zero.
         }
 
         return $res;
