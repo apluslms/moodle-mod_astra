@@ -1,5 +1,5 @@
-Moodle plugin for accessing A+ style exercise services
-======================================================
+Astra: Moodle plugin for accessing A+ style exercise services
+=============================================================
 
 This Moodle plugin (mod_astra) implements most of the functionality
 available in the A+ system (https://github.com/Aalto-LeTech/a-plus), thus
@@ -96,7 +96,8 @@ Code organization
     defined by the plugin
 - db: defines various things that Moodle requires
   * access.php: defines capabilities that are used in access control (Access API)
-  * install.php: code run at installation
+  * install.php: code run at installation (in addition to the standard installation
+    of the database tables)
   * install.xml: defines the database schema of the plugin
   * messages.php: message providers that use the Moodle message API
   * uninstall.php: code run at uninstallation
@@ -111,7 +112,7 @@ Code organization
 - PHP scripts under astra directory correspond to pages that the user sees
 - lib.php defines functions that Moodle requires from all module/activity plugins
 - mod_form.php defines a form that is used to create/edit activity instances.
-  In this plugin, the teacher should use the separate teachers pages instead of
-  mod_form.php
+  In this plugin, the teacher should use the separate teacher pages instead of
+  mod_form.php (edit course link in the block plugin)
 - version.php is required by Moodle: it defines the version number of the plugin and
   its dependencies on other plugins and the Moodle version
