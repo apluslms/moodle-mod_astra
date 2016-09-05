@@ -105,7 +105,7 @@ class auto_setup {
         // (other alternative would be to ask the user for the correct role)
         if ($teacher_role_id === false) {
             $assistant_users = array();
-        } else {
+        } else if (!empty($assistant_users)) {
             if (!\has_capability('moodle/role:assign', $course_ctx) ||
                     !\array_key_exists($teacher_role_id, \get_assignable_roles($course_ctx))) {
                 // ensure that the current user (teacher) is allowed to modify user roles in the course
