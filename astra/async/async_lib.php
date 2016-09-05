@@ -156,11 +156,25 @@ function astra_get_async_submission_info(mod_astra_exercise $exercise, stdClass 
  * @return true if successful, array if not (keys client_ip, service_ip and result)
  */
 function astra_check_request_comes_from_exercise_service($service_url) {
-    $client_ip_address = $_SERVER['REMOTE_ADDR'];
     // If there is a proxy server between the client and Moodle,
-    // REMOTE_ADDR could be the IP of the proxy.
+    // REMOTE_ADDR could be the IP of the proxy, not the original client.
     // $_SERVER['HTTP_X_FORWARDED_FOR'] might contain the client IP in that case,
     // but the HTTP headers are easily spoofed by malicious clients.
+    // (There is no reliable way to determine the original client IP with proxies.)
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $trim_func = function($str) {
+            return trim($str);
+        };
+        // the header value should be a comma-separated list of IP addresses
+        $ip_array = array_filter(array_map($trim_func, explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])));
+        if (!empty($ip_array)) {
+            $client_ip_address = $ip_array[0]; // the original client IP should be the first in the list
+        }
+    }
+    if (empty($client_ip_address)) {
+        $client_ip_address = $_SERVER['REMOTE_ADDR'];
+    }
+    
     if (empty($client_ip_address) || filter_var($client_ip_address, FILTER_VALIDATE_IP) === false) {
         // no client IP address
         return array(
