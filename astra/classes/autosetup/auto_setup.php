@@ -339,6 +339,9 @@ class auto_setup {
                 $roundRecord->latesbmsdl = $d;
                 $roundRecord->latesbmsallowed = 1;
             }
+        } else {
+            // late submissions are not allowed
+            $roundRecord->latesbmsallowed = 0;
         }
         
         if (isset($module->late_penalty)) {
@@ -543,11 +546,16 @@ class auto_setup {
                 
                 if (isset($o->allow_assistant_grading)) {
                     $lobjectRecord->allowastgrading = $this->parseBool($o->allow_assistant_grading, $errors);
+                } else {
+                    $lobjectRecord->allowastgrading = false;
                 }
                 if (isset($o->allow_assistant_viewing)) {
                     $lobjectRecord->allowastviewing = $this->parseBool($o->allow_assistant_viewing, $errors);
+                } else {
+                    $lobjectRecord->allowastviewing = false;
                 }
                 
+                // max_submission is set since it was used to separate exercises and chapters
                 $maxsbms = $this->parseInt($o->max_submissions, $errors);
                 if ($maxsbms !== null)
                     $lobjectRecord->maxsubmissions = $maxsbms;
