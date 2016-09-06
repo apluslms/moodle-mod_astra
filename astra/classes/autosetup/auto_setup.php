@@ -15,6 +15,8 @@ require_once($CFG->dirroot .'/enrol/locallib.php');
  */
 class auto_setup {
     
+    protected $numerate_ignoring_modules = false;
+    
     public function __construct() {
     }
     
@@ -126,6 +128,9 @@ class auto_setup {
         $seen_exercises = array();
         $module_order = 0;
         $exercise_order = 0;
+        $this->numerate_ignoring_modules = isset($conf->numerate_ignoring_modules) ?
+                $this->parseBool($conf->numerate_ignoring_modules, $errors) :
+                false;
         foreach ($conf->modules as $module) {
             try {
                 list($module_order, $exercise_order) = $this->configure_exercise_round(
@@ -379,7 +384,7 @@ class auto_setup {
         
         $seen_modules[] = $exround->getId();
         
-        if (!(isset($module->numerate_ignoring_modules) && $this->parseBool($module->numerate_ignoring_modules, $errors))) {
+        if (!$this->numerate_ignoring_modules) {
             $exercise_order = 0;
         }
         
