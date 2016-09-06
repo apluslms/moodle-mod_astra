@@ -14,10 +14,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_astra';
-$plugin->version = 2016090200;
-$plugin->release = 'v0.3';
+$plugin->version = 2016090600;
+$plugin->release = 'v1.0';
 $plugin->requires =  2015111600; // Moodle 3.0
-$plugin->maturity = MATURITY_BETA;
+$plugin->maturity = MATURITY_STABLE;
 //$plugin->cron = 0; // legacy cron API 
 $plugin->dependencies = array(
     'theme_bootstrapbase' => 2015111600, // so that Bootstrap2 JavaScript is included in page footers
