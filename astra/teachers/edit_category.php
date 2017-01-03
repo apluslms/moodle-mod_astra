@@ -65,7 +65,7 @@ if ($fromform = $form->get_data()) {
         if ($cat->getStatus() != $category->getStatus()) {
             // changing to/from hidden status affects the visible max points of exercise rounds
             $roundRecords = $DB->get_records_select(mod_astra_exercise_round::TABLE,
-                    'id IN (SELECT DISTINCT roundid FROM {'. mod_astra_exercise::TABLE .'} WHERE categoryid = ?)',
+                    'id IN (SELECT DISTINCT roundid FROM {'. mod_astra_learning_object::TABLE .'} WHERE categoryid = ?)',
                     array($id));
             foreach ($roundRecords as $roundrec) {
                 $round = new mod_astra_exercise_round($roundrec);
