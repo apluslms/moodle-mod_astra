@@ -119,7 +119,7 @@ Blocks that child templates should override:
 </div>
 
 {{#js}}
-require(['jquery', 'mod_astra/aplus_filemodal'], function($) {
+require(['jquery', 'core/event', 'mod_astra/aplus_filemodal'], function($, event) {
   /* enable Bootstrap tooltips */
   $(function() {
     $('[data-toggle="tooltip"]').tooltip();
@@ -136,5 +136,15 @@ require(['jquery', 'mod_astra/aplus_filemodal'], function($) {
     var page = arr[arr.length - 1];
     $(".menu-" + page).addClass("active");
   }
+  
+  // render MathJax (Latex) formulas with the Moodle built-in MathJax filter
+  event.notifyFilterContentUpdated('#exercise');
+  /* The MathJax formulas must be also wrapped in an element with class
+  filter_mathjaxloader_equation
+  For example:
+  <p class="filter_mathjaxloader_equation">Some formula: $$ u \rightarrow v $$
+  and an inline formula: \( u \rightarrow v \)
+  </p>
+  */
 });
 {{/js}}
