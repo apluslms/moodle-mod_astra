@@ -21,15 +21,6 @@
     "tooltip.less",
     "modals.less"
   ],
-  "js": [
-    "alert.js",
-    "button.js",
-    "dropdown.js",
-    "modal.js",
-    "tooltip.js",
-    "tab.js",
-    "collapse.js",
-    "transition.js"
-  ],
-  "customizerUrl": "http://getbootstrap.com/customize/?id=cb5918e302c23e0c72b8"
+  "js": [],
+  "customizerUrl": "http://getbootstrap.com/customize/?id=2041a3a9cb16c242987f9f7080acb5b6"
 }
