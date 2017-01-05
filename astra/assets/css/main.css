@@ -246,3 +246,12 @@ div.bs3-container-fluid .nav-tabs .open .dropdown-toggle,
 div.bs3-container-fluid .nav-pills.exercise-summary .open .dropdown-toggle {
 	color: rgb(51, 122, 183); /* blue */
 }
+
+/* In the exercise, submission, and inspect submission pages, the exercise and submission
+info boxes have too much white space around the text. */
+.panel > .panel-body > dl {
+	/* if padding is removed from the .panel-body, it works in the MyCourses theme but looks bad in the clean theme */
+	/* MyCourses theme causes too wide margins in the left and right sides and
+	the clean theme causes too wide bottom margin -> set to zero */
+	margin: 0;
+}
