@@ -3,6 +3,8 @@ namespace mod_astra\output;
 
 defined('MOODLE_INTERNAL') || die;
 
+require_once(dirname(dirname(dirname(__FILE__))).'/locallib.php');
+
 /**
  * Page for displaying a plain learning object (exercise/chapter) for embedding into chapters.
  */
@@ -48,13 +50,14 @@ class exercise_plain_page implements \renderable, \templatable {
         if ($this->submission !== null) {
             // show feedback
             $data->page = new \stdClass();
-            $data->page->content = $this->submission->getFeedback();
+            $data->page->content = astra_filter_exercise_content($this->submission->getFeedback(), $ctx);
             
         } else if (!($status_maintenance || $not_started) || $data->is_course_staff) {
             // download exercise description from the exercise service
             try {
                 $remotePage = $this->learningObject->loadPage($this->user->id);
                 unset($remotePage->remote_page);
+                $remotePage->content = astra_filter_exercise_content($remotePage->content, $ctx);
                 $data->page = $remotePage; // has content field
             } catch (\mod_astra\protocol\remote_page_exception $e) {
                 $data->error = \get_string('serviceconnectionfailed', \mod_astra_exercise_round::MODNAME);

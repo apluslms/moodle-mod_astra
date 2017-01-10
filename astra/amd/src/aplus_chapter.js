@@ -11,12 +11,12 @@
  * 
  * @module mod_astra/aplus_chapter
  */
-define(['jquery', 'theme_bootstrapbase/bootstrap'], function(jQuery) {
+define(['jquery', 'core/event', 'theme_bootstrapbase/bootstrap'], function(jQuery, moodleEvent) {
 
 /**
  * Chapter element containing number of exercise elements.
  */
-;(function($, window, document, undefined) {
+;(function($, moodleEvent, window, document, undefined) {
 	//"use strict";
 
 	var pluginName = "aplusChapter";
@@ -74,7 +74,18 @@ define(['jquery', 'theme_bootstrapbase/bootstrap'], function(jQuery) {
 			this.modalElement.find(this.settings.modal_content_selector)
 				.empty().append(content)
 				.find('.file-modal').aplusFileModal();
+			// change to A+ version: render MathJax in the modal content
+			this.moodleNotifyFilterContentUpdatedInModal();
 			this.modalElement.modal("show");
+		},
+
+		moodleNotifyFilterContentUpdatedInModal: function() {
+			// Change to the A+ version: new method
+			// Trigger Moodle JS event so that MathJax renders new formulas
+			// that are inserted into the modal dialog (openModal appends the modal content
+			// at runtime).
+			// This uses the Moodle filter MathJax loader.
+			moodleEvent.notifyFilterContentUpdated(this.settings.modal_selector);
 		}
 	});
 
@@ -86,13 +97,13 @@ define(['jquery', 'theme_bootstrapbase/bootstrap'], function(jQuery) {
 		});
 	};
 
-})(jQuery, window, document);
+})(jQuery, moodleEvent, window, document);
 
 /**
  * Exercise element inside chapter.
  *
  */
-;(function($, window, document, undefined) {
+;(function($, moodleEvent, window, document, undefined) {
 	//"use strict";
 
 	var pluginName = "aplusExercise";
@@ -173,6 +184,11 @@ define(['jquery', 'theme_bootstrapbase/bootstrap'], function(jQuery) {
 					exercise.update($(data));
 					if (exercise.quiz) {
 						exercise.loadLastSubmission($(data));
+					} else {
+						// change to the A+ version:
+						// add a call to the Moodle function that renders MathJax formulas
+						// else branch is used because loadLastSubmission also asynchronously modifies the DOM
+						exercise.moodleNotifyFilterContentUpdated();
 					}
 				});
 		},
@@ -234,6 +250,9 @@ define(['jquery', 'theme_bootstrapbase/bootstrap'], function(jQuery) {
 				exercise.hideLoader();
 				if (exercise.quiz) {
 					exercise.update($(data));
+					// change to A+ version:
+					// render MathJax in the new retrieved content
+					exercise.moodleNotifyFilterContentUpdated();
 				} else {
 					exercise.updateSubmission($(data));
 				}
@@ -282,7 +301,17 @@ define(['jquery', 'theme_bootstrapbase/bootstrap'], function(jQuery) {
 								.empty().append(data);
 							f.find("table.submission-info").remove();
 							exercise.bindFormEvents(f);
+							// change to A+ version: render MathJax after async modification to the DOM
+							exercise.moodleNotifyFilterContentUpdated();
 						});
+				} else {
+					// the exercise (quiz) has no submissions yet
+					// change to the A+ version:
+					// add a call to the Moodle function that renders MathJax formulas
+					// else branch is used here so that the filter event is triggered only once
+					// (the caller of this method assumes that the event is triggered even if
+					// there is no submission to load)
+					this.moodleNotifyFilterContentUpdated();
 				}
 			}
 		},
@@ -299,6 +328,16 @@ define(['jquery', 'theme_bootstrapbase/bootstrap'], function(jQuery) {
 
 		hideLoader: function() {
 			this.loader.hide();
+		},
+
+		moodleNotifyFilterContentUpdated: function() {
+			// Change to the A+ version: new method
+			// Trigger Moodle JS event so that MathJax renders new formulas
+			// that were modified/inserted (usually) by AJAX after the initial page load.
+			// This uses the Moodle filter MathJax loader.
+			// The selector id is like "chapter-exercise-1", the element that contains
+			// the embedded exercise in the chapter page.
+			moodleEvent.notifyFilterContentUpdated('#' + this.element.attr('id'));
 		}
 	});
 
@@ -319,7 +358,7 @@ define(['jquery', 'theme_bootstrapbase/bootstrap'], function(jQuery) {
 		});
 	};
 
-})(jQuery, window, document);
+})(jQuery, moodleEvent, window, document);
 
 return {}; // for AMD, no names are exported to the outside
 }); // end define

@@ -18,6 +18,27 @@ function astra_page_require($page) {
 }
 
 /**
+ * Filter/format exercise page content so that Moodle filters are activated, e.g.,
+ * the Moodle MathJax loader renders Latex math formulas.
+ * This function may be used to filter exercise descriptions and submission feedbacks
+ * that originate from an exercise service.
+ * 
+ * @param string $content (HTML) content to filter
+ * @param context|int $ctx Moodle context object or context ID of the exercise (round)
+ */
+function astra_filter_exercise_content($content, $ctx) {
+    return format_text($content, FORMAT_HTML, array(
+            'trusted' => true,
+            // $content is trusted and its dangerous elements are not removed, e.g., <input>
+            'noclean' => true,
+            'filter' => true, // activate Moodle filters
+            'para' => false, // no extra <div> wrapping
+            'context' => $ctx,
+            'allowid' => true, // retain HTML element IDs
+    ));
+}
+
+/**
  * Convert a number to a roman numeral. Number should be between 0--1999.
  * 
  * Derived from A+ (a-plus/lib/helpers.py).
