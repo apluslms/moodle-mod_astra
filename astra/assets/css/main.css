@@ -156,6 +156,11 @@ h3.panel-title {
 .modal-dialog {
 	margin-top: 50px; /* so that modal does not overlap with the bar at the top of the page */
 }
+.modal-body {
+	/* Moodle core sets a low max-height (400px) that makes the modal too small. */
+	max-height: 80vh; /* 80% of the viewport height */
+}
+
 /* Moodle uses class hidden in forms but it is not supposed hide everything like
    in Bootstrap CSS. Overwrite the Bootstrap rule here, !important is required since
    Bootstrap uses it. */
