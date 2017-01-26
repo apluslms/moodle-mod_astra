@@ -143,7 +143,7 @@ define(['jquery', 'core/event', 'theme_bootstrapbase/bootstrap'], function(jQuer
 		init: function() {
 			this.chapterID = this.element.attr("id");
 			this.url = this.element.attr(this.chapter.settings.exercise_url_attr);
-			this.url = this.url; // + "?__r=" + encodeURIComponent(
+			//this.url = this.url + "?__r=" + encodeURIComponent(
 			//	window.location.href + "#" + this.element.attr("id"));
 			// URL changed from the format that A+ uses
 
