@@ -35,7 +35,9 @@ class exercise_page implements \renderable, \templatable {
     
     /**
      * Copy CSS and JS requirements from the remote page head (with data-aplus attributes)
-     * to the Moodle page.
+     * to the Moodle page. Likewise, JS inline scripts with data-astra-jquery attribute
+     * are copied from anywhere in the remote page, and they are automatically embedded
+     * in AMD code that loads the jQuery JS library.
      * @param \mod_astra\protocol\remote_page $remotePage
      */
     protected function setMoodlePageRequirements(\mod_astra\protocol\remote_page $remotePage) {
@@ -53,6 +55,13 @@ class exercise_page implements \renderable, \templatable {
             // the code probably is not using any AMD modules but the Moodle page API
             // does not have other methods to inject inline JS code to the page
             $this->page_requires->js_amd_inline($inlineCode);
+        }
+        
+        // inline scripts (JS code inside <script>) with jQuery
+        foreach ($remotePage->getInlinejQueryScripts() as $scriptElem) {
+            // import jQuery in the Moodle way, jQuery module is visible to the code in the given name $scriptElem[1]
+            $js = 'require(["jquery"], function('. $scriptElem[1] .') { '. $scriptElem[0] .' });';
+            $this->page_requires->js_amd_inline($js);
         }
     }
     

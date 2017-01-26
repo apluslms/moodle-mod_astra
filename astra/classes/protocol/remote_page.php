@@ -25,6 +25,7 @@ class remote_page {
     protected $points; // int, if grader returns results synchronously
     
     protected $aplusHeadElements; // \DOMNode[], nodes in document head with aplus attribute
+    protected $astrajQueryScriptElements; // \DOMNode[], script elements in the document with data-astra-jquery attribute
     
     /**
      * Create a remote page: a HTML page whose content and metadata are
@@ -240,6 +241,14 @@ class remote_page {
         // find tags in <head> that have attribute data-aplus
         $this->aplusHeadElements = $this->findHeadElementsWithAttribute('data-aplus');
         
+        // find script tags in the document with attribute data-astra-jquery="$" (attribute value is optional)
+        $this->astrajQueryScriptElements = $this->findScriptElementsWithAttribute('data-astra-jquery');
+        // remove the script tags from the document, their contents shall be inserted again later
+        // as Moodle page requirements (not done in this class)
+        foreach ($this->astrajQueryScriptElements as $scriptElem) {
+            $scriptElem->parentNode->removeChild($scriptElem);
+        }
+        
         // find learning object content
         $this->content = $this->getElementOrBody(array('exercise', 'aplus', 'chapter'),
                 array('class' => 'entry-content'));
@@ -318,6 +327,27 @@ class remote_page {
             }
         }
         return array($js_urls, $js_inline_elements);
+    }
+    
+    /**
+     * Return inline JavaScript code strings of script elements in the document
+     * that have the attribute data-astra-jquery. The JS code is expected to
+     * use the jQuery JS library with the name given as the value of the data attribute,
+     * by default "$" is assumed.
+     * The page must be loaded before calling this method.
+     * @return an array of arrays: one array for each found script element;
+     * the nested arrays consist of two elements: inline JS code and the name for jQuery
+     */
+    public function getInlinejQueryScripts() {
+        $js_codes = array();
+        foreach ($this->astrajQueryScriptElements as $elem) {
+            $attrVal = $elem->getAttribute('data-astra-jquery');
+            if (!$attrVal)
+                $attrVal = '$'; // default
+            
+            $js_codes[] = array($elem->textContent, $attrVal); // inline code and the name for jQuery
+        }
+        return $js_codes;
     }
     
     /**
@@ -486,6 +516,21 @@ class remote_page {
                 if ($node->nodeType == \XML_ELEMENT_NODE && $node->hasAttribute($attrName)) {
                     $elements[] = $node;
                 }
+            }
+        }
+        return $elements;
+    }
+    
+    /**
+     * Return an array of DOMNodes that are script elements with the given attribute.
+     * @param string $attrName attribute name to search for
+     * @return \DOMNode[]
+     */
+    protected function findScriptElementsWithAttribute($attrName) {
+        $elements = array();
+        foreach ($this->DOMdoc->getElementsByTagName('script') as $scriptElem) {
+            if ($scriptElem->hasAttribute($attrName)) {
+                $elements[] = $scriptElem;
             }
         }
         return $elements;
