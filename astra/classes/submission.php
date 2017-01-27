@@ -501,20 +501,26 @@ class mod_astra_submission extends mod_astra_database_object {
         $submissions = $this->getExercise()->getSubmissionsForStudent($this->record->submitter);
         $count = 0;
         $thisIsBest = true;
+        $bestSubmission = null;
         foreach ($submissions as $record) {
             if ($record->id != $this->record->id) {
+                $sbms = new mod_astra_submission($record);
                 // count the ordinal number for this submission ("how many'th submission")
                 if ($record->submissiontime <= $this->getSubmissionTime()) {
                     $count += 1;
                 }
-                // check if this submission is the best one
-                if ($record->grade >= $adjustedGrade) {
-                    $thisIsBest = false;
+                // find the best submission from the other submissions besides this one
+                if ($bestSubmission === null || $sbms->getGrade() > $bestSubmission->getGrade()) {
+                    $bestSubmission = $sbms;
                 }
             }
         }
         $submissions->close();
         $count += 1;
+        // check if this submission is the best one
+        if ($bestSubmission !== null && $bestSubmission->getGrade() >= $adjustedGrade) {
+            $thisIsBest = false;
+        }
         $maxSubmissions = $this->getExercise()->getMaxSubmissionsForStudent($this->getSubmitter());
         if ($maxSubmissions > 0 && $count > $maxSubmissions) {
             // this submission exceeded the submission limit
@@ -529,6 +535,13 @@ class mod_astra_submission extends mod_astra_database_object {
         // write to gradebook if this is the best submission
         if ($thisIsBest) {
             $this->writeToGradebook();
+        } else {
+            // if this submission used to be the best and its grade decreased in regrading,
+            // it might not be the best anymore -> check if gradebook should be updated
+            $prevBestGrade = $exercise->getGradeFromGradebook($this->record->submitter);
+            if ($bestSubmission->getGrade() < $prevBestGrade) {
+                $bestSubmission->writeToGradebook();
+            }
         }
     }
     
