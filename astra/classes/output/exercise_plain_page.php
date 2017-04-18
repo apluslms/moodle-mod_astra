@@ -55,10 +55,9 @@ class exercise_plain_page implements \renderable, \templatable {
         } else if (!($status_maintenance || $not_started) || $data->is_course_staff) {
             // download exercise description from the exercise service
             try {
-                $remotePage = $this->learningObject->loadPage($this->user->id);
-                unset($remotePage->remote_page);
-                $remotePage->content = astra_filter_exercise_content($remotePage->content, $ctx);
-                $data->page = $remotePage; // has content field
+                $page = $this->learningObject->load($this->user->id);
+                $page->content = astra_filter_exercise_content($page->content, $ctx);
+                $data->page = $page->get_template_context(); // has content field
             } catch (\mod_astra\protocol\remote_page_exception $e) {
                 $data->error = \get_string('serviceconnectionfailed', \mod_astra_exercise_round::MODNAME);
                 $page = new \stdClass();

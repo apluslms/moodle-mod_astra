@@ -39,7 +39,10 @@ Context variables:
 }}
 
 <div class="well">
-  <a href="{{{ autosetupurl }}}">{{#str}} autosetup, mod_astra {{/str}}</a>
+  <form method="post" class="form-inline" action="{{{ renumber_action_url }}}">
+    <a href="{{{ autosetupurl }}}" class="btn btn-default">{{#str}} autosetup, mod_astra {{/str}}</a>
+    <button class="btn btn-default" type="submit" name="cache">{{#str}} clearcontentcache, mod_astra {{/str}}</button>
+  </form>
 </div>
 
 <div class="panel panel-primary">

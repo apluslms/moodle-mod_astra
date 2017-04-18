@@ -14,18 +14,11 @@ class remote_page {
     protected $url;
     protected $response; // string, the whole response from the server
     protected $DOMdoc; // \DOMDocument instance
+    
     protected $metaNodes = null; // cache \DOMNodeList
-    
-    // fields for storing content and metadata after the response has been parsed
-    protected $content; // string, content that is shown to user
-    protected $meta = array(); // associative array
-    protected $isGraded = false;
-    protected $isAccepted = false;
-    protected $isWait = false;
-    protected $points; // int, if grader returns results synchronously
-    
     protected $aplusHeadElements; // \DOMNode[], nodes in document head with aplus attribute
     protected $astrajQueryScriptElements; // \DOMNode[], script elements in the document with data-astra-jquery attribute
+    protected $response_headers = array();
     
     /**
      * Create a remote page: a HTML page whose content and metadata are
@@ -37,12 +30,18 @@ class remote_page {
      * values are objects with fields filename (original base name), filepath (full path)
      * and mimetype.
      * @param string $api_key API key for authorization, null if not used
+     * @param null|string $stamp timestamp string for If-Modified-Since request header.
+     * Only usable in HTTP GET requests.
      * @throws \mod_astra\protocol\remote_page_exception if there are errors
      * in connecting to the server
+     * @throws \mod_astra\protocol\remote_page_not_modified if the $stamp argument is used
+     * and the remote page has not been modified since that time
      */
-    public function __construct($url, $post = false, $data = null, $files = null, $api_key = null) {
+    public function __construct($url, $post = false, $data = null, $files = null, $api_key = null,
+            $stamp = null) {
         $this->url = $url;
-        $this->response = self::request($url, $post, $data, $files, $api_key);
+        list($this->response, $this->response_headers) =
+                self::request($url, $post, $data, $files, $api_key, $stamp);
         $this->DOMdoc = new \DOMDocument();
         if ($this->DOMdoc->loadHTML($this->response) === false)
             throw new \mod_astra\protocol\remote_page_exception('DOMDocument::loadHTML could not load the response');
@@ -56,13 +55,31 @@ class remote_page {
      * @param array $files array or files to upload. Keys are used as POST data keys and
      * values are objects with fields filename, filepath and mimetype.
      * @param string $api_key API key for authorization, null if not used
+     * @param null|string $stamp timestamp string for If-Modified-Since request header.
+     * Only usable in HTTP GET requests.
      * @throws \mod_astra\protocol\service_connection_exception if there are errors
      * in connecting to the server
      * @throws \mod_astra\protocol\exercise_service_exception if there is an error
      * in the exercise service
-     * @return string the response
+     * @throws \mod_astra\protocol\remote_page_not_modified if the $stamp argument is used
+     * and the remote page has not been modified since that time
+     * @return array of two elements: the response (string) and an array of response headers (header names as keys)
      */
-    public static function request($url, $post = false, $data = null, $files = null, $api_key = null) {
+    public static function request($url, $post = false, $data = null, $files = null, $api_key = null,
+            $stamp = null) {
+        $response_headers = array();
+        // callback for storing HTTP response headers
+        $header_function = static function($curl_handle, $header) use (&$response_headers) {
+            // array[HEADER] = VALUE
+            $parts = explode(':', $header, 2);
+            if (count($parts) == 2) {
+                $response_headers[strtolower(trim($parts[0]))] = trim($parts[1]);
+            }
+            // else no colon (:) in the header, possibly the status line (HTTP 200)
+            
+            return strlen($header);
+        };
+        
         $ch = curl_init();
         curl_setopt_array($ch, array(
                 CURLOPT_URL => $url,
@@ -70,6 +87,7 @@ class remote_page {
                 CURLOPT_HEADER => false, // no header in output
                 CURLOPT_FOLLOWLOCATION => true, // follow redirects (Location header)
                 CURLOPT_MAXREDIRS => 10,
+                CURLOPT_HEADERFUNCTION => $header_function, // save the HTTP response headers
                 
                 CURLOPT_SSL_VERIFYPEER => true, // HTTPS certificate and security
                 CURLOPT_SSL_VERIFYHOST => 2,
@@ -77,10 +95,17 @@ class remote_page {
                 CURLOPT_CAINFO => self::exercise_service_CA_path(),
         ));
         
+        $request_headers = array();
+        
         if (!is_null($api_key)) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                    'Authorization: key='. $api_key, // HTTP request header for API key
-            ));
+            $request_headers[] = 'Authorization: key='. $api_key; // HTTP request header for API key
+        }
+        if (!empty($stamp) && !$post) {
+            $request_headers[] = 'If-Modified-Since: '. $stamp;
+        }
+        
+        if (!empty($request_headers)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
         }
         
         if ($post) {
@@ -121,13 +146,18 @@ class remote_page {
             // check HTTP status code
             $resStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            if ($resStatus != 200) {
+            if ($resStatus == 304) {
+                // not modified ($stamp argument was used)
+                $expires = self::parseExpires(isset($response_headers['expires']) ?
+                        $response_headers['expires'] : null);
+                throw new \mod_astra\protocol\remote_page_not_modified($expires);
+            } else if ($resStatus != 200) {
                 // server returned some error message
                 $error = "curl HTTP response status: $resStatus";
                 throw new \mod_astra\protocol\exercise_service_exception($error);
             }
         }
-        return $response; // response as string
+        return array($response, $response_headers); // response as string, array of headers
     }
     
     /**
@@ -177,13 +207,11 @@ class remote_page {
      * Load the exercise page (usually containing instructions and submission form,
      * or chapter content) from the exercise service.
      * @param \mod_astra_learning_object $learningObject
-     * @return \stdClass with fields content and remote_page
+     * @return \mod_astra\protocol\exercise_page the exercise page
      */
     public function loadExercisePage(\mod_astra_learning_object $learningObject) {
-        $this->parsePageContent($learningObject);
-        $page = new \stdClass();
-        $page->content = $this->content;
-        $page->remote_page = $this;
+        $page = new \mod_astra\protocol\exercise_page($learningObject);
+        $this->parsePageContent($learningObject, $page);
         return $page;
     }
     
@@ -196,13 +224,14 @@ class remote_page {
      */
     public function loadFeedbackPage(\mod_astra_exercise $exercise,
             \mod_astra_submission $submission, $noPenalties = false) {
-        $this->parsePageContent($exercise);
-        $feedback = $this->content;
-        if ($this->isAccepted) {
-            if ($this->isGraded) {
-                $servicePoints = $this->points;
-                if (isset($this->meta['max_points'])) {
-                    $serviceMaxPoints = $this->meta['max_points'];
+        $page = new \mod_astra\protocol\exercise_page($exercise);
+        $this->parsePageContent($exercise, $page);
+        $feedback = $page->content;
+        if ($page->is_accepted) {
+            if ($page->is_graded) {
+                $servicePoints = $page->points;
+                if (isset($page->meta['max_points'])) {
+                    $serviceMaxPoints = $page->meta['max_points'];
                 } else {
                     $serviceMaxPoints = $exercise->getMaxPoints();
                 }
@@ -219,7 +248,7 @@ class remote_page {
         }
     }
     
-    protected function parsePageContent(\mod_astra_learning_object $lobj) {
+    protected function parsePageContent(\mod_astra_learning_object $lobj, \mod_astra\protocol\exercise_page $page) {
         if ($lobj->isSubmittable()) {
             $this->fixFormAction($lobj);
             $this->fixFormMultipleCheckboxes();
@@ -249,40 +278,88 @@ class remote_page {
             $scriptElem->parentNode->removeChild($scriptElem);
         }
         
+        $page->is_loaded = true;
+        
+        // save CSS and JS code or elements that should be injected to the final page
+        // (these values are strings)
+        $page->injected_css_urls = $this->getInjectedCSS_URLs();
+        $page->injected_js_urls_and_inline = $this->getInjectedJsUrlsAndInline();
+        $page->inline_jquery_scripts = $this->getInlinejQueryScripts();
+        
         // find learning object content
-        $this->content = $this->getElementOrBody(array('exercise', 'aplus', 'chapter'),
+        $page->content = $this->getElementOrBody(array('exercise', 'aplus', 'chapter'),
                 array('class' => 'entry-content'));
         
         // parse metadata
         $maxPoints = $this->getMeta('max-points');
         if ($maxPoints !== null)
-            $this->meta['max_points'] = $maxPoints;
+            $page->meta['max_points'] = $maxPoints;
         $maxPoints = $this->getMeta('max_points'); // underscore preferred
         if ($maxPoints !== null)
-            $this->meta['max_points'] = $maxPoints;
+            $page->meta['max_points'] = $maxPoints;
         
-        $this->meta['status'] = $this->getMeta('status');
-        if ($this->meta['status'] === 'accepted') {
-            $this->isAccepted = true; // accepted for async grading
+        $page->meta['status'] = $this->getMeta('status');
+        if ($page->meta['status'] === 'accepted') {
+            $page->is_accepted = true; // accepted for async grading
             if ($this->getMeta('wait'))
-                $this->isWait = true;
+                $page->is_wait = true;
         }
         
-        $this->meta['points'] = $this->getMeta('points');
-        if ($this->meta['points'] !== null) {
-            $this->points = (int) $this->meta['points'];
-            $this->isGraded = true;
-            $this->isAccepted = true;
-            $this->isWait = false;
+        $page->meta['points'] = $this->getMeta('points');
+        if ($page->meta['points'] !== null) {
+            $page->points = (int) $page->meta['points'];
+            $page->is_graded = true;
+            $page->is_accepted = true;
+            $page->is_wait = false;
         }
         
         $metaTitle = $this->getMeta('DC.Title');
         if ($metaTitle)
-            $this->meta['title'] = $metaTitle;
+            $page->meta['title'] = $metaTitle;
         else
-            $this->meta['title'] = $this->getTitle();
+            $page->meta['title'] = $this->getTitle();
         
-        $this->meta['description'] = $this->getMeta('DC.Description');
+        $page->meta['description'] = $this->getMeta('DC.Description');
+        
+        $page->last_modified = $this->getHeader('Last-Modified');
+        $page->expires = $this->getExpires();
+    }
+    
+    /**
+     * Return the value of the given HTTP response header, i.e.,
+     * header returned by the server when this page was retrieved.
+     * 
+     * @param string $name name of the HTTP header, e.g., 'Last-Modified'
+     * @return mixed|boolean the value of the header, or false if not found
+     */
+    public function getHeader($name) {
+        $name = strtolower($name);
+        if (isset($this->response_headers[$name])) {
+            return $this->response_headers[$name];
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * Parse the value of the Expires HTTP header.
+     * @param string $expires_header date string
+     * @return int Unix timestamp
+     */
+    public static function parseExpires($expires_header) {
+        if ($expires_header && ($val = strtotime($expires_header))) {
+            // the Expires header exists and can be parsed
+            return $val;
+        }
+        return 0;
+    }
+    
+    /**
+     * Return the Unix timestamp corresponding to the Expires HTTP response header.
+     * @return int
+     */
+    public function getExpires() {
+        return self::parseExpires($this->getHeader('Expires'));
     }
     
     /**

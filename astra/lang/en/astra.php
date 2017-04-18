@@ -261,6 +261,8 @@ $string['arabicnumbering'] = 'Arabic';
 $string['romannumbering'] = 'Roman';
 $string['hiddenarabicnum'] = 'Hidden arabic';
 $string['backtocourseedit'] = 'Back to the course edit page.';
+$string['clearcontentcache'] = 'Clear content cache';
+$string['cachescleared'] = 'Exercise caches have been cleared.';
 
 // auto setup form
 $string['configurl'] = 'Configuration URL';
@@ -337,3 +339,6 @@ $string['astra:view'] = 'View Astra exercise (round)';
 $string['astra:submit'] = 'Submit a new solution to an Astra exercise';
 $string['astra:viewallsubmissions'] = 'View and inspect all submissions to Astra exercises';
 $string['astra:grademanually'] = 'Edit the feedback and grade of an Astra submission manually';
+
+// cache API
+$string['cachedef_exercisedesc'] = 'Cache for exercise descriptions retrieved from an exercise service';

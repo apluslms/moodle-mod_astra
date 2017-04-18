@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     $submitted = isset($_POST['save']) || isset($_POST['renumbermodule']) || isset($_POST['renumbercourse']);
     if ($submitted) {
+        // renumerate rounds or learning objects
         \mod_astra_course_config::updateOrCreate($cid, null, null, null, $module_numbering, $content_numbering);
         
         if (isset($_POST['save'])) {
@@ -40,8 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         foreach (astra_find_course_sections_with_astra_ex($cid) as $sectionNumber) {
             astra_sort_activities_in_section($cid, $sectionNumber);
         }
-        // clear cache so that course main page shows the updated exercise round names (Moodle course modules)
+        // clear (Moodle) cache so that course main page shows the updated exercise round names (Moodle course modules)
         rebuild_course_cache($cid);
+        
+    } else if (isset($_POST['cache'])) {
+        // clear the Astra exercise/learning object description cache for the course
+        \mod_astra\cache\exercise_cache::invalidate_course($cid);
+        // use the Moodle redirect function to show a message to the user (caches successfully cleared)
+        // It is clunky and old-fashioned, but Moodle does not have other built-in method for such flash messages.
+        // Moodle 3.1 seems to have a new notification API for this purpose.
+        redirect(\mod_astra\urls\urls::editCourse($cid, true), get_string('cachescleared', mod_astra_exercise_round::MODNAME));
     }
 }
 

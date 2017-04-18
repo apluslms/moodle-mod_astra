@@ -111,6 +111,9 @@ if ($fromform = $form->get_data()) {
             $updatedChapter = new mod_astra_chapter($fromform);
             $updatedChapter->save();
         }
+        // clear the exercise/learning object description cache
+        \mod_astra\cache\exercise_cache::invalidate_exercise_all_lang($id);
+        
         $message = get_string('lobjecteditsuccess', mod_astra_exercise_round::MODNAME);
         
     } else { // create new

@@ -310,18 +310,47 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
     }
     
     /**
+     * Load the learning object/exercise page (from the cache if available,
+     * otherwise from the exercise service).
+     * 
+     * @param int $userid user ID
+     * @return \mod_astra\protocol\exercise_page the exercise page
+     */
+    public function load($userid) {
+        $page = new \mod_astra\protocol\exercise_page($this);
+        $language = 'en'; // TODO user language from Moodle settings
+        $cache = new \mod_astra\cache\exercise_cache($this, $language, $userid);
+        
+        $page->content = $cache->get_content();
+        $page->injected_css_urls = $cache->get_injected_css_urls();
+        $page->injected_js_urls_and_inline = $cache->get_injected_js_urls_and_inline();
+        $page->inline_jquery_scripts = $cache->get_inline_jquery_scripts();
+        $page->expires = $cache->get_expires();
+        $page->last_modified = $cache->get_last_modified();
+        $page->is_loaded = true;
+        
+        return $page;
+    }
+    
+    /**
      * Load the exercise page from the exercise service.
      * @param int $userid user ID
+     * @param null|string $last_modified value for If-Modified-Since HTTP request header
      * @throws mod_astra\protocol\remote_page_exception if there are errors
      * in connecting to the server
-     * @return stdClass with field content
+     * @throws \mod_astra\protocol\remote_page_not_modified if $last_modified is given and
+     * the remote page has not been modified
+     * @return \mod_astra\protocol\exercise_page the exercise page
      */
-    public function loadPage($userid) {
+    public function loadPage($userid, $last_modified = null) {
         global $DB;
         
         $courseConfig = mod_astra_course_config::getForCourseId(
                 $this->getExerciseRound()->getCourse()->courseid);
         $api_key = ($courseConfig ? $courseConfig->getApiKey() : null);
+        if (empty($api_key)) {
+            $api_key = null; // $courseConfig gives an empty string if not set
+        }
         
         $submissionCount = $DB->count_records(\mod_astra_submission::TABLE, array(
                 'submitter' => $userid,
@@ -330,7 +359,8 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         // must increment $submissionCount since the exercise description must match the next new submission
         $serviceUrl = $this->getLoadUrl($userid, $submissionCount + 1);
         try {
-            $remotePage = new \mod_astra\protocol\remote_page($serviceUrl, false, null, null, $api_key);
+            $remotePage = new \mod_astra\protocol\remote_page($serviceUrl, false, null, null,
+                    $api_key, $last_modified);
             return $remotePage->loadExercisePage($this);
         } catch (\mod_astra\protocol\service_connection_exception $e) {
             // error logging

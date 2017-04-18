@@ -38,15 +38,15 @@ class exercise_page implements \renderable, \templatable {
      * to the Moodle page. Likewise, JS inline scripts with data-astra-jquery attribute
      * are copied from anywhere in the remote page, and they are automatically embedded
      * in AMD code that loads the jQuery JS library.
-     * @param \mod_astra\protocol\remote_page $remotePage
+     * @param \mod_astra\protocol\exercise_page $page
      */
-    protected function setMoodlePageRequirements(\mod_astra\protocol\remote_page $remotePage) {
-        foreach ($remotePage->getInjectedCSS_URLs() as $cssUrl) {
+    protected function setMoodlePageRequirements(\mod_astra\protocol\exercise_page $page) {
+        foreach ($page->injected_css_urls as $cssUrl) {
             // absolute (external) URL must be passed as moodle_url instance
             $this->page_requires->css(new \moodle_url($cssUrl));
         }
         
-        list($jsUrls, $jsInlineCode) = $remotePage->getInjectedJsUrlsAndInline();
+        list($jsUrls, $jsInlineCode) = $page->injected_js_urls_and_inline;
         foreach ($jsUrls as $jsUrl) {
             // absolute (external) URL must be passed as moodle_url instance
             $this->page_requires->js(new \moodle_url($jsUrl));
@@ -58,7 +58,7 @@ class exercise_page implements \renderable, \templatable {
         }
         
         // inline scripts (JS code inside <script>) with jQuery
-        foreach ($remotePage->getInlinejQueryScripts() as $scriptElem) {
+        foreach ($page->inline_jquery_scripts as $scriptElem) {
             // import jQuery in the Moodle way, jQuery module is visible to the code in the given name $scriptElem[1]
             $js = 'require(["jquery"], function('. $scriptElem[1] .') { '. $scriptElem[0] .' });';
             $this->page_requires->js_amd_inline($js);
@@ -91,11 +91,10 @@ class exercise_page implements \renderable, \templatable {
 
         if (!($data->status_maintenance || $data->not_started) || $data->is_course_staff) {
             try {
-                $remotePage = $this->learningObject->loadPage($this->user->id);
-                $this->setMoodlePageRequirements($remotePage->remote_page);
-                unset($remotePage->remote_page);
-                $remotePage->content = astra_filter_exercise_content($remotePage->content, $ctx);
-                $data->page = $remotePage; // has content field
+                $page = $this->learningObject->load($this->user->id);
+                $this->setMoodlePageRequirements($page);
+                $page->content = astra_filter_exercise_content($page->content, $ctx);
+                $data->page = $page->get_template_context(); // has content field
             } catch (\mod_astra\protocol\remote_page_exception $e) {
                 $data->error = \get_string('serviceconnectionfailed', \mod_astra_exercise_round::MODNAME);
                 $page = new \stdClass();

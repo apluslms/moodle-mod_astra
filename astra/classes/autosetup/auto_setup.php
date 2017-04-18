@@ -35,7 +35,7 @@ class auto_setup {
     public static function configure_content_from_url($courseid, $sectionNumber, $url, $api_key = null) {
         $setup = new self();
         try {
-            $response = \mod_astra\protocol\remote_page::request($url, false, null, null, $api_key);
+            list($response, $response_headers) = \mod_astra\protocol\remote_page::request($url, false, null, null, $api_key);
         } catch (\mod_astra\protocol\remote_page_exception $e) {
             return array($e->getMessage());
         }
@@ -173,6 +173,9 @@ class auto_setup {
                 $cat->delete();
             }
         }
+        
+        // purge the exercise/learning object HTML description cache for the course
+        \mod_astra\cache\exercise_cache::invalidate_course($courseid);
         
         return $errors;
     }
