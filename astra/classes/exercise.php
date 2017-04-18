@@ -492,6 +492,9 @@ class mod_astra_exercise extends mod_astra_learning_object {
         $courseConfig = mod_astra_course_config::getForCourseId(
                 $submission->getExercise()->getExerciseRound()->getCourse()->courseid);
         $api_key = ($courseConfig ? $courseConfig->getApiKey() : null);
+        if (empty($api_key)) {
+            $api_key = null; // $courseConfig gives an empty string if not set
+        }
         
         $language = current_language();
         
