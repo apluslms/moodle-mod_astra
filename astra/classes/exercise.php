@@ -441,22 +441,25 @@ class mod_astra_exercise extends mod_astra_learning_object {
      * be given in the format "1-2-3" (separated by dash)
      * @param int $submissionOrdinalNumber ordinal number of the submission that is
      * uploaded for grading or the submission for which the exercise description is downloaded
+     * @param string $language language of the content of the page, e.g., 'en' for English
+     * (lang query parameter in the grader protocol)
      * @return string
      */
-    protected function buildServiceUrl($submissionUrl, $uid, $submissionOrdinalNumber) {
+    protected function buildServiceUrl($submissionUrl, $uid, $submissionOrdinalNumber, $language) {
         $query_data = array(
                 'submission_url' => $submissionUrl,
                 'post_url' => \mod_astra\urls\urls::newSubmissionHandler($this),
                 'max_points' => $this->getMaxPoints(),
                 'uid' => $uid,
                 'ordinal_number' => $submissionOrdinalNumber,
+                'lang' => $language,
         );
         return $this->getServiceUrl() .'?'. http_build_query($query_data, 'i_', '&');
     }
     
-    public function getLoadUrl($userid, $submissionOrdinalNumber) {
+    public function getLoadUrl($userid, $submissionOrdinalNumber, $language) {
         return $this->buildServiceUrl(\mod_astra\urls\urls::asyncNewSubmission($this, $userid),
-                $userid, $submissionOrdinalNumber);
+                $userid, $submissionOrdinalNumber, $language);
     }
     
     /**
@@ -490,8 +493,10 @@ class mod_astra_exercise extends mod_astra_learning_object {
                 $submission->getExercise()->getExerciseRound()->getCourse()->courseid);
         $api_key = ($courseConfig ? $courseConfig->getApiKey() : null);
         
+        $language = current_language();
+        
         $serviceUrl = $this->buildServiceUrl(\mod_astra\urls\urls::asyncGradeSubmission($submission),
-                $submission->getRecord()->submitter, $submission->getCounter());
+                $submission->getRecord()->submitter, $submission->getCounter(), $language);
         try {
             $remotePage = new \mod_astra\protocol\remote_page(
                     $serviceUrl, true, $sbmsData, $files, $api_key);

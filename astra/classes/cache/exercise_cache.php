@@ -59,7 +59,7 @@ class exercise_cache {
     protected function generate_data() {
         try {
             $last_modified = !empty($this->data) ? $this->data['last_modified'] : null;
-            $page = $this->learning_object->loadPage($this->userid, $last_modified); //TODO language
+            $page = $this->learning_object->loadPage($this->userid, $this->language, $last_modified);
             $this->data = array(
                     'content' => $page->content,
                     'expires' => $page->expires,

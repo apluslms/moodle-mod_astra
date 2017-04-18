@@ -304,9 +304,12 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         return $ctx;
     }
     
-    public function getLoadUrl($userid, $submissionOrdinalNumber) {
+    public function getLoadUrl($userid, $submissionOrdinalNumber, $language) {
         // this method can be overridden in child classes to change the URL in loadPage method
-        return $this->getServiceUrl();
+        $query_data = array(
+                'lang' => $language,
+        );
+        return $this->getServiceUrl() .'?'. http_build_query($query_data, 'i_', '&');
     }
     
     /**
@@ -318,7 +321,7 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
      */
     public function load($userid) {
         $page = new \mod_astra\protocol\exercise_page($this);
-        $language = 'en'; // TODO user language from Moodle settings
+        $language = current_language(); // e.g., 'en'
         $cache = new \mod_astra\cache\exercise_cache($this, $language, $userid);
         
         $page->content = $cache->get_content();
@@ -335,6 +338,8 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
     /**
      * Load the exercise page from the exercise service.
      * @param int $userid user ID
+     * @param string $language language of the content of the page, e.g., 'en' for English
+     * (lang query parameter in the grader protocol)
      * @param null|string $last_modified value for If-Modified-Since HTTP request header
      * @throws mod_astra\protocol\remote_page_exception if there are errors
      * in connecting to the server
@@ -342,7 +347,7 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
      * the remote page has not been modified
      * @return \mod_astra\protocol\exercise_page the exercise page
      */
-    public function loadPage($userid, $last_modified = null) {
+    public function loadPage($userid, $language = 'en', $last_modified = null) {
         global $DB;
         
         $courseConfig = mod_astra_course_config::getForCourseId(
@@ -357,7 +362,7 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
                 'exerciseid' => $this->getId(),
         ));
         // must increment $submissionCount since the exercise description must match the next new submission
-        $serviceUrl = $this->getLoadUrl($userid, $submissionCount + 1);
+        $serviceUrl = $this->getLoadUrl($userid, $submissionCount + 1, $language);
         try {
             $remotePage = new \mod_astra\protocol\remote_page($serviceUrl, false, null, null,
                     $api_key, $last_modified);
