@@ -342,3 +342,11 @@ $string['astra:grademanually'] = 'Edit the feedback and grade of an Astra submis
 
 // cache API
 $string['cachedef_exercisedesc'] = 'Cache for exercise descriptions retrieved from an exercise service';
+
+// admin settings (settings.php)
+$string['cacertheading'] = 'CA (certificate authority) certificates for secure HTTPS connections to exercise services';
+$string['explaincacert'] = 'If HTTPS connections are used (i.e., the service URL starts with https:// in any exercise or learning object), the PHP libcurl networking library must know where the CA certificates are located in the Moodle server. They are used to verify the peer certificate (the certificate of the exercise service). Depending on the server, libcurl default values may work and these settings may be left empty.';
+$string['cainfopath'] = 'File path of the CA certificate bundle';
+$string['cainfopath_help'] = 'Absolute path to a file that holds one or more CA certificates. If this is set, the next setting (curl_capath) is ignored. In Ubuntu Linux, the file "/etc/ssl/certs/ca-certificates.crt" usually contains the CA bundle. Different operating systems use different default locations!';
+$string['cadirpath'] = 'Directory that holds CA certificates';
+$string['cadirpath_help'] = 'Absolute path to a directory that holds multiple CA certificates. The certificate file names must be hashed (c_rehash script in OpenSSL). In Ubuntu Linux, the directory "/etc/ssl/certs" is the system default location that already has hashed the file names. Some operating systems may prefer using a CA bundle file as a default over a CA directory (see the previous setting, curl_cainfo).';

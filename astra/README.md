@@ -57,14 +57,15 @@ a Linux shell is the following command:
 `$ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-99};echo;`
 The new key should be copy-pasted into the PHP file, replacing the old value.
 
-If you use HTTPS connection between Moodle and exercise service (i.e., if exercise
-service URL begins with `https://`), you may need to add a certificate authority (CA)
-file to the Moodle plugin installation so that PHP `libcurl` may initiate the
-HTTPS connection to the exercise service. This file is used to verify the certificate
-provided by the exercise service. If the verification fails, the HTTPS connection
-also fails, as the other endpoint of the connection is considered untrusted.
-The CA file should be named `exservice_CA.pem` and it is installed in Moodle
-in the path `moodledir/mod/astra/exservice_CA.pem`.
+If you use HTTPS connection between Moodle and exercise service (i.e., if the exercise
+service URL begins with `https://`), you may need to configure the plugin in
+Moodle `Site administration -> Plugins -> Activity modules -> Astra exercises`.
+There you may set the path to CA certificates installed in the Moodle server.
+The CA certificates are used to verify peer certificates in HTTPS connections
+(to the exercise service): if the verification fails, the connection fails.
+Astra uses the PHP libcurl library for issuing HTTP(S) requests. Some servers may
+have functional default values for libcurl, in which case it is unnecessary to set
+the CA certificate configurations in the Astra plugin.
 
 
 Code organization

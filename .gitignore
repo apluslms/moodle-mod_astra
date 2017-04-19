@@ -7,8 +7,5 @@ astra/testpage.php
 # script for copying files to logic-dev
 copy.sh
 
-# HTTPS certificate for the exercise service
-astra/exservice_CA.pem
-
 # downloaded Node.js / NPM packages
 node_modules

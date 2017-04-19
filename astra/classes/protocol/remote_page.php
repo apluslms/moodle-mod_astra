@@ -91,9 +91,9 @@ class remote_page {
                 
                 CURLOPT_SSL_VERIFYPEER => true, // HTTPS certificate and security
                 CURLOPT_SSL_VERIFYHOST => 2,
-                //CURLOPT_CAPATH => self::CAPATH, // a directory that holds multiple CA certificates
-                CURLOPT_CAINFO => self::exercise_service_CA_path(),
         ));
+        // CA certificates for HTTPS
+        curl_setopt_array($ch, self::server_CA_certificate_curl_options());
         
         $request_headers = array();
         
@@ -161,12 +161,34 @@ class remote_page {
     }
     
     /**
-     * Return the file path to CA file that is used to verify secure HTTPS
-     * connections to the exercise service.
+     * Return a cURL options array for setting the CA certificate location(s).
+     * The CA certificates are used to verify the peer certificate in HTTPS connections.
+     * The locations used may be configured in the admin settings of the Astra plugin.
      */
-    protected static function exercise_service_CA_path() {
+    protected static function server_CA_certificate_curl_options() {
         global $CFG;
-        return $CFG->dirroot .'/mod/'. \mod_astra_exercise_round::TABLE .'/exservice_CA.pem';
+        // typical defaults for Ubuntu
+        //return array(CURLOPT_CAINFO => '/etc/ssl/certs/ca-certificates.crt');
+        //return array(CURLOPT_CAPATH => '/etc/ssl/certs');
+        
+        $cainfo = get_config(\mod_astra_exercise_round::MODNAME, 'curl_cainfo');
+        // use CAINFO if it is set, otherwise CAPATH
+        if (empty($cainfo)) {
+            $capath = get_config(\mod_astra_exercise_round::MODNAME, 'curl_capath');
+            if (empty($capath)) {
+                // Moodle sysadmin has set no values, try values from a Moodle function
+                require_once($CFG->libdir .'/filelib.php');
+                $cainfo = \curl::get_cacert();
+                if (empty($cainfo)) {
+                    return array();
+                } else {
+                    return array(CURLOPT_CAINFO => $cainfo);
+                }
+            }
+            return array(CURLOPT_CAPATH => $capath);
+        } else {
+            return array(CURLOPT_CAINFO => $cainfo);
+        }
     }
     
     /**
