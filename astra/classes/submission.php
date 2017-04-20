@@ -388,9 +388,12 @@ class mod_astra_submission extends mod_astra_database_object {
         return $json;
     }
     
-    public static function getRandomString($length = 32) {
+    public static function getRandomString($length = 32, $specialCharacters = false) {
         // digits 0-9, alphabets a-z, A-Z
         $chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        if ($specialCharacters) {
+            $chars .= '!"#%&/()=?+@{[]},.-_:;*\'\\';
+        }
         $rmax = strlen($chars) - 1; // max value for rand, inclusive
         $res = '';
         for ($i = 0; $i < $length; $i++) {

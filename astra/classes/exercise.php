@@ -1,4 +1,5 @@
 <?php
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -596,13 +597,15 @@ class mod_astra_exercise extends mod_astra_learning_object {
     /**
      * Generate a hash of this exercise for the user. The hash is based on
      * a secret key.
-     * @param int $userid Moodle user ID of the user for whom the has is generated
+     * @param int $userid Moodle user ID of the user for whom the hash is generated
      * @return string
      */
     public function getAsyncHash($userid) {
-        require_once(dirname(dirname(__FILE__)) . '/astra_settings.php');
-        
+        $secretkey = get_config(mod_astra_exercise_round::MODNAME, 'secretkey');
+        if (empty($secretkey)) {
+            throw new moodle_exception('nosecretkeyset', mod_astra_exercise_round::MODNAME);
+        }
         $identifier = "$userid." . $this->getId();
-        return \hash_hmac('sha256', $identifier, ASTRA_SECRET_KEY);
+        return \hash_hmac('sha256', $identifier, $secretkey);
     }
 }

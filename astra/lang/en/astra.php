@@ -325,6 +325,7 @@ $string['assistgradingnotallowed'] = 'Assistant grading is not allowed in this e
 $string['assistviewingnotallowed'] = 'Assistant viewing is not allowed in this exercise.';
 $string['exportfilesziperror'] = 'Error in creating the zip archive';
 $string['notenrollednosubmit'] = 'You are not enrolled in the course, hence you may not submit new solutions to exercises.';
+$string['nosecretkeyset'] = 'The Moodle site administrator has not set the mandatory secret key for the Astra plugin.';
 
 // Events / logging
 $string['eventsubmitted'] = 'Student submitted a new solution';
@@ -350,3 +351,5 @@ $string['cainfopath'] = 'File path of the CA certificate bundle';
 $string['cainfopath_help'] = 'Absolute path to a file that holds one or more CA certificates. If this is set, the next setting (curl_capath) is ignored. In Ubuntu Linux, the file "/etc/ssl/certs/ca-certificates.crt" usually contains the CA bundle. Different operating systems use different default locations!';
 $string['cadirpath'] = 'Directory that holds CA certificates';
 $string['cadirpath_help'] = 'Absolute path to a directory that holds multiple CA certificates. The certificate file names must be hashed (c_rehash script in OpenSSL). In Ubuntu Linux, the directory "/etc/ssl/certs" is the system default location that already has hashed the file names. Some operating systems may prefer using a CA bundle file as a default over a CA directory (see the previous setting, curl_cainfo).';
+$string['asyncsecretkey'] = 'Secret key';
+$string['asyncsecretkey_help'] = 'Secret key is used to ensure that only the real exercise service may post grading results back to Astra, that is, the key is used to compute hash values that others can not replicate. The key should be 50-100 characters long and consist of ASCII characters (a-z, A-Z, 0-9, special characters !"#@.- etc.). The key must not leak to users or outsiders and it shall not be stored in the exercise service either.';

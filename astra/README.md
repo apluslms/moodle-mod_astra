@@ -27,7 +27,7 @@ Features in A+ that have NOT been implemented in this Moodle plugin
 
 
 Moodle block plugin: block_astra_setup
--------------------------------------------
+--------------------------------------
 
 The Moodle plugin is bundled with a small Moodle block plugin. The block plugin
 is used to provide links to course administrative tasks for teachers. The block
@@ -48,24 +48,28 @@ moodledir/blocks/astra_setup/
 After copying the files, an admin needs to visit the Moodle admin pages
 in the web browser and upgrade the database, as usual when installing plugins.
 
-mod_astra needs a secret key defined in the source code. If the code is
-pulled from a (Git) repository, the default key is not safe to use in production
-servers. The secret key should be 50-100 characters long and consist of printable
-ASCII characters. It is defined in the PHP file `astra/astra_settings.php`
-as a constant `ASTRA_SECRET_KEY`. One way to generate a new random key using
-a Linux shell is the following command: 
-`$ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-99};echo;`
-The new key should be copy-pasted into the PHP file, replacing the old value.
+Sitewide configuration of the plugin
+------------------------------------
+
+Astra has some settings that affect all instances (activities) of the module.
+They are accessed from the Moodle administration menu
+(`Site administration -> Plugins -> Activity modules -> Astra exercises`).
+
+Astra requires a secret key for computing hash values that are part of the
+grader protocol (used to communicate with exercise services).
+The secret key should be 50-100 characters long and consist of ASCII characters.
+Astra generates a random key at installation time but it may be replaced with
+a new key. If the secret key is changed while a course is running, it may disrupt
+exercise submissions that were started before the change but did not completely
+finish before it.
 
 If you use HTTPS connection between Moodle and exercise service (i.e., if the exercise
-service URL begins with `https://`), you may need to configure the plugin in
-Moodle `Site administration -> Plugins -> Activity modules -> Astra exercises`.
-There you may set the path to CA certificates installed in the Moodle server.
-The CA certificates are used to verify peer certificates in HTTPS connections
-(to the exercise service): if the verification fails, the connection fails.
-Astra uses the PHP libcurl library for issuing HTTP(S) requests. Some servers may
-have functional default values for libcurl, in which case it is unnecessary to set
-the CA certificate configurations in the Astra plugin.
+service URL begins with `https://`), you may need to set the path to CA certificates
+installed in the Moodle server. The CA certificates are used to verify peer
+certificates in HTTPS connections (to the exercise service): if the verification fails,
+the connection fails. Astra uses the PHP libcurl library for issuing HTTP(S) requests.
+Some servers may have functional default values for libcurl, in which case it is
+unnecessary to set the CA certificate configurations in the Astra plugin.
 
 
 Code organization
