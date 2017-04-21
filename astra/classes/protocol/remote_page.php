@@ -248,25 +248,28 @@ class remote_page {
             \mod_astra_submission $submission, $noPenalties = false) {
         $page = new \mod_astra\protocol\exercise_page($exercise);
         $this->parsePageContent($exercise, $page);
-        $feedback = $page->content;
-        if ($page->is_accepted) {
-            if ($page->is_graded) {
-                $servicePoints = $page->points;
-                if (isset($page->meta['max_points'])) {
-                    $serviceMaxPoints = $page->meta['max_points'];
+        if ($page->is_loaded) {
+            $feedback = $page->content;
+            if ($page->is_accepted) {
+                if ($page->is_graded) {
+                    $servicePoints = $page->points;
+                    if (isset($page->meta['max_points'])) {
+                        $serviceMaxPoints = $page->meta['max_points'];
+                    } else {
+                        $serviceMaxPoints = $exercise->getMaxPoints();
+                    }
+                    
+                    $submission->grade($servicePoints, $serviceMaxPoints, $feedback, null, $noPenalties);
                 } else {
-                    $serviceMaxPoints = $exercise->getMaxPoints();
+                    $submission->setWaiting();
+                    $submission->setFeedback($feedback);
+                    $submission->save();
                 }
-                
-                $submission->grade($servicePoints, $serviceMaxPoints, $feedback, null, $noPenalties);
             } else {
-                $submission->setWaiting();
+                $submission->setError();
                 $submission->setFeedback($feedback);
                 $submission->save();
             }
-        } else {
-            $submission->setError();
-            $submission->save();
         }
     }
     
