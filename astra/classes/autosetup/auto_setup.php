@@ -765,9 +765,11 @@ class auto_setup {
             $value = \substr($duration, 0, $len - 1);
             if (\is_numeric($value)) {
                 $value = (int) $value;
-                if (\in_array(\strtolower($unit), array('h', 'm', 's')))
+                if (\in_array(\strtolower($unit), array('h', 's')))
+                    // time (hours), mooc-grader uses m for months, not minutes
                     $intervalSpec = "PT$value". \strtoupper($unit);
                 else
+                    // date (days, months, years)
                     $intervalSpec = "P$value". \strtoupper($unit);
                 try {
                     $interval = new \DateInterval($intervalSpec);
