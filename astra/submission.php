@@ -12,6 +12,7 @@ require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/locallib.php');
 
 $id = required_param('id', PARAM_INT); // submission ID
+$wait = (bool) optional_param('wait', 0, PARAM_INT); // yes 1 / no 0, poll for the grading status
 
 $submission = mod_astra_submission::createFromId($id);
 $exercise = $submission->getExercise();
@@ -65,7 +66,7 @@ if (astra_is_ajax()) {
     
     echo $output->header();
     
-    $renderable = new \mod_astra\output\submission_page($exround, $exercise, $submission);
+    $renderable = new \mod_astra\output\submission_page($exround, $exercise, $submission, $wait);
     echo $output->render($renderable);
     
     echo $output->footer();

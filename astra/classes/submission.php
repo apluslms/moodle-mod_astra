@@ -630,6 +630,7 @@ class mod_astra_submission extends mod_astra_database_object {
     public function getTemplateContext($includeFeedbackAndFiles = false, $includeSbmsAndGradingData = false) {
         $ctx = new stdClass();
         $ctx->url = \mod_astra\urls\urls::submission($this);
+        $ctx->poll_url = \mod_astra\urls\urls::pollSubmissionStatus($this);
         $ctx->inspecturl = \mod_astra\urls\urls::inspectSubmission($this);
         $ctx->submission_time = $this->getSubmissionTime();
         //$ctx->nth = 1; // counting the ordinal number here would be too expensive,

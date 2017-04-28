@@ -30,6 +30,7 @@ if ((!$cm->visible || $exround->isHidden() || $learningObject->isHidden()) &&
 }
 
 $sbms = null;
+$wait_for_async_grading = false; // if frontend JS should poll for the submission status
 $errorMsg = null;
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && $learningObject->isSubmittable()) {
     // new submission, can only submit to exercises
@@ -79,7 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $learningObject->isSubmittable()) {
                 }
                 
                 // send the new submission to the exercise service
-                $learningObject->uploadSubmissionToService($sbms, false, $tmpFiles, false);
+                $feedback_page = $learningObject->uploadSubmissionToService($sbms, false, $tmpFiles, false);
+                $wait_for_async_grading = $feedback_page->is_wait;
                 
             } catch (Exception $e) {
                 $errorMsg = get_string('uploadtoservicefailed', mod_astra_exercise_round::MODNAME);
@@ -93,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $learningObject->isSubmittable()) {
             if (empty($errorMsg) && !astra_is_ajax()) {
                 // Redirect the client to the submission page: 
                 // there must be no output before this (echo HTML, whitespace outside php tags)
-                header('Location: '. \mod_astra\urls\urls::submission($sbms));
+                header('Location: '. \mod_astra\urls\urls::submission($sbms, false, $wait_for_async_grading, false));
                 exit(0);
             }
         }
@@ -112,7 +114,7 @@ if (astra_is_ajax()) {
     $output = $PAGE->get_renderer(mod_astra_exercise_round::MODNAME);
     
     $renderable = new \mod_astra\output\exercise_plain_page($exround, $learningObject,
-            $USER, $errorMsg, $sbms);
+            $USER, $errorMsg, $sbms, $wait_for_async_grading);
     header('Content-Type: text/html');
     echo $output->render($renderable);
     // no Moodle header/footer in the output

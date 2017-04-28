@@ -16,12 +16,14 @@ class exercise_plain_page implements \renderable, \templatable {
     protected $user;
     protected $errorMsg;
     protected $submission;
+    protected $wait;
     
     public function __construct(\mod_astra_exercise_round $exround,
             \mod_astra_learning_object $learningObject,
             \stdClass $user,
             $errorMsg = null,
-            $submission = null) {
+            $submission = null,
+            $wait_for_async_grading = false) {
         $this->exround = $exround;
         $this->learningObject = $learningObject;
         $this->user = $user;
@@ -32,6 +34,8 @@ class exercise_plain_page implements \renderable, \templatable {
         }
         $this->errorMsg = $errorMsg;
         $this->submission = $submission; // if set, the page includes the feedback instead of the exercise description
+        $this->wait = $wait_for_async_grading; // if submission is set and $wait is true,
+        // tell the frontend JS to poll for the status of the submission until the grading is complete
     }
     
     /**
@@ -51,6 +55,8 @@ class exercise_plain_page implements \renderable, \templatable {
             // show feedback
             $data->page = new \stdClass();
             $data->page->content = astra_filter_exercise_content($this->submission->getFeedback(), $ctx);
+            $data->page->is_wait = $this->wait;
+            $data->submission = $this->submission->getTemplateContext();
             
         } else if (!($status_maintenance || $not_started) || $data->is_course_staff) {
             // download exercise description from the exercise service

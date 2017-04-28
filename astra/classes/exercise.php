@@ -478,6 +478,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
      * @throws mod_astra\protocol\remote_page_exception if there are errors
      * in connecting to the server
      * @throws Exception if there are errors in handling the files
+     * @return \mod_astra\protocol\exercise_page the feedback page
      */
     public function uploadSubmissionToService(\mod_astra_submission $submission, $noPenalties = false,
             array $files = null, $deleteFiles = false) {
@@ -537,13 +538,14 @@ class mod_astra_exercise extends mod_astra_learning_object {
             throw $e;
         } // PHP 5.4 has no finally block
         
-        $remotePage->loadFeedbackPage($this, $submission, $noPenalties);
+        $page = $remotePage->loadFeedbackPage($this, $submission, $noPenalties);
         
         if ($deleteFiles) {
             foreach ($files as $f) {
                 @unlink($f->filepath);
             }
         }
+        return $page;
     }
     
     public function getMaxSubmissionsForStudent(stdClass $user) {

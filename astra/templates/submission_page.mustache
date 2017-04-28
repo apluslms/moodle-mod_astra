@@ -10,10 +10,13 @@ Context variables:
         that are required by _file_link.mustache
     - feedback (string)
     - variables required by _submission_info.mustache
+    - variables required by _exercise_wait.mustache
 * exercise requires more fields: 
     allow_assistant_grading (bool), max_points (int)
 * fileSizeFormatter (callable) function to convert bytes (int) to a human-readable string (e.g. "10.2 KB")
 * is_course_staff (bool)
+* page (object) with fields
+    - is_wait (boolean) true if the page should poll whether the grading of the submission is complete 
 }}
 
 {{< mod_astra/exercise_base }}
@@ -54,6 +57,7 @@ Context variables:
         {{#str}} nofeedback, mod_astra {{/str}}
     </div>
   {{/ submission.feedback }}
+  {{> mod_astra/_exercise_wait }}
 
 {{/ exercisecontent }}
 
@@ -67,3 +71,12 @@ Context variables:
 {{/ exerciseinfo }}
 
 {{/ mod_astra/exercise_base }}
+
+{{#js}}
+require(['jquery', 'mod_astra/aplus_poll'], function($) {
+  // activate poller (uses markup from _exercise_wait.mustache)
+  $(function() {
+    $.aplusExerciseDetectWaits();
+  });
+});
+{{/js}}

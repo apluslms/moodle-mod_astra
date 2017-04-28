@@ -18,6 +18,8 @@ class urls {
             return $url;
         } else {
             return $url->out($escaped); // string
+            // $escaped true: use in HTML, ampersands & are escaped
+            // false: use in HTTP headers
         }
     }
     
@@ -72,9 +74,13 @@ class urls {
         return self::buildUrl('/teachers/delete.php', $query, $asMdlUrl);
     }
     
-    public static function submission(\mod_astra_submission $sbms, $asMdlUrl = false) {
+    public static function submission(\mod_astra_submission $sbms, $asMdlUrl = false, $wait = false,
+            $escaped = true) {
         $query = array('id' => $sbms->getId());
-        return self::buildUrl('/submission.php', $query, $asMdlUrl);
+        if ($wait) {
+            $query['wait'] = 1; // poll whether the grading has finished
+        }
+        return self::buildUrl('/submission.php', $query, $asMdlUrl, $escaped);
     }
     
     public static function inspectSubmission(\mod_astra_submission $sbms, $asMdlUrl = false) {
@@ -205,5 +211,10 @@ class urls {
     public static function massRegrading($courseid, $asMdlUrl = false) {
         $query = array('course' => $courseid);
         return self::buildUrl('/teachers/mass_regrading.php', $query, $asMdlUrl);
+    }
+    
+    public static function pollSubmissionStatus(\mod_astra_submission $submission, $asMdlUrl = false) {
+        $query = array('id' => $submission->getId());
+        return self::buildUrl('/poll.php', $query, $asMdlUrl);
     }
 }

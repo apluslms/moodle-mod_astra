@@ -243,6 +243,7 @@ class remote_page {
      * @param \mod_astra_exercise $exercise
      * @param \mod_astra_submission $submission
      * @param string $noPenalties
+     * @return \mod_astra\protocol\exercise_page the feedback page
      */
     public function loadFeedbackPage(\mod_astra_exercise $exercise,
             \mod_astra_submission $submission, $noPenalties = false) {
@@ -271,6 +272,7 @@ class remote_page {
                 $submission->save();
             }
         }
+        return $page;
     }
     
     protected function parsePageContent(\mod_astra_learning_object $lobj, \mod_astra\protocol\exercise_page $page) {
@@ -326,8 +328,12 @@ class remote_page {
         $page->meta['status'] = $this->getMeta('status');
         if ($page->meta['status'] === 'accepted') {
             $page->is_accepted = true; // accepted for async grading
-            if ($this->getMeta('wait'))
+            $meta_wait = $this->getMeta('wait');
+            if (!empty($meta_wait) || $meta_wait === '0') {
+                // if the remote page has non-empty attribute value for wait, we should wait
+                // PHP thinks empty("0") === true
                 $page->is_wait = true;
+            }
         }
         
         $page->meta['points'] = $this->getMeta('points');

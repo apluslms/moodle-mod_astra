@@ -11,7 +11,7 @@
  * 
  * @module mod_astra/aplus_chapter
  */
-define(['jquery', 'core/event', 'theme_bootstrapbase/bootstrap'], function(jQuery, moodleEvent) {
+define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_bootstrapbase/bootstrap'], function(jQuery, moodleEvent) {
 
 /**
  * Chapter element containing number of exercise elements.

@@ -10,15 +10,18 @@ class submission_page implements \renderable, \templatable {
     protected $submission;
     protected $exerciseSummary;
     protected $user;
+    protected $wait;
     
     public function __construct(\mod_astra_exercise_round $exround,
             \mod_astra_exercise $exercise,
-            \mod_astra_submission $submission) {
+            \mod_astra_submission $submission,
+            $wait = false) {
         $this->exround = $exround;
         $this->exercise = $exercise;
         $this->submission = $submission;
         $this->user = $submission->getSubmitter();
         $this->exerciseSummary = new \mod_astra\summary\user_exercise_summary($exercise, $this->user);
+        $this->wait = $wait;
     }
     
     /**
@@ -45,6 +48,9 @@ class submission_page implements \renderable, \templatable {
         
         $data->toDateStr = new \mod_astra\output\date_to_string();
         $data->fileSizeFormatter = new \mod_astra\output\file_size_formatter();
+        
+        $data->page = new \stdClass();
+        $data->page->is_wait = $this->wait;
         
         return $data;
         // It should return an stdClass with properties that are only made of simple types:

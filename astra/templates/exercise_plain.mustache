@@ -23,6 +23,8 @@ Context variables:
 * error (string) set if an error message should be displayed
 * page (stdClass) with fields
     content (html string)
+    is_wait (boolean) true if JS should poll for the status of the new submission to see when it is ready
+* submission (object) a new submission for _exercise_wait.mustache
 }}
 
         <div id="exercise-all">
@@ -97,8 +99,7 @@ Context variables:
                 </div>
                 {{! if this page receives submissions (is rendered when a new submission is uploaded, 
                 and exercise service tells us to wait a short time,
-                poll for the grading status of the new submission
-                {> mod_astra/_exercise_wait }
-                }}
+                poll for the grading status of the new submission }}
+                {{> mod_astra/_exercise_wait }}
             </div>
         </div>
