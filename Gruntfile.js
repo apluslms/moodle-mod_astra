@@ -27,7 +27,7 @@ module.exports = function(grunt) {
         cwd = process.env.PWD || process.cwd(),
         inAMD = path.basename(cwd) == 'amd';
 
-    var saveLicense = require('uglify-save-license');
+    //var saveLicense = require('uglify-save-license');
 
     // Project configuration.
     grunt.initConfig({
@@ -44,7 +44,7 @@ module.exports = function(grunt) {
         uglify: {
             dynamic_mappings: {
                 options: {
-                    preserveComments: saveLicense,
+                    //preserveComments: saveLicense,
                 },
                 files: grunt.file.expandMapping(
                     ['**/src/*.js', '!**/node_modules/**'],
@@ -63,7 +63,7 @@ module.exports = function(grunt) {
             static_mappings: {
                 // if there is a need to avoid processing all files at once, list some files here
                 options: {
-                    preserveComments: saveLicense,
+                    //preserveComments: saveLicense,
                 },
                 files: {
                     'astra/amd/build/aplus_filemodal.min.js': ['astra/amd/src/aplus_filemodal.js'],
