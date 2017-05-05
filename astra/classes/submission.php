@@ -636,6 +636,7 @@ class mod_astra_submission extends mod_astra_database_object {
         //$ctx->nth = 1; // counting the ordinal number here would be too expensive,
         // since it has to query all submissions from the database
         $ctx->state = $this->getStatus(true);
+        $ctx->status_wait = ($this->getStatus() === self::STATUS_WAITING);
         $grade = $this->getGrade();
         $ctx->submitted = true;
         $ctx->full_score = ($grade >= $this->getExercise()->getMaxPoints());

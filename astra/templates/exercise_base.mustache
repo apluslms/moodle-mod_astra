@@ -96,19 +96,46 @@ Blocks that child templates should override:
 <div class="col-lg-3">
 
     {{$ exerciseinfo }}
-    <div id="exercise-info" {{!data-url="{ exercise|url:'exercise-info' }"}}>
-        {{>  mod_astra/_exercise_info }}
+    <div id="exercise-info" {{!data-url="{ exercise|url:'exercise-info' }" no backend implemented for retrieving the exercise info box}}>
+        {{> mod_astra/_exercise_info }}
     </div>
     {{/ exerciseinfo }}
 
 </div>
 </div>
 
-<div id="default-modal" class="modal" role="dialog">
+<div id="page-modal" class="modal" role="dialog">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
+            <div class="modal-progress">
+              <div class="progress">
+                <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%" data-msg-error="{{#str}} loadingfailed, mod_astra {{/str}}">
+                  {{#str}} loading, mod_astra {{/str}}
+                </div>
+              </div>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">
+                {{#str}} close, mod_astra {{/str}}
+              </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="file-modal" class="modal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-progress">
+              <div class="progress">
+                <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%" data-msg-error="{{#str}} loadingfailed, mod_astra {{/str}}">
+                  {{#str}} loading, mod_astra {{/str}}
+                </div>
+              </div>
+            </div>
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{#str}} close, mod_astra {{/str}}">
                     <span aria-hidden="true">&times;</span>
                 </button>
                 <h4 class="modal-title"></h4>
@@ -119,14 +146,15 @@ Blocks that child templates should override:
 </div>
 
 {{#js}}
-require(['jquery', 'mod_astra/aplus_filemodal'], function($) {
-  /* enable Bootstrap tooltips */
+require(['jquery', 'mod_astra/aplus_modal'], function($) {
   $(function() {
+    /* enable Bootstrap tooltips */
     $('[data-toggle="tooltip"]').tooltip();
+    
+    /* Enable modal dialogs */
+    $('.page-modal').aplusModalLink();
+    $('.file-modal').aplusModalLink({file:true});
   });
-  
-  /* Enable file modal */
-  $('.file-modal').aplusFileModal();
   
   /* set active tab in the exercise page navbar */
   var body_id = $('body').attr('id');

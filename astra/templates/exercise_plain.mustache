@@ -27,79 +27,76 @@ Context variables:
 * submission (object) a new submission for _exercise_wait.mustache
 }}
 
-        <div id="exercise-all">
+<div id="exercise-all">
 
-      {{# exercise.is_submittable }}
-            <ul class="exercise-summary nav nav-pills">
-                <li>
-                    <a href="{{# summary.best_submission_url }}{{ summary.best_submission_url }}{{/ summary.best_submission_url }}{{^ summary.best_submission_url }}#{{/ summary.best_submission_url }}">
-                        {{#str}} points, mod_astra {{/str}}
-                        {{# summary }}
-                          {{> mod_astra/_points_badge }}
-                        {{/ summary }}
-                    </a>
-                </li>
-                <li class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                        {{#str}} submissions, mod_astra {{/str}}
-                        <span class="badge">
-                            {{ summary.submission_count }}
-                            {{# exercise.max_submissions_for_user }}
-                            / {{ exercise.max_submissions_for_user }}
-                            {{/ exercise.max_submissions_for_user }}
-                        </span>
-                        <b class="caret"></b>
-                    </a>
-                    <ul class="dropdown-menu">
-                        {{# submissions }}
-                        <li>
-                            <a href="{{{ url }}}">
-                                {{ nth }}.
-                                {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
-                                {{> mod_astra/_points_badge }}
-                            </a>
-                        </li>
-                        {{/ submissions }}
-                        {{^ submissions }}
-                        <li>
-                            <a href="#">{{#str}} nosubmissionsyet, mod_astra {{/str}}</a>
-                        </li>
-                        {{/ submissions }}
-                    </ul>
-                </li>
-                <li>
-                    <p class="navbar-text navbar-btn">
-                        <small>
-                            {{# exercise.points_to_pass }}
-                            {{#str}} requiredpoints, mod_astra, {{ exercise.points_to_pass }} {{/str}}. 
-                            {{/ exercise.points_to_pass }}
-                            {{#str}} deadline, mod_astra {{/str}} {{# toDateStr }}{{ module.closingtime }}{{/ toDateStr }}
-                        </small>
-                    </p>
-                </li>
-                {{# exercise.can_view_submissions }}
-                <li>
-                    <p class="navbar-text navbar-btn">
-                        <a class="btn btn-default btn-xs no-open-modal" href="{{{ exercise.submissionlisturl }}}">
-                            <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
-                            {{#str}} viewallsubmissions, mod_astra {{/str}}
+    {{# exercise.is_submittable }}
+        <nav class="exercise-summary navbar navbar-default clearfix">
+          <ul class="nav navbar-nav exercise-nav">
+            <li>
+                <a href="{{# summary.best_submission_url }}{{ summary.best_submission_url }}{{/ summary.best_submission_url }}{{^ summary.best_submission_url }}#{{/ summary.best_submission_url }}">
+                    {{#str}} points, mod_astra {{/str}}
+                    {{# summary }}
+                      {{> mod_astra/_points_badge }}
+                    {{/ summary }}
+                </a>
+            </li>
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    {{#str}} submissions, mod_astra {{/str}}
+                    <span class="badge">
+                        {{ summary.submission_count }}
+                        {{# exercise.max_submissions_for_user }}
+                        / {{ exercise.max_submissions_for_user }}
+                        {{/ exercise.max_submissions_for_user }}
+                    </span>
+                    <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    {{# submissions }}
+                    <li>
+                        <a href="{{{ url }}}">
+                            {{ nth }}.
+                            {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
+                            {{> mod_astra/_points_badge }}
                         </a>
-                    </p>
-                </li>
-                {{/ exercise.can_view_submissions }}
-            </ul>
-      {{/ exercise.is_submittable }}
+                    </li>
+                    {{/ submissions }}
+                    {{^ submissions }}
+                    <li>
+                        <a href="#">{{#str}} nosubmissionsyet, mod_astra {{/str}}</a>
+                    </li>
+                    {{/ submissions }}
+                </ul>
+            </li>
+            <li class="navbar-text">
+                <small>
+                    {{# exercise.points_to_pass }}
+                      {{#str}} requiredpoints, mod_astra, {{ exercise.points_to_pass }} {{/str}}. 
+                    {{/ exercise.points_to_pass }}
+                    {{! TODO show late submission deadline if the normal DL has passed, personal extensions, late penalty }}
+                    {{#str}} deadline, mod_astra {{/str}} {{# toDateStr }}{{ module.closingtime }}{{/ toDateStr }}
+                </small>
+            </li>
+          </ul>
+          {{# exercise.can_view_submissions }}
+            <a class="btn btn-default btn-xs page-modal no-open-modal" href="{{{ exercise.submissionlisturl }}}">
+                <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+                {{#str}} viewallsubmissions, mod_astra {{/str}}
+            </a>
+          {{/ exercise.can_view_submissions }}
+        </nav>
+    {{/ exercise.is_submittable }}
 
-            <div class="exercise-response">
-                {{# error }}
-                  {{> mod_astra/_error_alert }}
-                {{/ error }}
-                <div id="exercise">
-                    {{{ page.content }}}
-                </div>
-                {{! if this page receives submissions (is rendered when a new submission is uploaded, 
-                and exercise service tells us to wait a short time,
-                poll for the grading status of the new submission }}
-                {{> mod_astra/_exercise_wait }}
-            </div>
+    <div class="exercise-response">
+        {{# error }}
+          {{> mod_astra/_error_alert }}
+        {{/ error }}
+        <div>
+            {{{ page.content }}}
         </div>
+        {{! if this page receives submissions (is rendered when a new submission is uploaded, 
+        and exercise service tells us to wait a short time,
+        poll for the grading status of the new submission }}
+        {{> mod_astra/_exercise_wait }}
+    </div>
+</div>

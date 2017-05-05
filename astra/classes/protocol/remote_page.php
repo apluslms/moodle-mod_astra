@@ -284,8 +284,8 @@ class remote_page {
             // AJAX Javascript will load the exercise to the DOM
             $replaceValues = array();
             foreach ($lobj->getChildren() as $childEx) {
-                $replaceValues[$childEx->getOrder()] = array(
-                        'data-aplus-order' => $childEx->getOrder(),
+                $replaceValues[] = array(
+                        'id' => 'chapter-exercise-'. $childEx->getOrder(),
                         'data-aplus-exercise' => \mod_astra\urls\urls::exercise($childEx),
                 );
             }
@@ -459,8 +459,10 @@ class remote_page {
     }
     
     /**
-     * Return HTML string of the element with the given id or attribute value, or
+     * Return HTML string of the contents of the element with the given id or attribute value, or
      * body if no element is found with the given id or attribute in the HTML document.
+     * The contents of an element refer to its inner HTML, excluding the outer element itself.
+     * 
      * @param array $ids array of ID values to search for; the first hit is returned.
      * Use empty array to avoid searching for IDs.
      * @param array $searchAttrs array of (div) element attributes to search for; the first hit
@@ -474,11 +476,7 @@ class remote_page {
         foreach ($ids as $id) {
             $element = $this->DOMdoc->getElementById($id);
             if (!is_null($element)) {
-                if ($id == 'exercise') {
-                    $element->removeAttribute('id');
-                    // remove id since this content is inserted to a new div with id=exercise
-                }
-                return $this->DOMdoc->saveHTML($element);
+                return self::DOMinnerHTML($element);
             }
         }
         
@@ -487,7 +485,7 @@ class remote_page {
             if ($node->nodeType == \XML_ELEMENT_NODE) {
                 foreach ($searchAttrs as $attrName => $attrValue) {
                     if ($node->getAttribute($attrName) == $attrValue) {
-                        return $this->DOMdoc->saveHTML($node);
+                        return self::DOMinnerHTML($node);
                     }
                 }
             }
@@ -496,19 +494,32 @@ class remote_page {
         // resort to body since no id/attr was found
         // Note: using id is more reliable than parsing content from body
         $nodesList = $this->DOMdoc->getElementsByTagName('body');
-        if ($nodesList->length == 0)
+        if ($nodesList->length == 0) {
             return null;
+        }
         $element = $nodesList->item(0); // there should always be exactly one body
-        $html = '';
-        // create HTML strings of all child nodes under body and concatenate
-        // -> do not store the body element itself since this content will be
-        // inserted to another HTML document
-        foreach ($element->childNodes as $child) {
-            $html .= $this->DOMdoc->saveHTML($child);
+        return self::DOMinnerHTML($element);
+    }
+    
+    /**
+     * Return HTML of the inner contents of a DOMNode (or DOMElement).
+     * The element itself is not included, only its children (and their children, etc.).
+     * DOMDocument->saveHTML($element) gives the HTML including the element itself.
+     * Source: http://stackoverflow.com/a/2087136
+     * 
+     * @param \DOMNode $element
+     * @return string
+     */
+    public static function DOMinnerHTML(\DOMNode $element) {
+        $innerHTML = "";
+        $children  = $element->childNodes;
+        
+        foreach ($children as $child) {
+            $innerHTML .= $element->ownerDocument->saveHTML($child);
         }
         
-        return $html;
-    }
+        return $innerHTML;
+    } 
     
     protected function fixFormAction(\mod_astra_exercise $ex) {
         $nodesList = $this->DOMdoc->getElementsByTagName('form');
@@ -597,7 +608,7 @@ class remote_page {
      * is used to replace attribute values. The inner array has attribute names as keys and
      * attribute values as array values.
      */
-    protected function findAndReplaceElementAttributes($tagName, $attrName, array $replaceValues) {
+    protected function findAndReplaceElementAttributesWithMatchingKey($tagName, $attrName, array $replaceValues) {
         foreach ($this->DOMdoc->getElementsByTagName($tagName) as $node) {
             if ($node->nodeType == \XML_ELEMENT_NODE && $node->hasAttribute($attrName)) {
                 if (isset($replaceValues[$node->getAttribute($attrName)])) {
@@ -605,6 +616,49 @@ class remote_page {
                     foreach ($attrsToReplace as $replaceAttrName => $replaceAttrValue) {
                         $node->setAttribute($replaceAttrName, $replaceAttrValue);
                     }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Find elements of type $tagName that have attribute $attrName. Then,
+     * replace the attributes of the element with the attribute values in $replaceValues.
+     * Only the attributes given in $replaceValues are affected.
+     * 
+     * @param string $tagName name of the elements/tags that are searched
+     * @param string $attrName attribute name that is used in the search of elements
+     * @param array $replaceValues array of new attribute values, separately for each
+     * element. The outer array is traversed in the same order as $tagName elements with
+     * attribute $attrName are found in the document, while the corresponding inner array
+     * is used to replace attribute values. The inner array has attribute names as keys and
+     * attribute values as array values.
+     */
+    protected function findAndReplaceElementAttributes($tagName, $attrName, array $replaceValues) {
+        $length = count($replaceValues);
+        if ($length == 0) {
+            return;
+        }
+        $i = 0;
+        foreach ($this->DOMdoc->getElementsByTagName($tagName) as $node) {
+            if ($node->nodeType == \XML_ELEMENT_NODE && $node->hasAttribute($attrName)) {
+                $attrsToReplace = $replaceValues[$i];
+                foreach ($attrsToReplace as $replaceAttrName => $replaceAttrValue) {
+                    if (substr($replaceAttrName, 0, strlen('?')) === '?') {
+                        // if the attribute name for replacing has been prefixed with a question mark,
+                        // only replace the attribute if the element had the attribute previously
+                        $replaceAttrName = substr($replaceAttrName, 1); // drop the first ?
+                        if ($node->hasAttribute($replaceAttrName)) {
+                            $node->setAttribute($replaceAttrName, $replaceAttrValue);
+                        }
+                    } else {
+                        $node->setAttribute($replaceAttrName, $replaceAttrValue);
+                    }
+                }
+                
+                $i += 1;
+                if ($i >= $length) {
+                    return;
                 }
             }
         }

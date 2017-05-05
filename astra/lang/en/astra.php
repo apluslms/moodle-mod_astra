@@ -127,6 +127,10 @@ $string['withyourextension'] = 'with your personal extension';
 $string['close'] = 'Close';
 $string['date'] = 'Date';
 $string['files'] = 'Files';
+$string['loading'] = 'Loading...';
+$string['submissionreceived'] = 'Submission received.';
+$string['gotofeedback'] = 'Go to feedback';
+$string['acceptedforgrading'] = 'Your submission has been accepted for grading.';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';
@@ -326,6 +330,7 @@ $string['assistviewingnotallowed'] = 'Assistant viewing is not allowed in this e
 $string['exportfilesziperror'] = 'Error in creating the zip archive';
 $string['notenrollednosubmit'] = 'You are not enrolled in the course, hence you may not submit new solutions to exercises.';
 $string['nosecretkeyset'] = 'The Moodle site administrator has not set the mandatory secret key for the Astra plugin.';
+$string['loadingfailed'] = 'Loading failed!';
 
 // Events / logging
 $string['eventsubmitted'] = 'Student submitted a new solution';

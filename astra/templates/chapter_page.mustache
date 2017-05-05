@@ -25,7 +25,7 @@ Context variables:
   {{> mod_astra/_round_toc }}
 {{/ round_toc }}
 
-<div id="exercise" data-aplus-chapter="{{{ chapter.url }}}">
+<div id="exercise-page-content">
     {{{ page.content }}}
 </div>
 
@@ -41,6 +41,15 @@ Context variables:
   data-msg-error="{{#str}} exercisecommerror, mod_astra {{/str}}">
   <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
 </div>
+
+<div id="quiz-success" class="hide">
+  <h3 class="text-center">{{#str}} submissionreceived, mod_astra {{/str}}</h3>
+  <p class="text-center badge-placeholder"></p>
+  <button type="button" class="btn btn-success center-block read-feedback" data-dismiss="modal">
+    {{#str}} gotofeedback, mod_astra {{/str}}
+  </button>
+</div>
+
 {{/ exercisecontent }}
 
 {{! remove exercise info box, a chapter does not accept submissions }}
@@ -49,23 +58,13 @@ Context variables:
 
 {{/ mod_astra/exercise_base }}
 
-<div id="embed-modal" class="modal" role="dialog">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-body"></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">
-          {{#str}} close, mod_astra {{/str}}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
 {{#js}}
 require(['jquery', 'mod_astra/aplus_chapter'], function($) {
   // Construct the page chapter element.
-  $('#exercise').aplusChapter();
+  $(function() {
+    $('#exercise-page-content').aplusChapter();
+  });
   
   // hack to support two simultaneously open Bootstrap modal dialogs
   // (feedback modal and submitted file modal)

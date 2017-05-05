@@ -13,14 +13,19 @@ Context variables:
     - late_penalty_applied_percent (int, 0-100)
     - assistant_feedback (string)
     - feedback (string)
+    - status_wait (bool) true if the submission is waiting for assessment
     - fields required by _points_badge.mustache
 * exercise (object) with fields
     - allow_assistant_grading (bool)
+    - name (string)
 * is_course_staff (bool) true if the user can inspect submissions
 * toDateStr callable Function that converts a Unix timestamp to a date string
 * fileSizeFormatter (callable) function to convert bytes (int) to a human-readable string (e.g. "10.2 KB")
 }}
 
+<p class="submission-title">
+    {{ exercise.name }}
+</p>
 <table class="submission-info table table-bordered table-condensed">
         <tr>
             <th>{{#str}} date, mod_astra {{/str}}</th>
@@ -66,25 +71,27 @@ Context variables:
         </tr>
 </table>
 
-<div id="exercise">
-{{# submission.assistant_feedback }}
+<div id="exercise-all">
+  {{# submission.assistant_feedback }}
     <h4>{{#str}} assistantfeedback, mod_astra {{/str}}</h4>
     <blockquote>{{{ submission.assistant_feedback }}}</blockquote>
-{{/ submission.assistant_feedback }}
-{{^ submission.assistant_feedback }}
-    {{# exercise.allow_assistant_grading }}
-    <div class="alert alert-info">
-        {{#str}} noassistantfeedback, mod_astra {{/str}}
+  {{/ submission.assistant_feedback }}
+  
+  {{# submission.feedback }}
+    <div class="exercise-content">
+      {{{ submission.feedback }}}
     </div>
-    {{/ exercise.allow_assistant_grading }}
-{{/ submission.assistant_feedback }}
-
-{{# submission.feedback }}
-    {{{ submission.feedback }}}
-{{/ submission.feedback }}
-{{^ submission.feedback }}
-<div class="alert alert-info">
-    {{#str}} nofeedback, mod_astra {{/str}}
-</div>
-{{/ submission.feedback }}
+  {{/ submission.feedback }}
+  {{^ submission.feedback }}
+    {{# submission.status_wait }}
+      <div class="alert alert-info">
+        {{#str}} acceptedforgrading, mod_astra {{/str}}
+      </div>
+    {{/ submission.status_wait }}
+    {{^ submission.status_wait }}
+      <div class="alert alert-info">
+        {{#str}} nofeedback, mod_astra {{/str}}
+      </div>
+    {{/ submission.status_wait }}
+  {{/ submission.feedback }}
 </div>

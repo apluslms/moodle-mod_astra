@@ -9,6 +9,7 @@ Context variables:
     - files (array of stdClass objects), each object has fields 
         that are required by _file_link.mustache
     - feedback (string)
+    - status_wait (bool) true if the submission is waiting for assessment
     - variables required by _submission_info.mustache
     - variables required by _exercise_wait.mustache
 * exercise requires more fields: 
@@ -39,31 +40,32 @@ Context variables:
     <h4>{{#str}} assistantfeedback, mod_astra {{/str}}</h4>
     <blockquote>{{{ submission.assistant_feedback }}}</blockquote>
   {{/ submission.assistant_feedback }}
-  {{^ submission.assistant_feedback }}
-    {{# exercise.allow_assistant_grading }}
-      <div class="alert alert-info">
-        {{#str}} noassistantfeedback, mod_astra {{/str}}
-      </div>
-    {{/ exercise.allow_assistant_grading }}
-  {{/ submission.assistant_feedback }}
-
+  
   {{# submission.feedback }}
     <div id="exercise">
         {{{ submission.feedback }}}
     </div>
   {{/ submission.feedback }}
   {{^ submission.feedback }}
-    <div class="alert alert-info">
+    {{# submission.status_wait }}
+      <div class="alert alert-info">
+        {{#str}} acceptedforgrading, mod_astra {{/str}}
+      </div>
+    {{/ submission.status_wait }}
+    {{^ submission.status_wait }}
+      <div class="alert alert-info">
         {{#str}} nofeedback, mod_astra {{/str}}
-    </div>
+      </div>
+    {{/ submission.status_wait }}
   {{/ submission.feedback }}
+  
   {{> mod_astra/_exercise_wait }}
 
 {{/ exercisecontent }}
 
 {{$ exerciseinfo }}
 
-  <div id="exercise-info" {{!data-url="{ exercise|url:'exercise-info' }"}}>
+  <div id="exercise-info" {{!data-url="{ exercise|url:'exercise-info' }" no backend implemented for retrieving the exercise info box}}>
       {{>  mod_astra/_exercise_info }}
   </div>
   {{> mod_astra/_submission_info }}
