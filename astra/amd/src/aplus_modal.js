@@ -6,7 +6,7 @@
  * 
  * @module mod_astra/aplus_modal
  */
-define(['jquery', 'mod_astra/aplus_highlightcode', 'theme_bootstrapbase/bootstrap'], function(jQuery) {
+define(['jquery', 'core/event', 'mod_astra/aplus_highlightcode', 'theme_bootstrapbase/bootstrap'], function(jQuery, moodleEvent) {
 
 /**
  * Handle common modal dialog.
@@ -106,7 +106,7 @@ define(['jquery', 'mod_astra/aplus_highlightcode', 'theme_bootstrapbase/bootstra
 /**
  * Open links in a modal.
  */
-(function($, window, document, undefined) {
+(function($, moodleEvent, window, document, undefined) {
    //"use strict";
 
     var pluginName = "aplusModalLink";
@@ -151,6 +151,8 @@ define(['jquery', 'mod_astra/aplus_highlightcode', 'theme_bootstrapbase/bootstra
             var c = modal.aplusModal("content", { content: data });
             c.find('.file-modal').aplusModalLink({file:true});
             c.find('pre.hljs').highlightCode();
+            // changed from A+: render MathJax formulas in the modal content retrieved from the URL
+            moodleEvent.notifyFilterContentUpdated(settings.modal_selector);
           }
         }).fail(function() {
           modal.aplusModal("error");
@@ -166,7 +168,7 @@ define(['jquery', 'mod_astra/aplus_highlightcode', 'theme_bootstrapbase/bootstra
       }
     });
   };
-})(jQuery, window, document);
+})(jQuery, moodleEvent, window, document);
 
 return {}; // for AMD, no names are exported to the outside
 }); // end define

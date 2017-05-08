@@ -67,7 +67,8 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_bootstrapbase/boo
 			if (this.exercisesSize > 0) {
 				this.nextExercise();
 			} else {
-				$.augmentExerciseGroup($(".exercise-column"));
+				//$.augmentExerciseGroup($(".exercise-column"));
+				// changed from A+: no group submissions and no group selection UI
 			}
 		},
 
@@ -102,6 +103,8 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_bootstrapbase/boo
 
 		modalContent: function(content) {
 			this.modalElement.aplusModal("content", { content: content });
+			// changed from A+: render MathJax in the new content
+			this.moodleNotifyFilterContentUpdatedInModal();
 		},
 
 		modalSuccess: function(exercise, badge) {
@@ -112,7 +115,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_bootstrapbase/boo
 			});
 			var content = this.quizSuccess.clone()
 				.attr("class", exercise.attr("class"))
-				.removeClass("exercise")
+				.removeClass("exercise hide") // changed from A+: remove class hide as well since it might otherwise stay if no class is set in the line 115
 				.removeAttr("id");
 			content.find('.badge-placeholder').empty().append(badge);
 			if (badge.hasClass("badge-success") || badge.hasClass("badge-warning")) {
@@ -336,7 +339,6 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_bootstrapbase/boo
 						} else {
 							exercise.chapter.modalContent(content);
 						}
-						//TODO need to update Moodle filter?
 					}).fail(function() {
 						exercise.chapter.modalError(exercise.chapter.messages.error);
 					});
