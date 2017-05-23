@@ -14,13 +14,20 @@ Context variables:
     deadline (int, Unix timestamp, normal round deadline or the extended deadline for the user),
     dl_extended_minutes (int, number of minutes the deadline is extended for the user),
     course_module (stdClass) with keys 
-        closingtime
+        - closingtime
+        - late_submissions_allowed (boolean)
+        - late_submission_deadline (int) timestamp
+        - show_late_submission_point_worth (boolean) true if late submissions receive penalty
+        - late_submission_penalty (int) percentage of points reduced
+    category (object) with fields
+        - name (string)
+        - status_hidden (boolean) true if hidden
 * toDateStr callable Function that converts a Unix timestamp to a date string
 }}
 
 <div class="well">
     <p>{{#str}} earnedpoints, mod_astra {{/str}}</p>
-    <p><strong class="h2">
+    <p><strong class="h2 exercise-info-points">
         {{ summary.points }}
         <small>
             / {{ exercise.max_points }}
@@ -42,8 +49,14 @@ Context variables:
     </div>
     <div class="panel-body">
         <dl>
+            {{^ exercise.category.status_hidden }}
+                <dt>{{#str}} exercisecategory, mod_astra {{/str}}</dt>
+                <dd class="exercise-info-category">
+                  {{ exercise.category.name }}
+                </dd>
+            {{/ exercise.category.status_hidden }}
             <dt>{{#str}} yoursubmissions, mod_astra {{/str}}</dt>
-            <dd>
+            <dd class="exercise-info-submissions">
                 {{ summary.submission_count }}
                 {{# exercise.max_submissions }}
                 / {{ exercise.max_submissions_for_user }}
@@ -55,23 +68,31 @@ Context variables:
 
             {{# exercise.points_to_pass }}
             <dt>{{#str}} pointsrequired, mod_astra {{/str}}</dt>
-            <dd>{{ exercise.points_to_pass }}</dd>
+            <dd class="exercise-info-required-points">{{ exercise.points_to_pass }}</dd>
             {{/ exercise.points_to_pass }}
 
             <dt>{{#str}} deadline, mod_astra {{/str}}</dt>
-            <dd>{{# toDateStr }}{{ exercise.deadline }}{{/ toDateStr }}
+            <dd class="exercise-info-deadline">{{# toDateStr }}{{ exercise.deadline }}{{/ toDateStr }}
             {{# exercise.dl_extended_minutes }}
               <small>{{#str}} withyourextension, mod_astra {{/str}}</small>
             {{/ exercise.dl_extended_minutes }}
             </dd>
 
-            <dt>{{#str}} totalnumberofsubmitters, mod_astra {{/str}}</dt>
-            <dd>{{ exercise.total_submitter_count }}</dd>
+            {{^ exercise.dl_extended_minutes }}
+            {{# exercise.course_module.late_submissions_allowed }}
+            <dt>{{#str}} latesbmsdl, mod_astra {{/str}}</dt>
+            <dd class="exercise-info-late-deadline">
+              {{# toDateStr }}{{ exercise.course_module.late_submission_deadline }}{{/ toDateStr }}
+              {{# exercise.course_module.show_late_submission_point_worth }}
+                (-{{ exercise.course_module.late_submission_penalty }}%)
+              {{/ exercise.course_module.show_late_submission_point_worth }}
+            </dd>
+            {{/ exercise.course_module.late_submissions_allowed }}
+            {{/ exercise.dl_extended_minutes }}
 
-            {{! comment "Disabled: If average is required implement more efficient query for it."
-            <dt>{% trans "Average submissions per student" %}</dt>
-            <dd>{ exercise.todo|floatformat:2 }</dd>
-            }}
+            <dt>{{#str}} totalnumberofsubmitters, mod_astra {{/str}}</dt>
+            <dd class="exercise-info-submitters">{{ exercise.total_submitter_count }}</dd>
+
         </dl>
     </div>
 </div>

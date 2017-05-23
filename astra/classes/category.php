@@ -212,15 +212,18 @@ class mod_astra_category extends mod_astra_database_object {
         return $DB->delete_records(self::TABLE, array('id' => $this->getId()));
     }
     
-    public function getTemplateContext() {
+    public function getTemplateContext($include_lobject_count = true) {
         $ctx = new stdClass();
         $ctx->name = $this->getName();
         $ctx->editurl = \mod_astra\urls\urls::editCategory($this);
-        //$ctx->has_exercises = ($this->countExercises() > 0); // unneeded
-        $ctx->has_learning_objects = ($this->countLearningObjects() > 0);
+        if ($include_lobject_count) {
+            //$ctx->has_exercises = ($this->countExercises() > 0); // unneeded
+            $ctx->has_learning_objects = ($this->countLearningObjects() > 0);
+        }
         $ctx->removeurl = \mod_astra\urls\urls::deleteCategory($this);
         $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
         $ctx->status_str = $this->getStatus(true);
+        $ctx->status_hidden = ($this->getStatus() === self::STATUS_HIDDEN);
         return $ctx;
     }
 }

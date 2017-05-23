@@ -301,6 +301,8 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         $ctx->status_unlisted = ($this->getStatus() === self::STATUS_UNLISTED);
         $ctx->is_submittable = $this->isSubmittable();
         
+        $ctx->category = $this->getCategory()->getTemplateContext(false);
+        
         return $ctx;
     }
     
