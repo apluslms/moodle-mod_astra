@@ -18,6 +18,11 @@ Context variables:
     the variables required by _points_badge.mustache (set status if the submission is not graded)
 * module (object) exercise round, with fields 
     - closingtime (int) Unix timestamp of the round closing time
+    - is_late_submission_open (boolean) true if late submissions are accepted now
+      (deadline passed but the late deadline has not)
+    - late_submission_deadline (int) timestamp
+    - show_late_submission_point_worth (boolean) true if late submissions receive a penalty
+    - late_submission_penalty (int) percentage that is reduced from the points
 * is_course_staff (bool) true if the user can view all submissions
 * toDateStr callable Function that converts a Unix timestamp to a date string
 * error (string) set if an error message should be displayed
@@ -73,8 +78,16 @@ Context variables:
                     {{# exercise.points_to_pass }}
                       {{#str}} requiredpoints, mod_astra, {{ exercise.points_to_pass }} {{/str}}. 
                     {{/ exercise.points_to_pass }}
-                    {{! TODO show late submission deadline if the normal DL has passed, personal extensions, late penalty }}
-                    {{#str}} deadline, mod_astra {{/str}} {{# toDateStr }}{{ module.closingtime }}{{/ toDateStr }}
+                    {{! TODO show personal deadline deviation }}
+                    {{# module.is_late_submission_open }}
+                      {{#str}} latesbmsdl, mod_astra {{/str}} {{# toDateStr }}{{ module.late_submission_deadline }}{{/ toDateStr }}
+                      {{# module.show_late_submission_point_worth }}
+                        (-{{ module.late_submission_penalty }}%)
+                      {{/ module.show_late_submission_point_worth }}
+                    {{/ module.is_late_submission_open }}
+                    {{^ module.is_late_submission_open }}
+                      {{#str}} deadline, mod_astra {{/str}} {{# toDateStr }}{{ module.closingtime }}{{/ toDateStr }}
+                    {{/ module.is_late_submission_open }}
                 </small>
             </li>
           </ul>

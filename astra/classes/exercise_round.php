@@ -953,7 +953,9 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         $ctx->late_submissions_allowed = $this->isLateSubmissionAllowed();
         $ctx->late_submission_deadline = $this->getLateSubmissionDeadline();
         $ctx->late_submission_point_worth = $this->getLateSubmissionPointWorth();
+        $ctx->is_late_submission_open = $this->isLateSubmissionOpen();
         $ctx->show_late_submission_point_worth = ($ctx->late_submission_point_worth < 100);
+        $ctx->late_submission_penalty = (int) ($this->getLateSubmissionPenalty() * 100); // percent
         $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
         $ctx->status_maintenance = ($this->getStatus() === self::STATUS_MAINTENANCE);
         $ctx->introduction = \format_module_intro(self::TABLE, $this->record, $this->cm->id);
