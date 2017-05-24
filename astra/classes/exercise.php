@@ -397,6 +397,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
             $includeTotalSubmitterCount = true, $includeCourseModule = true) {
         $ctx = parent::getTemplateContext($includeCourseModule);
         $ctx->submissionlisturl = \mod_astra\urls\urls::submissionList($this);
+        $ctx->infourl = \mod_astra\urls\urls::exerciseInfo($this);
         
         $ctx->max_points = $this->getMaxPoints();
         $ctx->max_submissions = $this->getMaxSubmissions();

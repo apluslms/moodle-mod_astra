@@ -4,7 +4,8 @@ Derived from A+ (a-plus/exercise/templates/exercise/exercise_base.html)
 
 Context variables:
 * exercise (stdClass) with fields
-    url (string), submissionlisturl, editurl
+    - url (string), submissionlisturl, editurl
+    - infourl (string) AJAX URL for the exercise info box
 * submissions (array of objects, the latest submission first), each object has keys 
     url (string), submission_time (int, timestamp), nth (int, ordinal number),
     the variables required by _points_badge.mustache (set status if the submission is not graded)
@@ -96,7 +97,7 @@ Blocks that child templates should override:
 <div class="col-lg-3">
 
     {{$ exerciseinfo }}
-    <div id="exercise-info" {{!data-url="{ exercise|url:'exercise-info' }" no backend implemented for retrieving the exercise info box}}>
+    <div id="exercise-info" data-url="{{ exercise.infourl }}">
         {{> mod_astra/_exercise_info }}
     </div>
     {{/ exerciseinfo }}

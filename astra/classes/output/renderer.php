@@ -89,4 +89,9 @@ class renderer extends \plugin_renderer_base {
         $data = $page->export_for_template($this);
         return $this->render_from_template(\mod_astra_exercise_round::MODNAME .'/submission_plain', $data);
     }
+    
+    protected function render_exercise_info(\mod_astra\output\exercise_info $page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template(\mod_astra_exercise_round::MODNAME .'/_exercise_info', $data);
+    }
 }

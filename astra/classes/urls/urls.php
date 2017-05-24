@@ -217,4 +217,9 @@ class urls {
         $query = array('id' => $submission->getId());
         return self::buildUrl('/poll.php', $query, $asMdlUrl);
     }
+    
+    public static function exerciseInfo(\mod_astra_exercise $exercise, $asMdlUrl = false) {
+        $query = array('id' => $exercise->getId());
+        return self::buildUrl('/exercise_info.php', $query, $asMdlUrl);
+    }
 }
