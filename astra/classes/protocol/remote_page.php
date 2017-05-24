@@ -744,11 +744,25 @@ class remote_page {
         if (isset($remoteUrlComponents['path'])) {
             $path = $remoteUrlComponents['path'];
         }
+        if (empty($path)) {
+            $path = '/';
+        } else if (mb_substr($path, -1) !== '/') { // does not end with /
+            // remove the last part in path, e.g., "chapter.html" in "/course/module/chapter.html"
+            $path = dirname($path) . '/';
+        }
         
-        $this->_fixRelativeUrls($domain, $path, 'img', 'src');
-        $this->_fixRelativeUrls($domain, $path, 'script', 'src');
-        $this->_fixRelativeUrls($domain, $path, 'link', 'href');
-        $this->_fixRelativeUrls($domain, $path, 'a', 'href');
+        $tags_attrs = array(
+                'img' => 'src',
+                'script' => 'src',
+                'iframe' => 'src',
+                'link' => 'href',
+                'a' => 'href',
+                'video' => 'poster',
+                'source' => 'src',
+        );
+        foreach ($tags_attrs as $tag => $attr) {
+            $this->_fixRelativeUrls($domain, $path, $tag, $attr);
+        }
     }
     
     /**
