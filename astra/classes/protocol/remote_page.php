@@ -42,9 +42,32 @@ class remote_page {
         $this->url = $url;
         list($this->response, $this->response_headers) =
                 self::request($url, $post, $data, $files, $api_key, $stamp);
+        libxml_use_internal_errors(true); // Disable libxml errors
+        // libxml (DOMDocument) prints a lot of warnings when it does not recognize (valid) HTML5 elements or
+        // sees unexpected <p> end tags... Disable error reporting to avoid useless spam.
         $this->DOMdoc = new \DOMDocument();
-        if ($this->DOMdoc->loadHTML($this->response) === false)
-            throw new \mod_astra\protocol\remote_page_exception('DOMDocument::loadHTML could not load the response');
+        if ($this->DOMdoc->loadHTML($this->response) === false) {
+            $message = '';
+            foreach (libxml_get_errors() as $error) {
+                switch ($error->level) {
+                    case LIBXML_ERR_WARNING:
+                        $message .= "Warning $error->code: ";
+                        break;
+                    case LIBXML_ERR_ERROR:
+                        $message .= "Error $error->code: ";
+                        break;
+                    case LIBXML_ERR_FATAL:
+                        $message .= "Fatal Error $error->code: ";
+                        break;
+                }
+                $message .= trim($error->message);
+                $message .= "\n";
+            }
+            libxml_clear_errors();
+            throw new \mod_astra\protocol\remote_page_exception("DOMDocument::loadHTML could not load the response\n" .
+                    $message);
+        }
+        libxml_clear_errors();
     }
     
     /**
