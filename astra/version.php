@@ -14,8 +14,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_astra';
-$plugin->version = 2017050200;
-$plugin->release = 'v1.1';
+$plugin->version = 2017052400;
+$plugin->release = 'v1.2';
 $plugin->requires =  2015111600; // Moodle 3.0
 $plugin->maturity = MATURITY_STABLE;
 //$plugin->cron = 0; // legacy cron API 
