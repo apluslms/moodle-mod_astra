@@ -147,7 +147,7 @@ Blocks that child templates should override:
 </div>
 
 {{#js}}
-require(['jquery', 'mod_astra/aplus_modal'], function($) {
+require(['jquery', 'mod_astra/aplus_modal', 'theme_bootstrapbase/bootstrap'], function($) {
   $(function() {
     /* enable Bootstrap tooltips */
     $('[data-toggle="tooltip"]').tooltip();
@@ -155,15 +155,15 @@ require(['jquery', 'mod_astra/aplus_modal'], function($) {
     /* Enable modal dialogs */
     $('.page-modal').aplusModalLink();
     $('.file-modal').aplusModalLink({file:true});
+    
+    /* set active tab in the exercise page navbar */
+    var body_id = $('body').attr('id');
+    // e.g. page-mod-astra-exercise
+    if (body_id) {
+      var arr = body_id.split('-');
+      var page = arr[arr.length - 1];
+      $(".menu-" + page).addClass("active");
+    }
   });
-  
-  /* set active tab in the exercise page navbar */
-  var body_id = $('body').attr('id');
-  // e.g. page-mod-astra-exercise
-  if (body_id) {
-    var arr = body_id.split('-');
-    var page = arr[arr.length - 1];
-    $(".menu-" + page).addClass("active");
-  }
 });
 {{/js}}

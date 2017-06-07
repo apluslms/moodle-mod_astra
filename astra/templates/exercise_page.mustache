@@ -45,7 +45,7 @@ Context variables:
 {{/ mod_astra/exercise_base }}
 
 {{#js}}
-require(['jquery'], function($) {
+require(['jquery', 'theme_bootstrapbase/bootstrap'], function($) {
     // Add an Ajax exercise event listener to refresh the info column.
     window.addEventListener("message", function (event) {
         if (event.data.type === "a-plus-refresh-stats") {
