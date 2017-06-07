@@ -135,7 +135,7 @@ class all_students_course_summary {
             $sbmsDataColumn = ',s.submissiondata';
         }
         
-        $submissionsByExercise = array(); // organize submissions by exercise (remote key) and submitter (user id)
+        $submissionsByExercise = array(); // organize submissions by exercise (learning object id) and submitter (user id)
         
         // one large DB query instead of repeating multiple small queries for each student and exercise
         $allSubmissions = $DB->get_recordset_sql(
@@ -149,46 +149,47 @@ class all_students_course_summary {
                 $params);
         foreach ($allSubmissions as $sbmsRecord) {
             /*
-            $submissionsByExercise[exercise remote key][student user id] = array(
+            $submissionsByExercise[exercise lobjectid][student user id] = array(
                 'best' => submission object (best points),
                 'student_id' => idnumber or username,
                 'submissions' => array of submission objects, in the order they were submitted
                                  (latest at the end)
             */
-            if (!isset($submissionsByExercise[$sbmsRecord->remotekey])) {
-                $submissionsByExercise[$sbmsRecord->remotekey] = array();
+            if (!isset($submissionsByExercise[$sbmsRecord->exerciseid])) {
+                $submissionsByExercise[$sbmsRecord->exerciseid] = array();
             }
             $sbms = new \mod_astra_submission($sbmsRecord);
             
-            if (!isset($submissionsByExercise[$sbmsRecord->remotekey][$sbmsRecord->submitter])) {
+            if (!isset($submissionsByExercise[$sbmsRecord->exerciseid][$sbmsRecord->submitter])) {
                 if (empty($sbmsRecord->idnumber) || $sbmsRecord->idnumber === '(null)') {
                     $studentId = $sbmsRecord->username;
                 } else {
                     $studentId = $sbmsRecord->idnumber;
                 }
-                $submissionsByExercise[$sbmsRecord->remotekey][$sbmsRecord->submitter] = array(
+                $submissionsByExercise[$sbmsRecord->exerciseid][$sbmsRecord->submitter] = array(
                         'best' => $sbms,
                         'student_id' => $studentId,
                         'submissions' => array(),
                         'roundkey' => $sbmsRecord->roundkey,
+                        'exkey' => $sbmsRecord->remotekey, // learning object remote key
                 );
             }
             
-            $submissionsByExercise[$sbmsRecord->remotekey][$sbmsRecord->submitter]['submissions'][] = $sbms;
-            if ($submissionsByExercise[$sbmsRecord->remotekey][$sbmsRecord->submitter]['best']->getGrade() <
+            $submissionsByExercise[$sbmsRecord->exerciseid][$sbmsRecord->submitter]['submissions'][] = $sbms;
+            if ($submissionsByExercise[$sbmsRecord->exerciseid][$sbmsRecord->submitter]['best']->getGrade() <
                     $sbms->getGrade()) {
-                $submissionsByExercise[$sbmsRecord->remotekey][$sbmsRecord->submitter]['best'] = $sbms;
+                $submissionsByExercise[$sbmsRecord->exerciseid][$sbmsRecord->submitter]['best'] = $sbms;
             }
         }
         
         $allSubmissions->close();
         $this->submissionsByExercise = $submissionsByExercise;
         
-        $categoriesByExRemoteKey = array(); // used later to look up categories
+        $categoriesByExerciseId = array(); // used later to look up categories
         foreach ($this->exercises as $ex) {
             foreach ($this->categories as $cat) {
                 if ($cat->getId() == $ex->getCategoryId()) {
-                    $categoriesByExRemoteKey[$ex->getRemoteKey()] = $cat;
+                    $categoriesByExerciseId[$ex->getId()] = $cat;
                     break;
                 }
             }
@@ -196,8 +197,8 @@ class all_students_course_summary {
         
         // compute category totals
         $categoryTotalsByStudent = array();
-        foreach ($submissionsByExercise as $exRemoteKey => $students) {
-            $catName = $categoriesByExRemoteKey[$exRemoteKey]->getName();
+        foreach ($submissionsByExercise as $exerciseId => $students) {
+            $catName = $categoriesByExerciseId[$exerciseId]->getName();
             foreach ($students as $userId => $results) {
                 $studentId = $results['student_id'];
                 if (!isset($categoryTotalsByStudent[$studentId])) {
@@ -217,7 +218,7 @@ class all_students_course_summary {
         
         // compute round totals
         $roundTotalsByStudent = array();
-        foreach ($submissionsByExercise as $exRemoteKey => $students) {
+        foreach ($submissionsByExercise as $exerciseId => $students) {
             foreach ($students as $userId => $results) {
                 $studentId = $results['student_id'];
                 $points = $results['best']->getGrade();

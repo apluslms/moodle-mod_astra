@@ -129,25 +129,10 @@ abstract class edit_learning_object_form extends \moodleform {
             $errors['parentid'] = \get_string('parentexinwronground', \mod_astra_exercise_round::MODNAME);
         }
     
-        // remotekey should be unique in all learning objects in the course
-        // first fetch all exercises/chapters with the same remotekey, check course in the loop
-        $exerciseRecords = $DB->get_records_sql(
-                \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_exercise::TABLE) .
-                ' WHERE lob.remotekey = ?',
-                array($data['remotekey']));
-        $chapterRecords = $DB->get_records_sql(
-                \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_chapter::TABLE) .
-                ' WHERE lob.remotekey = ?',
-                array($data['remotekey']));
-        $lobjRecords = \array_merge($exerciseRecords, $chapterRecords);
-        foreach ($lobjRecords as $exrecord) {
-            if (isset($exrecord->maxsubmissions)) {
-                $otherObject = new \mod_astra_exercise($exrecord);
-            } else {
-                $otherObject = new \mod_astra_chapter($exrecord);
-            }
-            if ($otherObject->getId() != $this->editObjectId &&
-                    $otherObject->getExerciseRound()->getCourse()->courseid == $this->courseid) {
+        // remotekey must be unique within the learning objects of the exercise round
+        foreach ($exercises as $ex) {
+            if ($ex->getId() != $this->editObjectId &&
+                    $ex->getRemoteKey() == $data['remotekey']) {
                 $errors['remotekey'] = \get_string('duplicateexerciseremotekey', \mod_astra_exercise_round::MODNAME);
                 break;
             }

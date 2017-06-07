@@ -74,7 +74,7 @@ class export_data {
         $json = array(
                 'students' => array(), 
         );
-        foreach ($this->courseSummary->getSubmissionsByExercise() as $exRemoteKey => $students) {
+        foreach ($this->courseSummary->getSubmissionsByExercise() as $exerciseId => $students) {
             foreach ($students as $userId => $results) {
                 $studentId = $results['student_id'];
                 if (!isset($json['students'][$studentId])) {
@@ -94,7 +94,10 @@ class export_data {
                     $bestSbms = $results['best'];
                 }
                 
-                $json['students'][$studentId]['exercises'][$exRemoteKey] = array(
+                $remoteKey = $this->combined_remote_key($results['roundkey'], $results['exkey']);
+                // combine the round and exercise remote keys since exercise keys are unique only within a round
+                
+                $json['students'][$studentId]['exercises'][$remoteKey] = array(
                         'points' => $bestSbms->getGrade(),
                         'submissiontime' => $bestSbms->getSubmissionTime(),
                         'id' => $bestSbms->getId(),
@@ -104,9 +107,9 @@ class export_data {
                 // include a list of all submissions in JSON
                 if ($this->includeSubmissions == all_students_course_summary::SUBMISSIONS_ALL ||
                         $this->includeSubmissions == all_students_course_summary::SUBMISSIONS_ONLY_ERROR) {
-                    $json['students'][$studentId]['exercises'][$exRemoteKey]['submissions'] = array();
+                    $json['students'][$studentId]['exercises'][$remoteKey]['submissions'] = array();
                     foreach ($results['submissions'] as $sbms) {
-                        $json['students'][$studentId]['exercises'][$exRemoteKey]['submissions'][] = array(
+                        $json['students'][$studentId]['exercises'][$remoteKey]['submissions'][] = array(
                                 'points' => $sbms->getGrade(),
                                 'submissiontime' => $sbms->getSubmissionTime(),
                                 'status' => $sbmsStatusToString($sbms->getStatus()),
@@ -140,7 +143,7 @@ class export_data {
             "students": {
                 "<student_id>" (idnumber or username): {
                     "exercises": {
-                        "<remotekey>" (each exercise): {
+                        "<round_remote_key>/<exercise_remote_key>" (each exercise): {
                             "points": 10, (points of the best submission)
                             "submissiontime": Unix timestamp,
                             "numberofsubmissions": 5,
@@ -171,6 +174,10 @@ class export_data {
         */
     }
     
+    protected function combined_remote_key($round_key, $exercise_key) {
+        return "$round_key/$exercise_key";
+    }
+    
     /**
      * Return a list of students that have passed the course exercises (gained at least
      * minimum required points in all exercises, rounds and categories).
@@ -198,9 +205,11 @@ class export_data {
         $passedAllExercisesAndRounds = function ($studentResults) use ($exercises, $exrounds) {
             $roundTotals = array();
             foreach ($exercises as $ex) {
-                if (isset($studentResults[$ex->getRemoteKey()])) {
+                if (isset($studentResults[$this->combined_remote_key(
+                        $exrounds[$ex->getRecord()->roundid]->getRemoteKey(), $ex->getRemoteKey())])) {
                     // student's best points in the exercise
-                    $points = $studentResults[$ex->getRemoteKey()]['points'];
+                    $points = $studentResults[$this->combined_remote_key(
+                            $exrounds[$ex->getRecord()->roundid]->getRemoteKey(), $ex->getRemoteKey())]['points'];
                 } else {
                     $points = 0;
                 }
@@ -274,9 +283,8 @@ class export_data {
         // gather all submitted files to the array
         // (key = file path inside archive, value = Moodle stored_file instance)
         foreach ($exercises as $ex) {
-            $exRemoteKey = $ex->getRemoteKey();
-            if (isset($submissionsByExercise[$exRemoteKey])) {
-                foreach ($submissionsByExercise[$exRemoteKey] as $userId => $results) {
+            if (isset($submissionsByExercise[$ex->getId()])) {
+                foreach ($submissionsByExercise[$ex->getId()] as $userId => $results) {
                     if ($this->includeSubmissions == all_students_course_summary::SUBMISSIONS_BEST) {
                         $submissions = array($results['best']);
                     } else if ($this->includeSubmissions == all_students_course_summary::SUBMISSIONS_LATEST) {
@@ -286,14 +294,16 @@ class export_data {
                     }
                     $studentId = $results['student_id'];
                     
+                    $remoteKey = $this->combined_remote_key($results['roundkey'], $results['exkey']);
+                    
                     foreach ($submissions as $sbms) {
                         $sbmsId = $sbms->getId();
                         $submittedFiles = $sbms->getSubmittedFiles();
                         foreach ($submittedFiles as $file) {
-                            $pathInArchive = "submitted_files/$exRemoteKey/$studentId/sbms$sbmsId/" . $file->get_filename();
+                            $pathInArchive = "submitted_files/$remoteKey/$studentId/sbms$sbmsId/" . $file->get_filename();
                             if (isset($filesForZipping[$pathInArchive])) {
                                 // if multiple files with the same name were submitted in the submission
-                                $pathInArchive = "submitted_files/$exRemoteKey/$studentId/sbms$sbmsId/" .
+                                $pathInArchive = "submitted_files/$remoteKey/$studentId/sbms$sbmsId/" .
                                         \trim($file->get_filepath(), '/') .'_'. $file->get_filename();
                             }
                             $filesForZipping[$pathInArchive] = $file; // Moodle stored_file
@@ -316,10 +326,11 @@ class export_data {
         /*
         Directory structure: (varying parts in < >)
         submitted_files/
-            <exercise_remote_key>/
-                <student_id>/
-                    sbms<ID>/
-                        <file1>, <file2>
+            <round_remote_key>/
+                <exercise_remote_key>/
+                    <student_id>/
+                        sbms<ID>/
+                            <file1>, <file2>
         */
     }
     
@@ -341,11 +352,14 @@ class export_data {
         
         $submittedFormInput = array();
         
-        foreach ($submissionsByExercise as $exRemoteKey => $submissionsByStudent) {
-            $submittedFormInput[$exRemoteKey] = array();
+        foreach ($submissionsByExercise as $exerciseId => $submissionsByStudent) {
             foreach ($submissionsByStudent as $userId => $results) {
+                $remotekey = $this->combined_remote_key($results['roundkey'], $results['exkey']);
+                if (!isset($submittedFormInput[$remotekey])) {
+                    $submittedFormInput[$remotekey] = array();
+                }
                 $studentId = $results['student_id'];
-                $submittedFormInput[$exRemoteKey][$studentId] = array();
+                $submittedFormInput[$remotekey][$studentId] = array();
                 
                 if ($this->includeSubmissions == all_students_course_summary::SUBMISSIONS_BEST) {
                     $submissions = array($results['best']);
@@ -355,7 +369,7 @@ class export_data {
                     $submissions = $results['submissions'];
                 }
                 foreach ($submissions as $sbms) {
-                    $submittedFormInput[$exRemoteKey][$studentId]['sbms'. $sbms->getId()] =
+                    $submittedFormInput[$remotekey][$studentId]['sbms'. $sbms->getId()] =
                             $sbms->getSubmissionData();
                 }
             }
@@ -364,7 +378,7 @@ class export_data {
         return $submittedFormInput;
         /* JSON structure:
         {
-            <exercise remote key>: {
+            <round remote key/exercise remote key>: {
                 <student id>: { (idnumber or username)
                     "sbms<id>": submission data (form input)
                 }

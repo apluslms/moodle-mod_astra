@@ -74,7 +74,7 @@
         <FIELD NAME="ordernum" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" 
                COMMENT="Order for listing the learning objects under the round. Smaller comes first."/>
         <FIELD NAME="remotekey" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" 
-               COMMENT="Unique exercise key in the exercise service server. ('key' in exercise service configuration.) Should be unique within a course."/>
+               COMMENT="Unique exercise key in the exercise service server. ('key' in exercise service configuration.) Should be unique within the round."/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name that is displayed to users."/>
         <FIELD NAME="serviceurl" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" 
                COMMENT="URL of the exercise service for this chapter."/>
@@ -87,7 +87,7 @@
              COMMENT="Foreign key to another learning object."/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="remotekey" UNIQUE="false" FIELDS="remotekey" COMMENT="Unique false because it might only be unique within a course."/>
+        <INDEX NAME="remotekey" UNIQUE="false" FIELDS="remotekey" COMMENT="Unique false because it might only be unique within a round."/>
       </INDEXES>
     </TABLE>
     

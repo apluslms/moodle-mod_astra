@@ -31,7 +31,7 @@ class mass_regrading_task extends \core\task\adhoc_task {
         $exercises = $courseSummary->getExercises();
         $submissionsByExercise = $courseSummary->getSubmissionsByExercise();
         
-        foreach ($submissionsByExercise as $exRemoteKey => $students) {
+        foreach ($submissionsByExercise as $exerciseId => $students) {
             foreach ($students as $results) {
                 if ($selectSubmissions == all_students_course_summary::SUBMISSIONS_BEST) {
                     $submissions = array($results['best']);

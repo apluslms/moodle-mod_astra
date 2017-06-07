@@ -514,10 +514,10 @@ class auto_setup {
                 continue;
             }
             
-            // find if a learning object with the key exists in the same course as the exercise round
-            $lobjectRecord = $DB->get_record_select(\mod_astra_learning_object::TABLE,
-                    'remotekey = ? AND roundid IN (SELECT id FROM {'. \mod_astra_exercise_round::TABLE .'} WHERE course = ?)',
-                    array($o->key, $exround->getCourse()->courseid), '*', IGNORE_MISSING);
+            // find if a learning object with the key exists in the exercise round
+            $lobjectRecord = $DB->get_record(\mod_astra_learning_object::TABLE,
+                    array('remotekey' => $o->key, 'roundid' => $exround->getId()),
+                    '*', IGNORE_MISSING);
             if ($lobjectRecord === false) {
                 // create new later
                 $lobjectRecord = new \stdClass();
