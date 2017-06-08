@@ -21,6 +21,7 @@ class exercise_page {
     public $is_loaded = false;
     public $is_graded = false;
     public $is_accepted = false;
+    public $is_rejected = false;
     public $is_wait = false;
     public $points = 0;
     public $expires = 0;

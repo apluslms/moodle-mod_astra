@@ -55,22 +55,6 @@ class export_data {
                 $this->studentUserIds, $this->submittedBefore, $this->includeSubmissions,
                 $includeHiddenExercises, false);
         
-        // submission status to non-localized string for JSON
-        $sbmsStatusToString = function ($status) {
-            switch ($status) {
-                case \mod_astra_submission::STATUS_INITIALIZED :
-                    return 'initialized';
-                case \mod_astra_submission::STATUS_WAITING :
-                    return 'waiting';
-                case \mod_astra_submission::STATUS_READY :
-                    return 'ready';
-                case \mod_astra_submission::STATUS_ERROR :
-                    return 'error';
-                default :
-                    return 'undefined'; // should not happen
-            }
-        };
-        
         $json = array(
                 'students' => array(), 
         );
@@ -112,7 +96,7 @@ class export_data {
                         $json['students'][$studentId]['exercises'][$remoteKey]['submissions'][] = array(
                                 'points' => $sbms->getGrade(),
                                 'submissiontime' => $sbms->getSubmissionTime(),
-                                'status' => $sbmsStatusToString($sbms->getStatus()),
+                                'status' => $sbms->getStatus(true, false),
                                 'id' => $sbms->getId(),
                         );
                     }

@@ -289,6 +289,10 @@ class remote_page {
                     $submission->setFeedback($feedback);
                     $submission->save();
                 }
+            } else if ($page->is_rejected) {
+                $submission->setRejected();
+                $submission->setFeedback($feedback);
+                $submission->save();
             } else {
                 $submission->setError();
                 $submission->setFeedback($feedback);
@@ -357,6 +361,8 @@ class remote_page {
                 // PHP thinks empty("0") === true
                 $page->is_wait = true;
             }
+        } else if ($page->meta['status'] === 'rejected') {
+            $page->is_rejected = true;
         }
         
         $page->meta['points'] = $this->getMeta('points');

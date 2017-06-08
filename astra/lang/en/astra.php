@@ -81,6 +81,7 @@ $string['totalnumberofsubmitters'] = 'Total number of submitters';
 $string['statuserror'] = 'Error';
 $string['statuswaiting'] = 'Waiting';
 $string['statusinitialized'] = 'Initialized';
+$string['statusrejected'] = 'Rejected';
 $string['statusunlisted'] = 'Unlisted';
 $string['submissionnumber'] = 'Submission {$a}';
 $string['filesinthissubmission'] = 'Files in this submission';

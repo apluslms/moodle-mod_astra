@@ -12,6 +12,7 @@ class mod_astra_submission extends mod_astra_database_object {
     const STATUS_WAITING     = 1; // sent for grading
     const STATUS_READY       = 2; // graded
     const STATUS_ERROR       = 3;
+    const STATUS_REJECTED    = 4; // missing fields etc.
     
     const SAFE_FILENAME_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._-0123456789';
     
@@ -20,21 +21,36 @@ class mod_astra_submission extends mod_astra_database_object {
     protected $submitter = null;
     protected $grader = null;
     
-    public function getStatus($asString = false) {
+    public function getStatus($asString = false, $localized = true) {
         if ($asString) {
             switch ((int) $this->record->status) {
                 case self::STATUS_INITIALIZED:
-                    return get_string('statusinitialized', mod_astra_exercise_round::MODNAME);
+                    return $localized
+                        ? get_string('statusinitialized', mod_astra_exercise_round::MODNAME)
+                        : 'initialized';
                     break;
                 case self::STATUS_WAITING:
-                    return get_string('statuswaiting', mod_astra_exercise_round::MODNAME);
+                    return $localized
+                        ? get_string('statuswaiting', mod_astra_exercise_round::MODNAME)
+                        : 'waiting';
                     break;
                 case self::STATUS_READY:
-                    return get_string('statusready', mod_astra_exercise_round::MODNAME);
+                    return $localized
+                        ? get_string('statusready', mod_astra_exercise_round::MODNAME)
+                        : 'ready';
                     break;
                 case self::STATUS_ERROR:
-                    return get_string('statuserror', mod_astra_exercise_round::MODNAME);
+                    return $localized
+                        ? get_string('statuserror', mod_astra_exercise_round::MODNAME)
+                        : 'error';
                     break;
+                case self::STATUS_REJECTED:
+                    return $localized
+                        ? get_string('statusrejected', mod_astra_exercise_round::MODNAME)
+                        : 'rejected';
+                    break;
+                default:
+                    return 'undefined';
             }
         }
         return (int) $this->record->status;
@@ -193,6 +209,10 @@ class mod_astra_submission extends mod_astra_database_object {
     
     public function setError() {
         $this->record->status = self::STATUS_ERROR;
+    }
+    
+    public function setRejected() {
+        $this->record->status = self::STATUS_REJECTED;
     }
     
     public function setFeedback($newFeedback) {
