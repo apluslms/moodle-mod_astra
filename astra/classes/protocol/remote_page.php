@@ -773,14 +773,58 @@ class remote_page {
      * @param string $attrName fix URLs in this attribute of the element, e.g., 'src'
      */
     protected function _fixRelativeUrls($domain, $path, $tagName, $attrName) {
+        global $DB;
+        
         $pattern = '%^(#|.+://|//)%';
+        $chapter_pattern = '%(\.\./)?(?P<roundkey>[\w-]+)/(?P<chapterkey>[\w-]+)(\.html)?(?P<anchor>#.+)?$%';
         // recognize absolute URLs (https:// or //) or anchor URLs (#someid)
         foreach ($this->DOMdoc->getElementsByTagName($tagName) as $elem) {
             if ($elem->nodeType == \XML_ELEMENT_NODE && $elem->hasAttribute($attrName)) {
                 $value = $elem->getAttribute($attrName);
-                if (!empty($value) && \preg_match($pattern, $value) === 0) {
+                if (empty($value)) {
+                    continue;
+                }
+                
+                if ($elem->hasAttribute('data-aplus-chapter')) {
+                    // Custom transform for RST chapter to chapter links
+                    // (the link must refer to Moodle, not the exercise service)
+                    $matches = array();
+                    if (preg_match($chapter_pattern, $value, $matches)) {
+                        // find the chapter with the remote key and the exercise round key
+                        $chapter_record = $DB->get_record_sql(
+                                \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_chapter::TABLE) .
+                                ' JOIN {'. \mod_astra_exercise_round::TABLE .'} round ON round.id = lob.roundid ' .
+                                ' WHERE lob.remotekey = ? AND round.remotekey = ?',
+                                array($matches['chapterkey'], $matches['roundkey']));
+                        if ($chapter_record) {
+                            $chapter = new \mod_astra_chapter($chapter_record);
+                            $url = \mod_astra\urls\urls::exercise($chapter);
+                            // keep the original URL anchor if it exists (#someid at the end)
+                            if (isset($matches['anchor'])) {
+                                $url .= $matches['anchor'];
+                            }
+                            // replace the URL with the Moodle URL of the chapter
+                            $elem->setAttribute($attrName, $url);
+                        }
+                    }
+                    // if the reg exp does not match, we cannot fix the URL at all
+                    
+                } else if (\preg_match($pattern, $value) === 0) {
                     // not absolute URL
-                    if ($value[0] == '/') { // absolute path
+                    
+                    if ($elem->hasAttribute('data-aplus-path')) {
+                        // Custom transform for RST generated exercises.
+                        // add the mooc-grader course key to the URL template
+                        $fix_path = str_replace('{course}', explode('/', $path)[1],
+                                $elem->getAttribute('data-aplus-path'));
+                        $fix_value = $value;
+                        if (mb_substr($value, 0, strlen('../')) === '../') { // $value starts with ../
+                            $fix_value = mb_substr($value, 2); // remote .. from the start
+                        }
+                        
+                        $newVal = $domain . $fix_path . $fix_value;
+                        
+                    } else if ($value[0] == '/') { // absolute path
                         $newVal = $domain . $value;
                     } else {
                         $newVal = $domain . $path . $value;
