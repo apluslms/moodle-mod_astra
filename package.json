@@ -1,6 +1,6 @@
 {
-  "name": "stratum2-Moodle-plugin",
-  "version": "0.1.0",
+  "name": "moodle-mod_astra",
+  "version": "1.2.0",
   "private": true,
   "devDependencies": {
     "grunt": "~0.4.5",
