@@ -31,7 +31,7 @@ class index_page implements \renderable, \templatable {
             $roundCtx->course_module = $round->getTemplateContext();
             $moduleSummary = $this->courseSummary->getModuleSummary($round->getId());
             $roundCtx->module_summary = $moduleSummary->getTemplateContext();
-            $roundCtx->module_summary->classes = 'pull-right'; // CSS classes
+            $roundCtx->module_summary->classes = 'float-right'; // CSS classes
             $roundCtx->categories = $moduleSummary->getExercisesByCategoriesTemplateContext();
             $roundsData[] = $roundCtx;
         }

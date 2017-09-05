@@ -19,27 +19,29 @@ Context variables:
             exercise_summary (object with keys that are required by _points_badge.mustache)
 
 }}
-<div class="panel panel-primary module-panel{{# course_module.expired }} module-expired{{/ course_module.expired }}">
-  <a class="panel-heading" href="{{{ course_module.url }}}">
-  <h3 class="panel-title">
+<div class="card module-panel{{# course_module.expired }} module-expired{{/ course_module.expired }}">
+  <div class="card-header card-primary card-inverse">
+  <a href="{{{ course_module.url }}}">
+  <h3 class="card-title">
     {{# module_summary }}
       {{> mod_astra/_points_badge }}
     {{/ module_summary }}
     {{# course_module.not_started }}
-    <span class="badge pull-right">
+    <span class="badge badge-default float-right">
       {{#str}} opens, mod_astra {{/str}} {{# toDateStr }}{{ course_module.openingtime }}{{/ toDateStr }}
     </span>
     {{/ course_module.not_started }}
     {{ course_module.name }}
   </h3>
   </a>
+  </div>
 <div id="module{{ course_module.id }}">
-  <div class="panel-body">
+  <div class="card-block">
     <p>
       {{# toDateStr }}{{ course_module.openingtime }}{{/ toDateStr }} &ndash; {{# toDateStr }}{{ course_module.closingtime }}{{/ toDateStr }}
 
       {{# course_module.late_submissions_allowed }}
-      <br />
+      <br>
       <em>
         {{#str}}
         latealloweduntil, mod_astra, {{# toDateStr }}{{ course_module.late_submission_deadline }}{{/ toDateStr }}
@@ -51,7 +53,7 @@ Context variables:
       {{/ course_module.late_submissions_allowed }}
 
       {{# course_module.show_required_points }}
-      <br />
+      <br>
       {{#str}} pointsrequiredtopass, mod_astra, {{ course_module.points_to_pass }} {{/str}}
       {{/ course_module.show_required_points }}
     </p>
@@ -74,7 +76,7 @@ Context variables:
     {{/ course_module.status_maintenance }}
   </div>
   {{# course_module.status_ready }}
-  <table class="table table-striped table-condensed results-table">
+  <table class="table table-striped table-sm results-table">
     <tbody>
       {{# categories }}
       <tr class="category-row" data-category="{{ id }}">
@@ -82,7 +84,7 @@ Context variables:
         {{# course_module.is_course_staff }}
         <td>{{#str}} coursestaff, mod_astra {{/str}}</td>
         {{/ course_module.is_course_staff }}
-        <td class="col-md-2">{{#str}} points, mod_astra {{/str}}</td>
+        <td>{{#str}} points, mod_astra {{/str}}</td>
       </tr>
       {{# exercise_summaries }}
       <tr data-category="{{ id }}">
@@ -102,14 +104,14 @@ Context variables:
         {{# course_module.is_course_staff }}
         <td>
           {{# course_module.not_started }}
-          <a class="btn btn-default btn-xs" href="{{{ exercise.url }}}">
-            <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+          <a class="btn btn-secondary btn-sm" href="{{{ exercise.url }}}">
+            {{#pix}}i/lock{{/pix}}
             {{#str}} earlyaccess, mod_astra {{/str}}
           </a>
           {{/ course_module.not_started }}
           {{# exercise.can_view_submissions }}
-          <a class="btn btn-default btn-xs" href="{{{ exercise.submissionlisturl }}}">
-            <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+          <a class="btn btn-secondary btn-sm" href="{{{ exercise.submissionlisturl }}}">
+            {{#pix}}a/view_list_active{{/pix}}
             {{#str}} viewsubmissions, mod_astra {{/str}}
           </a>
           {{/ exercise.can_view_submissions }}

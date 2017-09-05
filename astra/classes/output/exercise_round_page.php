@@ -24,7 +24,7 @@ class exercise_round_page implements \renderable, \templatable {
         $data->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $ctx);
         $data->course_module = $this->exround->getTemplateContext();
         $data->module_summary = $this->moduleSummary->getTemplateContext();
-        $data->module_summary->classes = 'pull-right'; // CSS classes
+        $data->module_summary->classes = 'float-right'; // CSS classes
         $data->categories = $this->moduleSummary->getExercisesByCategoriesTemplateContext();
         
         $data->toDateStr = new \mod_astra\output\date_to_string();

@@ -7,18 +7,17 @@
  * See https://docs.moodle.org/dev/version.php for more info.
  *
  * @package    mod_astra
- * @copyright  2016 Aalto SCI CS dept.
+ * @copyright  2017 Aalto SCI CS dept.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_astra';
-$plugin->version = 2017060800;
+$plugin->version = 2017090100;
 $plugin->release = 'v1.2';
-$plugin->requires =  2015111600; // Moodle 3.0
+$plugin->requires =  2016120500; // Moodle 3.2
 $plugin->maturity = MATURITY_STABLE;
-//$plugin->cron = 0; // legacy cron API 
 $plugin->dependencies = array(
-    'theme_bootstrapbase' => 2015111600, // so that Bootstrap2 JavaScript is included in page footers
+        'theme_boost' => 2016120500, // so that the Bootstrap 4 framework is available
 );

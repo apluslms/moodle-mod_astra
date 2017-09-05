@@ -1,31 +1,20 @@
 /* Derived from A+ (a-plus/assets/css/main.css)
 */
 /* common */
-.glyphicon, .label {
-    margin-right: 0.2em;
-}
-dl > dt {
-    margin-top: 0.5em;
-}
 iframe {
     border: none;
 }
 .pre {
     white-space: pre;
 }
-.unread {
-    font-weight: bold;
-}
-.panel-title .pull-right {
+
+.card-title .float-right {
     margin-left: 0.5em;
 }
-.alert .pull-left {
+.alert .float-left {
     margin-right: 0.5em;
 }
-.nav .navbar-btn {
-    margin-top: 10px;
-    margin-bottom: 0;
-}
+
 .hljs {
     padding: 0;
 }
@@ -52,11 +41,6 @@ table.src tr td.src {
 }
 
 /* menus */
-.siblings>.btn {
-    max-width: 50%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
 .menu-exercise, .menu-submission {
     max-width: 50%;
     text-overflow: ellipsis;
@@ -72,21 +56,12 @@ table.src tr td.src {
     list-style: none;
 }
 
-
-/* panels */
-.module-panel .panel-heading {
-    display: block;
-}
-.module-panel .panel-title .caret {
-    margin-right: 0.5em;
-}
-.collapsed .caret {
-    border-left: 4px dashed;
-    border-top: 4px solid transparent;
-    border-bottom: 4px solid transparent;
-}
+/* cards */
 .module-panel table {
     margin: 0;
+}
+.module-panel>.card-header>a>h3.card-title {
+    margin-bottom: 0; /* module/round panel titles have too much empty space below them */
 }
 
 /* point progress and badges */
@@ -95,29 +70,18 @@ table.src tr td.src {
 }
 .progress .required-points {
     position: absolute;
-    height: 20px;
+    height: inherit;
     border-left: 1px solid black;
 }
-.badge-danger, .panel-primary>.panel-heading .badge-danger {
-    background-color: #d9534f;
-    color: #fff;
+.progress-bar {
+    float: left; /* the required points marker is not positioned on the progress bar otherwise */
+    height: inherit; /* might have height zero otherwise */
 }
-.badge-warning, .panel-primary>.panel-heading .badge-warning {
-    background-color: #f0ad4e;
-    color: #fff;
-}
-.badge-info, .panel-primary>.panel-heading .badge-info {
-    background-color: #5bc0de;
-    color: #fff;
-}
-.badge-success, .panel-primary>.panel-heading .badge-success {
-    background-color: #5cb85c;
-    color: #fff;
-}
-.panel-primary>.panel-heading .badge-danger,
-.panel-primary>.panel-heading .badge-warning,
-.panel-primary>.panel-heading .badge-info,
-.panel-primary>.panel-heading .badge-success {
+
+.card-primary>.card-header .badge-danger,
+.card-primary>.card-header .badge-warning,
+.card-primary>.card-header .badge-info,
+.card-primary>.card-header .badge-success {
     border: 1px solid #fff;
     padding: 2px 6px;
 }
@@ -148,8 +112,6 @@ table.src tr td.src {
 }
 .exercise-summary .navbar-nav .navbar-text {
     margin: 15px 15px 0 15px;
-    /* Moodle addition below */
-    line-height: unset;
 }
 .exercise-summary .navbar-nav>li>a,
 .exercise-summary .navbar-nav>.active>a,
@@ -190,127 +152,36 @@ table.src tr td.src {
 }
 
 /* results table */
-
 table.results-table .category-row {
     font-weight: bold;
 }
 
-
-/* --------------------------------------------------------- */
-/* New additions for Moodle */
-h3.panel-title {
-    line-height: 1.1; /* Moodle makes h3 too high for Bootstrap panel headings */
+/* Bootstrap hacks for Moodle */
+/* Moodle 3.2 uses Bootstrap4 alpha-3 (or 4), however, newer alphas and the beta release have already
+changed some APIs. Here are some small hacks that enable newer APIs in Moodle. Hopefully, these can be
+removed in a future Moodle version when the Moodle Boost theme uses a newer Bootstrap version with the newer API.*/
+.float-right {
+    float: right !important;
 }
-/* Moodle core Bootstrap 2 theme CSS conflicts with Bootstrap 3 modal dialogs */
-.modal {
-    width: unset;
-    margin-left: unset;
-    background-color: unset;
+.float-left {
+    float: left !important;
 }
-.modal-dialog {
-	margin-top: 50px; /* so that modal does not overlap with the bar at the top of the page */
-}
-.modal-body {
-	/* Moodle core sets a low max-height (400px) that makes the modal too small. */
-	max-height: 80vh; /* 80% of the viewport height */
+.float-none {
+    float: none !important;
 }
 
-/* Moodle uses class hidden in forms but it is not supposed hide everything like
-   in Bootstrap CSS. Overwrite the Bootstrap rule here, !important is required since
-   Bootstrap uses it. */
-fieldset.hidden {
-    display: inherit !important;
+/* old BS4 alpha hides this rule under broken media queries */
+.progress-bar-striped {
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-size: 1rem 1rem;
 }
-/* Moodle sets a height on text inputs but it makes them too low */
-input[type="text"] {
-	height: unset;
+/* old BS4 alpha API used <progress> elements and thus some CSS rules from the new API must be defined here */
+.progress {
+    background-color: #e9ecef;
+    border-radius: 0.25rem;
 }
-
-/* Moodle makes buttons gray with a gradient, but they should use the Bootstrap
-primary color (blue) (or other contextual colors). */
-input.btn-primary[type="submit"]:hover {
-	color: #fff;
-    background-color: #286090;
-    border-color: #204d74;
-    background-image: none;
-    background-repeat: no-repeat;
-    text-shadow: unset;
-}
-input.btn-primary[type="submit"] {
-	color: #fff;
-    background-color: #337ab7;
-    border-color: #2e6da4;
-    background-image: none;
-    background-repeat: no-repeat;
-    text-shadow: unset;
-}
-
-input.btn-danger[type="submit"]:hover {
+.progress-bar {
     color: #fff;
-    background-color: #c9302c !important;
-    border-color: #ac2925;
-    background-image: none;
-    background-repeat: no-repeat;
-    text-shadow: unset;
-}
-input.btn-danger[type="submit"] {
-    color: #fff;
-    background-color: #d9534f !important;
-    border-color: #d43f3a;
-    background-image: none;
-    background-repeat: no-repeat;
-    text-shadow: unset;
-}
-
-/* --------------------------------------------------------- */
-/* Fixes for the Aalto MyCourses theme */
-/* top orange navbar loses content in the plugin pages (display: none) */
-header nav div.collapse.nav-collapse {
-	display: block;
-}
-
-/* search icon in the top orange navbar becomes too narrow */
-.searchicon {
-	width: 50px;
-}
-
-/* caret used in dropdown menus is positioned too low */
-.caret {
-	vertical-align: unset;
-}
-
-/* text in embedded exercise navbars in chapter pages becomes hard to read with incorrect color */
-div[data-aplus-chapter] p.navbar-text small {
-	color: rgb(119, 119, 119); /* gray */
-}
-
-/* text in link buttons (a.btn) becomes unreadable when its color is white
-(in exercise pages in the description/submissions navbar) */
-div.bs3-container-fluid ul.nav p.navbar-btn > a.btn {
-	color: rgb(51, 51, 51); /* black */
-}
-
-/* text inputs in exercise pages receive a wrong display type and they end up
-in the same line with the label */
-div.bs3-container-fluid div.form-group input[type="text"],
-div.modal div.form-group input[type="text"] {
-	display: block;
-	width: 100%;
-}
-
-/* my submissions dropdown toggle in the exercise page switches text color
-when the dropdown is open -> keep the text always blue
-Similarly in chapter pages (embedded exercise summary navbar) */
-div.bs3-container-fluid .nav-tabs .open .dropdown-toggle,
-div.bs3-container-fluid .nav-pills.exercise-summary .open .dropdown-toggle {
-	color: rgb(51, 122, 183); /* blue */
-}
-
-/* In the exercise, submission, and inspect submission pages, the exercise and submission
-info boxes have too much white space around the text. */
-.panel > .panel-body > dl {
-	/* if padding is removed from the .panel-body, it works in the MyCourses theme but looks bad in the clean theme */
-	/* MyCourses theme causes too wide margins in the left and right sides and
-	the clean theme causes too wide bottom margin -> set to zero */
-	margin: 0;
+    background-color: #007bff;
+    transition: width 0.6s ease;
 }

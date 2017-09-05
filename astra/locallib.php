@@ -7,8 +7,6 @@ defined('MOODLE_INTERNAL') || die();
  * @param moodle_page $page supply $PAGE on a Moodle page
  */
 function astra_page_require($page) {
-    // Bootstrap CSS (hosted here because not all components are included)
-    $page->requires->css(new moodle_url('/mod/'. mod_astra_exercise_round::TABLE .'/assets/bootstrap/css/bootstrap.min.css'));
     // custom CSS
     $page->requires->css(new moodle_url('/mod/'. mod_astra_exercise_round::TABLE .'/assets/css/main.css'));
     

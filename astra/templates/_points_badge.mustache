@@ -19,12 +19,12 @@ Context variables:
 }}
 
 {{# status }}
-<span class="badge">
+<span class="badge badge-default badge-pill">
     {{ status }}
 </span>
 {{/ status }}
 {{^ status }}
-<span class="badge{{# submitted }} badge-{{# full_score }}success{{/ full_score }}{{^ full_score }}{{# passed }}warning{{/ passed }}{{^ passed }}danger{{/ passed }}{{/ full_score }}{{/ submitted }} {{ classes }}"
+<span class="badge badge-pill{{# submitted }} badge-{{# full_score }}success{{/ full_score }}{{^ full_score }}{{# passed }}warning{{/ passed }}{{^ passed }}danger{{/ passed }}{{/ full_score }}{{/ submitted }} {{ classes }}"
         data-toggle="tooltip" data-placement="bottom"
         title="{{# passed }}{{# submitted }}{{#str}} passed, mod_astra {{/str}}{{/ submitted }}{{^ submitted }}{{#str}} nosubmissions, mod_astra {{/str}}{{/ submitted }}{{/ passed }}{{^ passed }}{{# missing_points }}{{#str}} requiredpoints, mod_astra, {{ points_to_pass }}{{/str}}{{/ missing_points }}{{^ missing_points }}{{#str}} requirednotpassed, mod_astra {{/str}}{{/ missing_points }}{{/ passed }}"
         data-container="body">

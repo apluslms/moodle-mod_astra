@@ -7,42 +7,38 @@ Context variables:
         _round_toc.mustache
 }}
 
-<div class="bs3-container-fluid">
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" role="tablist">
+  <li class="nav-item">
+    <a href="#round-summary-tab" aria-controls="round-summary-tab" role="tab" data-toggle="tab" class="nav-link active">
+      {{#str}} exerciseresults, mod_astra {{/str}}
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="#round-toc-tab" aria-controls="round-toc-tab" role="tab" data-toggle="tab" class="nav-link">
+      {{#str}} toc, mod_astra {{/str}}
+    </a>
+  </li>
+</ul>
 
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active">
-      <a href="#round-summary-tab" aria-controls="round-summary-tab" role="tab" data-toggle="tab">
-        {{#str}} exerciseresults, mod_astra {{/str}}
-      </a>
-    </li>
-    <li role="presentation">
-      <a href="#round-toc-tab" aria-controls="round-toc-tab" role="tab" data-toggle="tab">
-        {{#str}} toc, mod_astra {{/str}}
-      </a>
-    </li>
-  </ul>
+<!-- Tab panes -->
+<div class="tab-content">
 
-  <!-- Tab panes -->
-  <div class="tab-content">
-  
   <div role="tabpanel" class="tab-pane active" id="round-summary-tab">
     {{> mod_astra/exercise_round }}
   </div> <!-- close tab-pane -->
   
   <div role="tabpanel" class="tab-pane" id="round-toc-tab">
-  <h3>{{#str}} toc, mod_astra {{/str}}</h3>
-  {{# toc }}
-    {{> mod_astra/_round_toc }}
-  {{/ toc }}
+    <h3>{{#str}} toc, mod_astra {{/str}}</h3>
+    {{# toc }}
+      {{> mod_astra/_round_toc }}
+    {{/ toc }}
   </div> <!-- close tab-pane -->
 
-  </div> <!-- close tab-content -->
-
-</div>
+</div> <!-- close tab-content -->
 
 {{#js}}
-require(['jquery', 'theme_bootstrapbase/bootstrap'], function($) {
+require(['jquery', 'theme_boost/tooltip'], function($) {
   /* enable Bootstrap tooltips */
   $(function() {
     $('[data-toggle="tooltip"]').tooltip();

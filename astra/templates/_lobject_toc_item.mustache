@@ -27,8 +27,8 @@ Context variables:
     {{^ has_started }}
       {{ name }}
       {{# is_course_staff }}
-        <a class="btn btn-default btn-xs" href="{{{ url }}}">
-          <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+        <a class="btn btn-secondary btn-sm" href="{{{ url }}}">
+          {{#pix}}i/lock{{/pix}}
           {{#str}} earlyaccess, mod_astra {{/str}}
         </a>
       {{/ is_course_staff }}
