@@ -128,7 +128,7 @@ if ($fromform = $form->get_data()) {
   </ul>
   <div class="input-group">
     <span class="input-group-btn dropdown-toggle" aria-haspopup="true" aria-expanded="false">
-      <button class="btn btn-default" data-toggle="dropdown" type="button" aria-label="$search">
+      <button class="btn btn-secondary" data-toggle="dropdown" type="button" aria-label="$search">
         <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
       </button>
       <ul class="dropdown-menu search-options">

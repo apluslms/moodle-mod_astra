@@ -40,8 +40,8 @@ Context variables:
 
 <div class="well">
   <form method="post" class="form-inline" action="{{{ renumber_action_url }}}">
-    <a href="{{{ autosetupurl }}}" class="btn btn-default">{{#str}} autosetup, mod_astra {{/str}}</a>
-    <button class="btn btn-default" type="submit" name="cache">{{#str}} clearcontentcache, mod_astra {{/str}}</button>
+    <a href="{{{ autosetupurl }}}" class="btn btn-secondary">{{#str}} autosetup, mod_astra {{/str}}</a>
+    <button class="btn btn-secondary" type="submit" name="cache">{{#str}} clearcontentcache, mod_astra {{/str}}</button>
   </form>
 </div>
 
@@ -60,12 +60,12 @@ Context variables:
                     {{/ status_ready }}
                 </td>
                 <td>
-                    <a class="btn btn-default btn-xs" href="{{{ editurl }}}">
+                    <a class="btn btn-secondary btn-xs" href="{{{ editurl }}}">
                         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
                         {{#str}} editcategory, mod_astra {{/str}}
                     </a>
                     {{^ has_learning_objects }}
-                    <a class="btn btn-default btn-xs" href="{{{ removeurl }}}">
+                    <a class="btn btn-secondary btn-xs" href="{{{ removeurl }}}">
                         <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> {{#str}} remove, mod_astra {{/str}}
                     </a>
                     {{/ has_learning_objects }}
@@ -100,11 +100,11 @@ Context variables:
                   {{/ status_ready }}
                 </th>
                 <td>
-                    <a class="btn btn-default btn-xs" href="{{{ editurl }}}">
+                    <a class="btn btn-secondary btn-xs" href="{{{ editurl }}}">
                         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> {{#str}} editmodule, mod_astra {{/str}}
                     </a>
                     {{^ has_exercises }}
-                    <a class="btn btn-default btn-xs" href="{{{ removeurl }}}">
+                    <a class="btn btn-secondary btn-xs" href="{{{ removeurl }}}">
                         <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> {{#str}} remove, mod_astra {{/str}}
                     </a>
                     {{/ has_exercises }}
@@ -122,10 +122,10 @@ Context variables:
                     {{/ status_ready }}
                 </td>
                 <td>
-                    <a class="btn btn-default btn-xs" href="{{{ editurl }}}">
+                    <a class="btn btn-secondary btn-xs" href="{{{ editurl }}}">
                         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> {{#str}} editexercise, mod_astra {{/str}}
                     </a>
-                    <a class="btn btn-default btn-xs" href="{{{ removeurl }}}">
+                    <a class="btn btn-secondary btn-xs" href="{{{ removeurl }}}">
                         <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> {{#str}} remove, mod_astra {{/str}}
                     </a>
                     <a class="btn btn-link btn-xs" href="{{{ url }}}">
