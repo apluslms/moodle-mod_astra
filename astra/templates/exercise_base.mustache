@@ -63,20 +63,20 @@ Blocks that child templates should override:
           <p class="navbar-text navbar-btn">
               {{# can_inspect }}
               {{# submission }}
-              <a href="{{{ submission.inspecturl }}}" class="btn btn-secondary btn-xs">
+              <a href="{{{ submission.inspecturl }}}" class="btn btn-secondary btn-sm">
                   <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
                   {{#str}} inspectsubmission, mod_astra {{/str}}
               </a>
               {{/ submission }}
               {{/ can_inspect }}
               {{# is_editing_teacher }}
-              <a href="{{{ exercise.editurl }}}" class="btn btn-secondary btn-xs">
+              <a href="{{{ exercise.editurl }}}" class="btn btn-secondary btn-sm">
                   <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
                   {{#str}} editexercise, mod_astra {{/str}}
               </a>
               {{/ is_editing_teacher }}
               {{# is_manual_grader }}
-              <a href="{{{ exercise.submissionlisturl }}}" class="btn btn-secondary btn-xs">
+              <a href="{{{ exercise.submissionlisturl }}}" class="btn btn-secondary btn-sm">
                   <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
                   {{#str}} viewallsubmissions, mod_astra {{/str}}
               </a>
