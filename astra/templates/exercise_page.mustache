@@ -16,8 +16,8 @@ Context variables:
     {{{ page.content }}}
 </div>
 
-<div id="submit-progress" class="hide progress">
-  <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;">
+<div id="submit-progress" class="progress" style="display: none;">
+  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:100%;">
     {{#str}} postingsubmission, mod_astra {{/str}}
   </div>
 </div>
@@ -25,17 +25,17 @@ Context variables:
 {{! not used since this page does not render feedback
 {> mod_astra/_exercise_wait } }}
 
-<div id="loading-indicator" class="hide progress"
+<div id="loading-indicator" class="progress" style="display: none;"
   data-msg-load="{{#str}} loadingexercise, mod_astra {{/str}}"
   data-msg-submit="{{#str}} postingsubmission, mod_astra {{/str}}"
   data-msg-error="{{#str}} exercisecommerror, mod_astra {{/str}}">
-  <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
+  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:100%;"></div>
 </div>
 
-<div id="quiz-success" class="hide">
+<div id="quiz-success" style="display: none;">
   <h3 class="text-center">{{#str}} submissionreceived, mod_astra {{/str}}</h3>
   <p class="text-center badge-placeholder"></p>
-  <button type="button" class="btn btn-success center-block read-feedback" data-dismiss="modal">
+  <button type="button" class="btn btn-success mx-auto read-feedback" data-dismiss="modal">
     {{#str}} gotofeedback, mod_astra {{/str}}
   </button>
 </div>
@@ -45,11 +45,11 @@ Context variables:
 {{/ mod_astra/exercise_base }}
 
 {{#js}}
-require(['jquery', 'theme_bootstrapbase/bootstrap'], function($) {
+require(['jquery', 'theme_boost/tooltip'], function($) {
     // Add an Ajax exercise event listener to refresh the info column.
     window.addEventListener("message", function (event) {
         if (event.data.type === "a-plus-refresh-stats") {
-            $("#submit-progress").addClass("hide");
+            $("#submit-progress").show();
             var $stats = $("#exercise-info"),
                 url = $stats.data("url");
             $stats.load(url, function() {

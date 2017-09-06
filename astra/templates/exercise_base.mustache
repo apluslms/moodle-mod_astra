@@ -26,58 +26,54 @@ Blocks that child templates should override:
     override if the submissions navbar is not needed, e.g., on a chapter page)
 }}
 
-<div class="bs3-container-fluid">
+<div class="row">
 <div class="col-lg-9">
   {{$ submissionsnavbar }}
+  <nav>
   <ul class="nav nav-tabs">
-      <li class="menu-exercise">
-          <a href="{{{ exercise.url }}}">
+      <li class="nav-item menu-exercise">
+          <a class="nav-link" href="{{{ exercise.url }}}">
               {{#str}} exercisedescription, mod_astra {{/str}}
           </a>
       </li>
-      <li class="dropdown menu-submission">
-          <a class="dropdown-toggle" data-toggle="dropdown" data-target="#" href="#" role="button"
+      <li class="nav-item dropdown menu-submission">
+          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button"
               aria-haspopup="true" aria-expanded="false">
               {{#str}} mysubmissions, mod_astra {{/str}}
-              <span class="caret"></span>
           </a>
-          <ul class="dropdown-menu">
+          <div class="dropdown-menu">
               {{# submissions }}
-              <li>
-                  <a href="{{{ url }}}">
+                  <a class="dropdown-item" href="{{{ url }}}">
                       {{ nth }}.
                       {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
                       {{> mod_astra/_points_badge }}
                   </a>
-              </li>
               {{/ submissions }}
               {{^ submissions }}
-              <li>
-                  <a href="#">{{#str}} nosubmissionsyet, mod_astra {{/str}}</a>
-              </li>
+                  <a class="dropdown-item" href="#">{{#str}} nosubmissionsyet, mod_astra {{/str}}</a>
               {{/ submissions }}
-          </ul>
+          </div>
       </li>
       {{# is_course_staff }}
-      <li>
-          <p class="navbar-text navbar-btn">
+      <li class="nav-item">
+          <p>
               {{# can_inspect }}
               {{# submission }}
               <a href="{{{ submission.inspecturl }}}" class="btn btn-secondary btn-sm">
-                  <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+                  {{#pix}}i/preview{{/pix}}
                   {{#str}} inspectsubmission, mod_astra {{/str}}
               </a>
               {{/ submission }}
               {{/ can_inspect }}
               {{# is_editing_teacher }}
               <a href="{{{ exercise.editurl }}}" class="btn btn-secondary btn-sm">
-                  <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                  {{#pix}}t/editinline{{/pix}}
                   {{#str}} editexercise, mod_astra {{/str}}
               </a>
               {{/ is_editing_teacher }}
               {{# is_manual_grader }}
               <a href="{{{ exercise.submissionlisturl }}}" class="btn btn-secondary btn-sm">
-                  <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+                  {{#pix}}a/view_list_active{{/pix}}
                   {{#str}} viewallsubmissions, mod_astra {{/str}}
               </a>
               {{/ is_manual_grader }}
@@ -85,6 +81,7 @@ Blocks that child templates should override:
       </li>
       {{/ is_course_staff }}
   </ul>
+  </nav>
   {{/ submissionsnavbar }}
   
   {{# error }}
@@ -105,12 +102,12 @@ Blocks that child templates should override:
 </div>
 </div>
 
-<div id="page-modal" class="modal" role="dialog">
-    <div class="modal-dialog modal-lg">
+<div id="page-modal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-progress">
               <div class="progress">
-                <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%" data-msg-error="{{#str}} loadingfailed, mod_astra {{/str}}">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:100%" data-msg-error="{{#str}} loadingfailed, mod_astra {{/str}}">
                   {{#str}} loading, mod_astra {{/str}}
                 </div>
               </div>
@@ -125,21 +122,21 @@ Blocks that child templates should override:
     </div>
 </div>
 
-<div id="file-modal" class="modal" role="dialog">
-    <div class="modal-dialog modal-lg">
+<div id="file-modal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-progress">
               <div class="progress">
-                <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%" data-msg-error="{{#str}} loadingfailed, mod_astra {{/str}}">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:100%" data-msg-error="{{#str}} loadingfailed, mod_astra {{/str}}">
                   {{#str}} loading, mod_astra {{/str}}
                 </div>
               </div>
             </div>
             <div class="modal-header">
+                <h4 class="modal-title"></h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="{{#str}} close, mod_astra {{/str}}">
                     <span aria-hidden="true">&times;</span>
                 </button>
-                <h4 class="modal-title"></h4>
             </div>
             <div class="modal-body"></div>
         </div>
@@ -147,7 +144,8 @@ Blocks that child templates should override:
 </div>
 
 {{#js}}
-require(['jquery', 'mod_astra/aplus_modal', 'theme_bootstrapbase/bootstrap'], function($) {
+require(['theme_boost/loader']); // this is needed to make Moodle Boostrap 4 AMD JS modules work; otherwise, jQuery could be undefined
+require(['jquery', 'theme_boost/tooltip', 'mod_astra/aplus_modal'], function($) {
   $(function() {
     /* enable Bootstrap tooltips */
     $('[data-toggle="tooltip"]').tooltip();
@@ -162,7 +160,7 @@ require(['jquery', 'mod_astra/aplus_modal', 'theme_bootstrapbase/bootstrap'], fu
     if (body_id) {
       var arr = body_id.split('-');
       var page = arr[arr.length - 1];
-      $(".menu-" + page).addClass("active");
+      $(".menu-" + page).children("a").first().addClass("active");
     }
   });
 });

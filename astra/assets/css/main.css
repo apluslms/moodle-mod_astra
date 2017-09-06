@@ -45,13 +45,6 @@ table.src tr td.src {
     max-width: 50%;
     text-overflow: ellipsis;
 }
-@media (min-width: 768px) {
-    .col-sm-2 .nav a {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-}
 .toc li {
     list-style: none;
 }
@@ -73,15 +66,11 @@ table.src tr td.src {
     height: inherit;
     border-left: 1px solid black;
 }
-.progress-bar {
-    float: left; /* the required points marker is not positioned on the progress bar otherwise */
-    height: inherit; /* might have height zero otherwise */
-}
 
-.card-primary>.card-header .badge-danger,
-.card-primary>.card-header .badge-warning,
-.card-primary>.card-header .badge-info,
-.card-primary>.card-header .badge-success {
+.card-primary.card-header .badge-danger,
+.card-primary.card-header .badge-warning,
+.card-primary.card-header .badge-info,
+.card-primary.card-header .badge-success {
     border: 1px solid #fff;
     padding: 2px 6px;
 }
@@ -184,4 +173,138 @@ removed in a future Moodle version when the Moodle Boost theme uses a newer Boot
     color: #fff;
     background-color: #007bff;
     transition: width 0.6s ease;
+}
+@-webkit-keyframes progress-bar-stripes {
+  from {
+    background-position: 1rem 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+@keyframes progress-bar-stripes {
+  from {
+    background-position: 1rem 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+.progress-bar-animated {
+  -webkit-animation: progress-bar-stripes 1s linear infinite;
+          animation: progress-bar-stripes 1s linear infinite;
+}
+
+/* old BS4 alpha does not have contextual badge classes */
+.badge-primary {
+  color: #fff;
+  background-color: #007bff;
+}
+.badge-primary[href]:focus, .badge-primary[href]:hover {
+  color: #fff;
+  text-decoration: none;
+  background-color: #0062cc;
+}
+.badge-secondary {
+  color: #fff;
+  background-color: #868e96;
+}
+.badge-secondary[href]:focus, .badge-secondary[href]:hover {
+  color: #fff;
+  text-decoration: none;
+  background-color: #6c757d;
+}
+.badge-success {
+  color: #fff;
+  background-color: #28a745;
+}
+.badge-success[href]:focus, .badge-success[href]:hover {
+  color: #fff;
+  text-decoration: none;
+  background-color: #1e7e34;
+}
+.badge-info {
+  color: #fff;
+  background-color: #17a2b8;
+}
+.badge-info[href]:focus, .badge-info[href]:hover {
+  color: #fff;
+  text-decoration: none;
+  background-color: #117a8b;
+}
+.badge-warning {
+  color: #fff;
+  background-color: #f0ad4e;
+}
+.badge-warning[href]:focus, .badge-warning[href]:hover {
+  color: #fff;
+  text-decoration: none;
+  background-color: #d39e00;
+}
+.badge-danger {
+  color: #fff;
+  background-color: #dc3545;
+}
+.badge-danger[href]:focus, .badge-danger[href]:hover {
+  color: #fff;
+  text-decoration: none;
+  background-color: #bd2130;
+}
+.badge-light {
+  color: #111;
+  background-color: #f8f9fa;
+}
+.badge-light[href]:focus, .badge-light[href]:hover {
+  color: #111;
+  text-decoration: none;
+  background-color: #dae0e5;
+}
+.badge-dark {
+  color: #fff;
+  background-color: #343a40;
+}
+.badge-dark[href]:focus, .badge-dark[href]:hover {
+  color: #fff;
+  text-decoration: none;
+  background-color: #1d2124;
+}
+
+/* alpha does not have newer contextual colours */
+.bg-secondary {
+  background-color: #868e96 !important;
+}
+a.bg-secondary:focus, a.bg-secondary:hover {
+  background-color: #6c757d !important;
+}
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+a.bg-light:focus, a.bg-light:hover {
+  background-color: #dae0e5 !important;
+}
+.bg-dark {
+  background-color: #343a40 !important;
+}
+a.bg-dark:focus, a.bg-dark:hover {
+  background-color: #1d2124 !important;
+}
+.bg-white {
+  background-color: #fff !important;
+}
+.bg-transparent {
+  background-color: transparent !important;
+}
+
+.mx-auto {
+  margin-right: auto !important;
+  margin-left: auto !important;
+}
+.text-left {
+  text-align: left !important;
+}
+.text-right {
+  text-align: right !important;
+}
+.text-center {
+  text-align: center !important;
 }

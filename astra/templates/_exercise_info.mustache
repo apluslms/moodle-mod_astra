@@ -25,14 +25,15 @@ Context variables:
 * toDateStr callable Function that converts a Unix timestamp to a date string
 }}
 
-<div class="well">
-    <p>{{#str}} earnedpoints, mod_astra {{/str}}</p>
-    <p><strong class="h2 exercise-info-points">
+<div class="card bg-light">
+  <div class="card-block">
+    <p class="card-title">{{#str}} earnedpoints, mod_astra {{/str}}</p>
+    <p class="card-text"><strong class="h2 exercise-info-points">
         {{ summary.points }}
         <small>
             / {{ exercise.max_points }}
             {{# summary.penaltyapplied }}
-            <span class="badge">
+            <span class="badge badge-secondary">
                 {{#str}} late, mod_astra {{/str}} -{{ summary.penaltyappliedpercent }} %
             </span>
             {{/ summary.penaltyapplied }}
@@ -41,13 +42,12 @@ Context variables:
     {{# summary }}
       {{> mod_astra/_points_progress }}
     {{/ summary }}
+  </div>
 </div>
 
-<div class="panel panel-primary">
-    <div class="panel-heading">
-        <h4 class="panel-title">{{#str}} exerciseinfo, mod_astra {{/str}}</h4>
-    </div>
-    <div class="panel-body">
+<div class="card card-outline-primary">
+    <h4 class="card-header bg-primary">{{#str}} exerciseinfo, mod_astra {{/str}}</h4>
+    <div class="card-block">
         <dl>
             {{^ exercise.category.status_hidden }}
                 <dt>{{#str}} exercisecategory, mod_astra {{/str}}</dt>

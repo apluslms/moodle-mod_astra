@@ -6,7 +6,7 @@
  * 
  * @module mod_astra/aplus_modal
  */
-define(['jquery', 'core/event', 'mod_astra/aplus_highlightcode', 'theme_bootstrapbase/bootstrap'], function(jQuery, moodleEvent) {
+define(['jquery', 'core/event', 'mod_astra/aplus_highlightcode', 'theme_boost/dropdown', 'theme_boost/modal'], function(jQuery, moodleEvent) {
 
 /**
  * Handle common modal dialog.
@@ -60,7 +60,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_highlightcode', 'theme_bootstra
       this.title.hide();
       this.content.hide();
       this.loaderText
-        .removeClass('progress-bar-danger').addClass('active')
+        .removeClass('bg-danger').addClass('progress-bar-animated')
         .text(data || this.messages.loading);
       this.loader.show();
       this.element.on("hidden.bs.modal", function(event) {
@@ -71,7 +71,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_highlightcode', 'theme_bootstra
 
     showError: function(data) {
       this.loaderText
-        .removeClass('active').addClass('progress-bar-danger')
+        .removeClass('progress-bar-animated').addClass('bg-danger')
         .text(data || this.messages.error);
     },
 
@@ -107,7 +107,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_highlightcode', 'theme_bootstra
  * Open links in a modal.
  */
 (function($, moodleEvent, window, document, undefined) {
-   //"use strict";
+    //"use strict";
 
     var pluginName = "aplusModalLink";
     var defaults = {
@@ -117,7 +117,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_highlightcode', 'theme_bootstra
         file: false
     };
 
-    function AplusModalLink(element, options) {
+  function AplusModalLink(element, options) {
     this.element = $(element);
     this.settings = $.extend({}, defaults, options);
     this.init();
