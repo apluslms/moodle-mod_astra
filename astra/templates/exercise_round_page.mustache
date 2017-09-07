@@ -10,12 +10,14 @@ Context variables:
 <!-- Nav tabs -->
 <ul class="nav nav-tabs" role="tablist">
   <li class="nav-item">
-    <a href="#round-summary-tab" aria-controls="round-summary-tab" role="tab" data-toggle="tab" class="nav-link active">
+    <a href="#round-summary-tab" aria-controls="round-summary-tab" role="tab" data-toggle="tab"
+        class="nav-link active" id="round-summary-link" aria-expanded="true">
       {{#str}} exerciseresults, mod_astra {{/str}}
     </a>
   </li>
   <li class="nav-item">
-    <a href="#round-toc-tab" aria-controls="round-toc-tab" role="tab" data-toggle="tab" class="nav-link">
+    <a href="#round-toc-tab" aria-controls="round-toc-tab" role="tab" data-toggle="tab"
+        class="nav-link" id="round-toc-link">
       {{#str}} toc, mod_astra {{/str}}
     </a>
   </li>
@@ -24,11 +26,12 @@ Context variables:
 <!-- Tab panes -->
 <div class="tab-content">
 
-  <div role="tabpanel" class="tab-pane active" id="round-summary-tab">
+  <div role="tabpanel" class="tab-pane fade show active" id="round-summary-tab"
+      aria-labelledby="round-summary-link">
     {{> mod_astra/exercise_round }}
   </div> <!-- close tab-pane -->
   
-  <div role="tabpanel" class="tab-pane" id="round-toc-tab">
+  <div role="tabpanel" class="tab-pane fade" id="round-toc-tab" aria-labelledby="round-toc-link">
     <h3>{{#str}} toc, mod_astra {{/str}}</h3>
     {{# toc }}
       {{> mod_astra/_round_toc }}
