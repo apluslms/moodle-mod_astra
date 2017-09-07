@@ -14,33 +14,37 @@ Context variables:
     - exercise_rounds (array of objects) as required by _course_toc.mustache
 }}
 
-<div class="bs3-container-fluid">
+<!-- Nav tabs -->
+<nav>
+<ul class="nav nav-tabs" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" href="#course-summary" aria-controls="course-summary"
+        aria-expanded="true" role="tab" data-toggle="tab" id="course-summary-tab">
+      {{#str}} exerciseresults, mod_astra {{/str}}
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#course-toc" aria-controls="course-toc"
+        role="tab" data-toggle="tab" id="course-toc-tab">
+      {{#str}} toc, mod_astra {{/str}}
+    </a>
+  </li>
+</ul>
+</nav>
 
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active">
-      <a href="#course-summary" aria-controls="course-summary" role="tab" data-toggle="tab">
-        {{#str}} exerciseresults, mod_astra {{/str}}
-      </a>
-    </li>
-    <li role="presentation">
-      <a href="#course-toc" aria-controls="course-toc" role="tab" data-toggle="tab">
-        {{#str}} toc, mod_astra {{/str}}
-      </a>
-    </li>
-  </ul>
-
-  <!-- Tab panes -->
-  <div class="tab-content">
+<!-- Tab panes -->
+<div class="tab-content">
   
-  <div role="tabpanel" class="tab-pane active" id="course-summary">
+  <div role="tabpanel" class="tab-pane fade show active" id="course-summary"
+      aria-labelledby="course-summary-tab">
   <div class="row">
   {{# categories }}
     {{# status_ready }}
-    <div class="col-lg-3">
-      <div class="well">
-        <p>{{ name }}</p>
-        <p><strong class="h2">
+    <div class="col-md-3">
+      <div class="card bg-light">
+      <div class="card-body">
+        <h4 class="card-title">{{ name }}</h4>
+        <p class="card-text"><strong class="h2">
           {{ summary.points }}
           <small>
             / {{ summary.max }}
@@ -49,6 +53,7 @@ Context variables:
         {{# summary }}
           {{> mod_astra/_points_progress }}
         {{/ summary }}
+      </div>
       </div>
     </div>
     {{/ status_ready }}
@@ -60,18 +65,17 @@ Context variables:
   {{/ rounds }}
   </div> <!-- close tab-pane -->
 
-  <div role="tabpanel" class="tab-pane" id="course-toc">
+  <div role="tabpanel" class="tab-pane fade" id="course-toc" aria-labelledby="course-toc-tab">
   {{# toc }}
     {{> mod_astra/_course_toc }}
   {{/ toc }}
   </div>
   
-  </div> <!-- close tab-content -->
-
-</div>
+</div> <!-- close tab-content -->
 
 {{#js}}
-require(['jquery', 'theme_bootstrapbase/bootstrap'], function($) {
+require(['theme_boost/loader']);
+require(['jquery', 'theme_boost/tooltip'], function($) {
   /* enable Bootstrap tooltips */
   $(function() {
     $('[data-toggle="tooltip"]').tooltip();

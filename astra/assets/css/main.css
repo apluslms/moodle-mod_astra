@@ -365,3 +365,7 @@ a.bg-dark:focus, a.bg-dark:hover {
   display: table;
   clear: both;
 }
+
+.fade.show {
+  opacity: 1;
+}

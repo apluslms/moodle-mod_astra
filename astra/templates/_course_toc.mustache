@@ -28,16 +28,16 @@ Context variables:
       {{/ has_started }}
       {{^ has_started }}
         <h3>
-          {{ module }}
+          {{ name }}
           {{# is_course_staff }}
           <a class="btn btn-secondary btn-sm" href="{{{ url }}}">
-              <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+              {{#pix}}i/lock{{/pix}}
               {{#str}} earlyaccess, mod_astra {{/str}}
           </a>
           {{/ is_course_staff }}
         </h3>
         <h4>
-            <span class="label label-info">{{#str}} opens, mod_astra {{/str}} {{#toDateStr}}{{ openingtime }}{{/toDateStr}}</span>
+            <span class="badge badge-info">{{#str}} opens, mod_astra {{/str}} {{#toDateStr}}{{ openingtime }}{{/toDateStr}}</span>
             <small>&ndash; {{#toDateStr}}{{ closingtime }}{{/toDateStr}}</small>
         </h4>
       {{/ has_started }}
