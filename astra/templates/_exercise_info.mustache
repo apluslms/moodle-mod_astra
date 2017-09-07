@@ -26,7 +26,7 @@ Context variables:
 }}
 
 <div class="card bg-light">
-  <div class="card-block">
+  <div class="card-body">
     <p class="card-title">{{#str}} earnedpoints, mod_astra {{/str}}</p>
     <p class="card-text"><strong class="h2 exercise-info-points">
         {{ summary.points }}
@@ -45,9 +45,9 @@ Context variables:
   </div>
 </div>
 
-<div class="card card-outline-primary">
-    <h4 class="card-header bg-primary">{{#str}} exerciseinfo, mod_astra {{/str}}</h4>
-    <div class="card-block">
+<div class="card border-primary">
+    <h4 class="card-header bg-primary text-white">{{#str}} exerciseinfo, mod_astra {{/str}}</h4>
+    <div class="card-body">
         <dl>
             {{^ exercise.category.status_hidden }}
                 <dt>{{#str}} exercisecategory, mod_astra {{/str}}</dt>

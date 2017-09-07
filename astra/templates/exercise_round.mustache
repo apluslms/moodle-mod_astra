@@ -20,7 +20,7 @@ Context variables:
 
 }}
 <div class="card module-panel{{# course_module.expired }} module-expired{{/ course_module.expired }}">
-  <div class="card-header card-primary card-inverse">
+  <div class="card-header bg-primary text-white">
   <a href="{{{ course_module.url }}}">
   <h3 class="card-title">
     {{# module_summary }}
@@ -36,7 +36,7 @@ Context variables:
   </a>
   </div>
 <div id="module{{ course_module.id }}">
-  <div class="card-block">
+  <div class="card-body">
     <p>
       {{# toDateStr }}{{ course_module.openingtime }}{{/ toDateStr }} &ndash; {{# toDateStr }}{{ course_module.closingtime }}{{/ toDateStr }}
 
