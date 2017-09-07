@@ -51,7 +51,7 @@ define(['jquery'], function(jQuery) {
 		 * Constructs contained exercise elements.
 		 */
 		init: function() {
-			this.element.removeClass("hide");
+			this.element.show();
 			this.url = this.element.attr(this.settings.poll_url_attr);
 			this.schedule();
 		},
@@ -95,10 +95,10 @@ define(['jquery'], function(jQuery) {
 	    },
 
 		message: function(messageType) {
-			this.element.removeClass("active").find(this.settings.message_selector)
+			this.element.find(this.settings.message_selector).removeClass("progress-bar-animated")
 				.text(this.element.attr(this.settings.message_attr[messageType]));
 			if (messageType == "error") {
-				this.element.addClass("progress-bar-danger");
+				this.element.find(this.settings.message_selector).addClass("bg-danger");
 			}
 		},
 

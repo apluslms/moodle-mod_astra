@@ -30,7 +30,7 @@ Context variables:
     <ul class="list-unstyled">
         {{# submission.files }}
         <li>
-            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+            {{#pix}}e/insert_file{{/pix}}
             {{> mod_astra/_file_link }}
         </li>
         {{/ submission.files }}
@@ -39,7 +39,7 @@ Context variables:
 
   {{# submission.assistant_feedback }}
     <h4>{{#str}} assistantfeedback, mod_astra {{/str}}</h4>
-    <blockquote>{{{ submission.assistant_feedback }}}</blockquote>
+    <blockquote class="blockquote">{{{ submission.assistant_feedback }}}</blockquote>
   {{/ submission.assistant_feedback }}
   
   {{# submission.feedback }}

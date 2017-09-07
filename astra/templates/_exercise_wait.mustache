@@ -13,12 +13,12 @@ Context variables:
 }}
 
 {{# page.is_wait }}
-<div class="exercise-wait hide progress"
+<div class="exercise-wait progress" style="display: none;"
   data-poll-url="{{{ submission.poll_url }}}"
   data-ready-url="{{{ submission.url }}}"
   data-msg-error="{{#str}} exercisecommerror, mod_astra {{/str}}"
   data-msg-timeout="{{#str}} gradingtakeslonger, mod_astra {{/str}}">
-  <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;">
+  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:100%;">
     {{#str}} gradingsubmission, mod_astra {{/str}}
   </div>
 </div>
