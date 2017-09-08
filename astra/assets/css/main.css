@@ -44,7 +44,7 @@ pre.hljs {
     border: 1px solid #ccc;
     border-radius: 4px;
 }
-#exercise pre {
+#exercise pre, #feedback pre {
     background-color: #f5f5f5;
     border: 1px solid #ccc;
     border-radius: 4px;

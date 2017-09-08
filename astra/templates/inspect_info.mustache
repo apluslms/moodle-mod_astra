@@ -18,11 +18,9 @@ Context variables:
 * fileSizeFormatter (callable) function to convert bytes (int) to a human-readable string (e.g. "10.2 KB")
 }}
 
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h3 class="panel-title">{{#str}} submitteddata, mod_astra {{/str}}</h3>
-    </div>
-    <div class="panel-body">
+<div class="card">
+    <h3 class="card-header">{{#str}} submitteddata, mod_astra {{/str}}</h3>
+    <div class="card-body">
         <dl>
             <dt>{{#str}} submitters, mod_astra {{/str}}</dt>
             <dd>{{ submitter_name }}</dd>
@@ -38,12 +36,12 @@ Context variables:
             {{/ late_penalty_applied }}
         </dl>
 
-        <h4>{{#str}} submittedfiles, mod_astra {{/str}}</h4>
+        <h4 class="card-title">{{#str}} submittedfiles, mod_astra {{/str}}</h4>
 
         <ul class="list-unstyled">
             {{# files }}
             <li>
-                <span class="glyphicon glyphicon-file"></span>
+                {{#pix}}e/insert_file{{/pix}}
                 {{> mod_astra/_file_link }}
             </li>
             {{/ files }}
@@ -54,13 +52,13 @@ Context variables:
             {{/ files }}
         </ul>
 
-        <h4>{{#str}} submittedvalues, mod_astra {{/str}}</h4>
+        <h4 class="card-title">{{#str}} submittedvalues, mod_astra {{/str}}</h4>
 
 <pre>
 {{ submission_data }}
 </pre>
 
-        <h4>{{#str}} gradingdata, mod_astra {{/str}}</h4>
+        <h4 class="card-title">{{#str}} gradingdata, mod_astra {{/str}}</h4>
 
 <pre>
 {{ grading_data }}
