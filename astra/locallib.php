@@ -148,6 +148,7 @@ function astra_send_assistant_feedback_notification(mod_astra_submission $submis
     $message->notification = 1;
     $message->contexturl = \mod_astra\urls\urls::submission($submission);
     $message->contexturlname = get_string('submissionnumber', \mod_astra_exercise_round::MODNAME, $sbmsCounter);
+    $message->courseid = $submission->getExercise()->getExerciseRound()->getCourse()->courseid;
     
     return message_send($message);
 }
