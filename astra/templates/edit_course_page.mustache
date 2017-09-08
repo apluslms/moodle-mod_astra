@@ -38,17 +38,17 @@ Context variables:
         (in <select> element of the form).
 }}
 
-<div class="well">
+<div class="card bg-light">
+  <div class="card-body">
   <form method="post" class="form-inline" action="{{{ renumber_action_url }}}">
     <a href="{{{ autosetupurl }}}" class="btn btn-secondary">{{#str}} autosetup, mod_astra {{/str}}</a>
     <button class="btn btn-secondary" type="submit" name="cache">{{#str}} clearcontentcache, mod_astra {{/str}}</button>
   </form>
+  </div>
 </div>
 
-<div class="panel panel-primary">
-    <div class="panel-heading">
-        <h3 class="panel-title">{{#str}} exercisecategories, mod_astra {{/str}}</h3>
-    </div>
+<div class="card border-primary">
+    <h3 class="card-header bg-primary text-white">{{#str}} exercisecategories, mod_astra {{/str}}</h3>
     <table class="table table-striped table-bordered table-sm">
         <tbody>
             {{# categories }}
@@ -56,56 +56,54 @@ Context variables:
                 <td>
                     {{ name }}
                     {{^ status_ready }}
-                      <span class="label label-default">{{ status_str }}</span>
+                      <span class="badge badge-secondary">{{ status_str }}</span>
                     {{/ status_ready }}
                 </td>
                 <td>
                     <a class="btn btn-secondary btn-sm" href="{{{ editurl }}}">
-                        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                        {{#pix}}t/editinline{{/pix}}
                         {{#str}} editcategory, mod_astra {{/str}}
                     </a>
                     {{^ has_learning_objects }}
                     <a class="btn btn-secondary btn-sm" href="{{{ removeurl }}}">
-                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> {{#str}} remove, mod_astra {{/str}}
+                        {{#pix}}t/delete{{/pix}} {{#str}} remove, mod_astra {{/str}}
                     </a>
                     {{/ has_learning_objects }}
                 </td>
             </tr>
             {{/ categories }}
             <tr>
-                <th colspan="2">
+                <td colspan="2">
                     <a class="btn btn-primary btn-sm" href="{{{ create_category_url }}}">
-                        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                        {{#pix}}t/add{{/pix}}
                         {{#str}} addnewcategory, mod_astra {{/str}}
                     </a>
-                </th>
+                </td>
             </tr>
         </tbody>
     </table>
 </div>
 
 
-<div class="panel panel-primary">
-    <div class="panel-heading">
-        <h3 class="panel-title">{{#str}} exerciserounds, mod_astra {{/str}}</h3>
-    </div>
+<div class="card border-primary">
+    <h3 class="card-header bg-primary text-white">{{#str}} exerciserounds, mod_astra {{/str}}</h3>
     <table class="table table-striped table-bordered table-sm">
         <tbody>
             {{# course_modules }}
-            <tr class="success">
+            <tr class="table-success">
                 <th>
                   <strong>{{ name }}</strong>
                   {{^ status_ready }}
-                  <span class="label label-default">{{ status_str }}</span>
+                  <span class="badge badge-secondary">{{ status_str }}</span>
                   {{/ status_ready }}
                 </th>
                 <td>
                     <a class="btn btn-secondary btn-sm" href="{{{ editurl }}}">
-                        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> {{#str}} editmodule, mod_astra {{/str}}
+                        {{#pix}}t/editinline{{/pix}} {{#str}} editmodule, mod_astra {{/str}}
                     </a>
                     {{^ has_exercises }}
                     <a class="btn btn-secondary btn-sm" href="{{{ removeurl }}}">
-                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> {{#str}} remove, mod_astra {{/str}}
+                        {{#pix}}t/delete{{/pix}} {{#str}} remove, mod_astra {{/str}}
                     </a>
                     {{/ has_exercises }}
                     <a class="btn btn-link btn-sm" href="{{{ url }}}">
@@ -118,15 +116,15 @@ Context variables:
                 <td>
                     {{ name }}
                     {{^ status_ready }}
-                    <span class="label label-default">{{ status_str }}</span>
+                    <span class="badge badge-secondary">{{ status_str }}</span>
                     {{/ status_ready }}
                 </td>
                 <td>
                     <a class="btn btn-secondary btn-sm" href="{{{ editurl }}}">
-                        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> {{#str}} editexercise, mod_astra {{/str}}
+                        {{#pix}}t/editinline{{/pix}} {{#str}} editexercise, mod_astra {{/str}}
                     </a>
                     <a class="btn btn-secondary btn-sm" href="{{{ removeurl }}}">
-                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> {{#str}} remove, mod_astra {{/str}}
+                        {{#pix}}t/delete{{/pix}} {{#str}} remove, mod_astra {{/str}}
                     </a>
                     <a class="btn btn-link btn-sm" href="{{{ url }}}">
                         {{#str}} openexercise, mod_astra {{/str}}
@@ -142,29 +140,31 @@ Context variables:
             <tr>
                 <td colspan="2">
                     <a class="btn btn-success btn-sm" href="{{{ addnewexerciseurl }}}">
-                        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                        {{#pix}}t/add{{/pix}}
                         {{#str}} addnewexercise, mod_astra {{/str}}
                     </a>
                     <a class="btn btn-success btn-sm" href="{{{ addnewchapterurl }}}">
-                        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                        {{#pix}}t/add{{/pix}}
                         {{#str}} addnewchapter, mod_astra {{/str}}
                     </a>
                 </td>
             </tr>
             {{/ course_modules }}
             <tr>
-                <th colspan="2">
+                <td colspan="2">
                     <a class="btn btn-primary btn-sm" href="{{{ create_module_url }}}">
-                        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                        {{#pix}}t/add{{/pix}}
                         {{#str}} addnewmodule, mod_astra {{/str}}
                     </a>
-                </th>
+                </td>
             </tr>
         </tbody>
     </table>
 </div>
 
-<form method="post" action="{{{ renumber_action_url }}}" class="well">
+<div class="card bg-light">
+<div class="card-body">
+<form method="post" action="{{{ renumber_action_url }}}">
     <div class="form-group">
       <label for="id_module_numbering">{{#str}} modulenumbering, mod_astra {{/str}}</label>
       <select class="form-control" id="id_module_numbering" name="module_numbering">
@@ -182,3 +182,5 @@ Context variables:
     <button class="btn btn-success" type="submit" name="renumbermodule">{{#str}} renumerateformodules, mod_astra {{/str}}</button>
     <button class="btn btn-success" type="submit" name="renumbercourse">{{#str}} renumerateignoremodules, mod_astra {{/str}}</button>
 </form>
+</div>
+</div>
