@@ -11,7 +11,14 @@
  * 
  * @module mod_astra/aplus_chapter
  */
-define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_bootstrapbase/bootstrap'], function(jQuery, moodleEvent) {
+define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 'mod_astra/aplus_modal'], function(jQuery, moodleEvent) {
+/* TODO
+Update exercise_plain.mustache and submission_plain.mustache to the theme Boost (Bootstrap 4).
+This file:
+- some selectors may change when the HTML structure of the page is updated (e.g., exercise navs and dropdowns)
+- hide class is not used anymore
+- progress bar has changed classes: active -> progress-bar-animated; progress-bar-danger -> bg-danger
+*/
 
 /**
  * Chapter element containing number of exercise elements.
@@ -63,7 +70,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_bootstrapbase/boo
 				.find("[" + this.settings.exercise_url_attr + "]")
 				.aplusExercise(this);
 			this.exercisesIndex = 0;
-			this.exercisesSize = this.exercises.size();
+			this.exercisesSize = this.exercises.length;
 			if (this.exercisesSize > 0) {
 				this.nextExercise();
 			} else {
@@ -348,7 +355,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_bootstrapbase/boo
 
 		loadLastSubmission: function(input) {
 			var link = input.find(this.settings.last_submission_selector);
-			if (link.size() > 0) {
+			if (link.length > 0) {
 				var url = link.attr("href");
 				if (url && url !== "#") {
 					this.showLoader("load");
