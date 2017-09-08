@@ -34,7 +34,7 @@ define(['jquery'], function(jQuery) {
         init: function() {
           var columnCount = 0;
           this.element.find('thead').find('tr').each(function() {
-            var count = $(this).find('th').size();
+            var count = $(this).find('th').length;
             columnCount = count > columnCount ? count : columnCount;
           });
 
@@ -51,7 +51,7 @@ define(['jquery'], function(jQuery) {
           var filterRow = $('<tr></tr>');
           for (var i = 0; i < columnCount; i++) {
             this.filters.push('');
-            var filterInput = $('<input type="text" data-column="'+i+'">')
+            var filterInput = $('<input type="text" class="form-control" data-column="'+i+'">')
               .on('keyup', filterDelay).on('change', filterDelay);
             var filterCell = $('<td></td>');
             filterCell.append(filterInput);
