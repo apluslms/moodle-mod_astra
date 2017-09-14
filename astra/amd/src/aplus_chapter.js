@@ -12,13 +12,6 @@
  * @module mod_astra/aplus_chapter
  */
 define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 'mod_astra/aplus_modal'], function(jQuery, moodleEvent) {
-/* TODO
-Update exercise_plain.mustache and submission_plain.mustache to the theme Boost (Bootstrap 4).
-This file:
-- some selectors may change when the HTML structure of the page is updated (e.g., exercise navs and dropdowns)
-- hide class is not used anymore
-- progress bar has changed classes: active -> progress-bar-animated; progress-bar-danger -> bg-danger
-*/
 
 /**
  * Chapter element containing number of exercise elements.
@@ -63,7 +56,7 @@ This file:
 			this.ajaxForms = window.FormData ? true : false;
 			this.url = this.element.attr(this.settings.chapter_url_attr);
 			this.modalElement = $(this.settings.modal_selector);
-			this.loader = $(this.settings.loader_selector);
+			this.loader = $(this.settings.loading_selector);
 			this.messages = this.readMessages();
 			this.quizSuccess = $(this.settings.quiz_success_selector);
 			this.exercises = this.element
@@ -88,16 +81,15 @@ This file:
 
 		readMessages: function() {
 			var messages = {};
-			var text = this.loader.find(this.settings.message_selector);
-			for (var key in this.message_attr) {
-				messages[key] = text.attr(this.message_attr[key]);
+			for (var key in this.settings.message_attr) {
+				messages[key] = this.loader.attr(this.settings.message_attr[key]);
 			}
 			return messages;
 		},
 
 		cloneLoader: function(msgType) {
 			return $(this.settings.loading_selector)
-				.clone().removeAttr("id").removeClass("hide");
+				.clone().removeAttr("id").show();
 		},
 
 		openModal: function(message) {
@@ -122,8 +114,9 @@ This file:
 			});
 			var content = this.quizSuccess.clone()
 				.attr("class", exercise.attr("class"))
-				.removeClass("exercise hide") // changed from A+: remove class hide as well since it might otherwise stay if no class is set in the line 115
-				.removeAttr("id");
+				.removeClass("exercise")
+				.removeAttr("id")
+				.show();
 			content.find('.badge-placeholder').empty().append(badge);
 			if (badge.hasClass("badge-success") || badge.hasClass("badge-warning")) {
 				content.find('.btn-success').css('display', 'block');
@@ -171,9 +164,10 @@ This file:
 		exercise_selector: '#exercise-all',
 		summary_selector: '.exercise-summary',
 		response_selector: '.exercise-response',
-		navigation_selector: 'ul.nav a[class!="dropdown-toggle"]',
-		dropdown_selector: 'ul.nav .dropdown-toggle',
-		last_submission_selector: 'ul.nav ul.dropdown-menu li:first-child a'
+		navigation_selector: 'ul.exercise-nav a[class!="dropdown-toggle"]',
+		dropdown_selector: 'ul.exercise-nav .dropdown-toggle',
+		last_submission_selector: 'ul.exercise-nav .dropdown-menu a:first-child',
+		submission_point_badges_selector: "[data-points-badge] .badge", // summary and latest submission points in submission_plain.mustache
 	};
 
 	function AplusExercise(element, chapter, options) {
@@ -257,12 +251,9 @@ This file:
 		},
 
 		bindNavEvents: function() {
-			var chapter = this.chapter;
-			this.element.find(this.settings.navigation_selector).filter(":not(.no-open-modal)").aplusModalLink();
-			// changed from A+: navigation links do not open in a modal if they have class no-open-modal
-			// (the link normally opens a new page then) 
+			this.element.find(this.settings.navigation_selector).aplusModalLink();
 			this.element.find(this.settings.dropdown_selector).dropdown();
-			this.element.find('.page-modal').filter(":not(.no-open-modal)").aplusModalLink();
+			this.element.find('.page-modal').aplusModalLink();
 		},
 
 		bindFormEvents: function(content) {
@@ -336,13 +327,13 @@ This file:
 				$.aplusExerciseDetectWaits(function(suburl) {
 					$.ajax(suburl).done(function(data) {
 						var input2 = $(data);
-						var new_badges = input2.find(".badge");
+						var new_badges = input2.find(exercise.settings.submission_point_badges_selector);
 						var old_badges = exercise.element.find(exercise.settings.summary_selector + " .badge");
-						old_badges.eq(0).replaceWith(new_badges.eq(0).clone());
-						old_badges.eq(2).replaceWith(new_badges.eq(1).clone());
+						old_badges.eq(0).replaceWith(new_badges.eq(0).clone()); // summary points badge (best submission)
+						old_badges.eq(2).replaceWith(new_badges.eq(1).clone()); // points badge of this submission
 						var content = input2.filter(exercise.settings.exercise_selector).contents();
 						if (content.text().trim() == "") {
-							exercise.chapter.modalSuccess(exercise.element, new_badges.eq(2).clone());
+							exercise.chapter.modalSuccess(exercise.element, new_badges.eq(1).clone());
 						} else {
 							exercise.chapter.modalContent(content);
 						}
@@ -399,9 +390,9 @@ This file:
 			this.loader.show().find(this.settings.message_selector)
 				.text(this.chapter.messages[messageType]);
 			if (messageType == "error") {
-				this.loader.removeClass("active").addClass("progress-bar-danger");
+				this.loader.removeClass("progress-bar-animated").addClass("bg-danger");
 			} else {
-				this.loader.addClass("active").removeClass("progress-bar-danger");
+				this.loader.addClass("progress-bar-animated").removeClass("bg-danger");
 			}
 		},
 

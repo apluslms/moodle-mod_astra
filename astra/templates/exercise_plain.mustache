@@ -35,45 +35,42 @@ Context variables:
 <div id="exercise-all">
 
     {{# exercise.is_submittable }}
-        <nav class="exercise-summary navbar navbar-default clearfix">
-          <ul class="nav navbar-nav exercise-nav">
-            <li>
-                <a href="{{# summary.best_submission_url }}{{ summary.best_submission_url }}{{/ summary.best_submission_url }}{{^ summary.best_submission_url }}#{{/ summary.best_submission_url }}">
+        <nav class="exercise-summary navbar navbar-expand navbar-light">
+          <ul class="navbar-nav exercise-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="{{# summary.best_submission_url }}{{ summary.best_submission_url }}{{/ summary.best_submission_url }}{{^ summary.best_submission_url }}#{{/ summary.best_submission_url }}">
                     {{#str}} points, mod_astra {{/str}}
                     {{# summary }}
                       {{> mod_astra/_points_badge }}
                     {{/ summary }}
                 </a>
             </li>
-            <li class="dropdown">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#"
+                    id="sbmsdropdown-{{uniqid}}" aria-haspopup="true" aria-expanded="false">
                     {{#str}} submissions, mod_astra {{/str}}
-                    <span class="badge">
+                    <span class="badge badge-secondary">
                         {{ summary.submission_count }}
                         {{# exercise.max_submissions_for_user }}
                         / {{ exercise.max_submissions_for_user }}
                         {{/ exercise.max_submissions_for_user }}
                     </span>
-                    <b class="caret"></b>
                 </a>
-                <ul class="dropdown-menu">
+                <div class="dropdown-menu" aria-labelledby="sbmsdropdown-{{uniqid}}">
                     {{# submissions }}
-                    <li>
-                        <a href="{{{ url }}}">
+                        <a class="dropdown-item" href="{{{ url }}}">
                             {{ nth }}.
                             {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
                             {{> mod_astra/_points_badge }}
                         </a>
-                    </li>
                     {{/ submissions }}
                     {{^ submissions }}
-                    <li>
-                        <a href="#">{{#str}} nosubmissionsyet, mod_astra {{/str}}</a>
-                    </li>
+                        <a class="dropdown-item" href="#">{{#str}} nosubmissionsyet, mod_astra {{/str}}</a>
                     {{/ submissions }}
-                </ul>
+                </div>
             </li>
-            <li class="navbar-text">
+          </ul>
+            <span class="navbar-text">
                 <small>
                     {{# exercise.points_to_pass }}
                       {{#str}} requiredpoints, mod_astra, {{ exercise.points_to_pass }} {{/str}}. 
@@ -89,11 +86,10 @@ Context variables:
                       {{#str}} deadline, mod_astra {{/str}} {{# toDateStr }}{{ module.closingtime }}{{/ toDateStr }}
                     {{/ module.is_late_submission_open }}
                 </small>
-            </li>
-          </ul>
+            </span>
           {{# exercise.can_view_submissions }}
-            <a class="btn btn-secondary btn-sm page-modal no-open-modal" href="{{{ exercise.submissionlisturl }}}">
-                <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+            <a class="btn btn-secondary btn-sm" href="{{{ exercise.submissionlisturl }}}">
+                {{#pix}}a/view_list_active{{/pix}}
                 {{#str}} viewallsubmissions, mod_astra {{/str}}
             </a>
           {{/ exercise.can_view_submissions }}
@@ -109,7 +105,8 @@ Context variables:
         </div>
         {{! if this page receives submissions (is rendered when a new submission is uploaded, 
         and exercise service tells us to wait a short time,
-        poll for the grading status of the new submission }}
+        poll for the grading status of the new submission
+        (then the aplus_poll AMD JS module should also be included in this page) }}
         {{> mod_astra/_exercise_wait }}
     </div>
 </div>

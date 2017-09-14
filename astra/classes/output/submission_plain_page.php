@@ -9,6 +9,7 @@ class submission_plain_page implements \renderable, \templatable {
     protected $exercise;
     protected $submission;
     protected $user;
+    protected $exerciseSummary;
     
     public function __construct(\mod_astra_exercise_round $exround,
             \mod_astra_exercise $exercise,
@@ -17,6 +18,7 @@ class submission_plain_page implements \renderable, \templatable {
         $this->exercise = $exercise;
         $this->submission = $submission;
         $this->user = $submission->getSubmitter();
+        $this->exerciseSummary = new \mod_astra\summary\user_exercise_summary($exercise, $this->user);
     }
     
     /**
@@ -31,6 +33,7 @@ class submission_plain_page implements \renderable, \templatable {
         
         $data->exercise = $this->exercise->getExerciseTemplateContext($this->user, false, false);
         $data->submission = $this->submission->getTemplateContext(true, false);
+        $data->summary = $this->exerciseSummary->getTemplateContext();
         
         $data->toDateStr = new \mod_astra\output\date_to_string();
         $data->fileSizeFormatter = new \mod_astra\output\file_size_formatter();

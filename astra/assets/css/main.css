@@ -60,7 +60,7 @@ pre.hljs {
     list-style: none;
 }
 
-/* cards */
+/* cards, exercise round box */
 .module-panel table {
     margin: 0;
 }
@@ -89,7 +89,13 @@ pre.hljs {
     color: #fff;
 }
 
-/* exercise wells */
+/* point badges in dropdowns should stick to the right side */
+/*li.menu-submission .dropdown-menu a.dropdown-item > .badge,
+.exercise-summary li.dropdown .dropdown-menu a.dropdown-item > .badge {
+    float: right;
+}*/
+
+/* exercises embedded in chapters */
 [data-aplus-exercise] {
     border: 1px solid #bce8f1;/*grey #e3e3e3;*/
     border-radius: 4px;
@@ -113,26 +119,25 @@ pre.hljs {
 .exercise-summary .navbar-nav {
     margin: 0;
 }
-.exercise-summary .navbar-nav .navbar-text {
-    margin: 15px 15px 0 15px;
+#page-content .navbar-light .navbar-nav .nav-link {
+    /* override rules from the Moodle theme Boost without the affecting the Moodle site navbar */
+    font-size: unset;
+    text-transform: none;
+    letter-spacing: normal;
 }
-.exercise-summary .navbar-nav>li>a,
-.exercise-summary .navbar-nav>.active>a,
-.exercise-summary .navbar-nav>.active>a:focus,
-.exercise-summary .navbar-nav>.active>a:hover,
-.exercise-summary .navbar-nav .navbar-text {
+.exercise-summary .navbar-nav + .navbar-text {
+    margin-left: 1rem;
+}
+.exercise-summary .navbar-nav > li.nav-item > a.nav-link,
+.exercise-summary .navbar-nav + .navbar-text {
     color: #31708f;
     background-color: transparent;
 }
-.exercise-summary .navbar-nav>li>a:hover,
-.exercise-summary .navbar-nav>.open>a,
-.exercise-summary .navbar-nav>.open>a:focus,
-.exercise-summary .navbar-nav>.open>a:hover {
-    background-color: rgba(0,0,0,0.04);
+.exercise-summary .navbar-nav > li.nav-item > a.nav-link:hover {
+    color: #0000FF;
 }
 .navbar-nav>li>a.file-modal {
     display: inline;
-    padding: 0;
     text-decoration: underline;
 }
 .exercise-response {
@@ -145,13 +150,23 @@ pre.hljs {
     display: inline-block;
 }
 .correct-option {
-  margin-left: -38px;
-  margin-right: 20px;
+  /*margin-left: -38px;
+  margin-right: 20px;*/
   color: green;
 }
 .btn-group button:first-child {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
+}
+/* submitted files list in the feedback modal (submission_plain.mustache) */
+table.submission-info .list-unstyled {
+    margin: 0;
+}
+/* The navbar of embedded exercises in chapter pages does not expand in height when the viewport
+becomes too narrow and Moodle has set a max height. While Moodle is using Bootstrap 4 alpha,
+it is too difficult to use responsive, collapsing navbars. */
+[data-aplus-exercise] > .exercise-content > nav.navbar {
+    max-height: unset;
 }
 
 /* results table */
@@ -368,4 +383,21 @@ a.bg-dark:focus, a.bg-dark:hover {
 
 .fade.show {
   opacity: 1;
+}
+
+#page-content .navbar-nav {
+  padding-left: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+.navbar-text {
+  display: inline-block;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.navbar-light .navbar-text {
+  color: rgba(0, 0, 0, 0.5);
+}
+.navbar-dark .navbar-text {
+  color: rgba(255, 255, 255, 0.5);
 }
