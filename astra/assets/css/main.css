@@ -401,3 +401,7 @@ a.bg-dark:focus, a.bg-dark:hover {
 .navbar-dark .navbar-text {
   color: rgba(255, 255, 255, 0.5);
 }
+
+.ml-3 {
+  margin-left: 1rem !important;
+}

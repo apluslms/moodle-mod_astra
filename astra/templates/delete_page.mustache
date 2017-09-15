@@ -9,12 +9,14 @@ Context variables:
 * actionurl (string) form action URL
 }}
 
-<form method="post" class="well form" action="{{{ actionurl }}}">
+<div class="card bg-light">
+<div class="card-body">
+  <form method="post" action="{{{ actionurl }}}">
     <legend>
         {{#str}} confirmobjectremoval, mod_astra, {{ objecttype }} {{/str}}
     </legend>
 
-    <div class="alert alert-danger">
+    <div class="alert alert-danger" role="alert">
         {{{ message }}}
     </div>
 
@@ -24,4 +26,6 @@ Context variables:
             {{#str}} cancel, mod_astra {{/str}}
         </a>
     </div>
-</form>
+  </form>
+</div>
+</div>
