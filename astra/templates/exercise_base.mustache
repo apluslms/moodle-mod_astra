@@ -6,6 +6,8 @@ Context variables:
 * exercise (stdClass) with fields
     - url (string), submissionlisturl, editurl
     - infourl (string) AJAX URL for the exercise info box
+    - is_submittable (boolean) does the learning object accept submissions (ever at all)?
+      True for exercises, false for chapters.
 * submissions (array of objects, the latest submission first), each object has keys 
     url (string), submission_time (int, timestamp), nth (int, ordinal number),
     the variables required by _points_badge.mustache (set status if the submission is not graded)
@@ -29,6 +31,7 @@ Blocks that child templates should override:
 <div class="row">
 <div class="col-lg-9">
   {{$ submissionsnavbar }}
+  {{# exercise.is_submittable }}
   <nav>
   <ul class="nav nav-tabs">
       <li class="nav-item menu-exercise">
@@ -82,6 +85,7 @@ Blocks that child templates should override:
       {{/ is_course_staff }}
   </ul>
   </nav>
+  {{/ exercise.is_submittable }}
   {{/ submissionsnavbar }}
   
   {{# error }}
@@ -94,9 +98,11 @@ Blocks that child templates should override:
 <div class="col-lg-3">
 
     {{$ exerciseinfo }}
+    {{# exercise.is_submittable }}
     <div id="exercise-info" data-url="{{ exercise.infourl }}">
         {{> mod_astra/_exercise_info }}
     </div>
+    {{/ exercise.is_submittable }}
     {{/ exerciseinfo }}
 
 </div>

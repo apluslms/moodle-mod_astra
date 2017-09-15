@@ -118,7 +118,7 @@ class exercise_page implements \renderable, \templatable {
 
             $data->summary = $this->exerciseSummary->getTemplateContext();
         } else {
-            $data->chapter = $this->learningObject->getTemplateContext(false);
+            $data->exercise = $this->learningObject->getTemplateContext(false);
             if ($this->learningObject->shouldGenerateTableOfContents()) {
                 $data->round_toc = \mod_astra\output\exercise_round_page::getRoundTableOfContentsContext($this->exround);
             } else {

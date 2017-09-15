@@ -1,19 +1,39 @@
 {{!
-Display one exercise (instructions, submission form).
+Display one learning object (exercise page with e.g. instructions and submission form or
+a chapter page with embedded exercises).
 Derived from A+ (a-plus/exercise/templates/exercise/exercise.html)
 
 Context variables:
 * variables required by exercise_base.mustache
 * page (stdClass) with fields
     content (html string)
-
+* error (string) set if an error message should be shown before the content
+* round_toc (object) table of contents of the exercise round, set if it should be printed,
+    object has the fields required by _round_toc.mustache
 }}
 
 {{< mod_astra/exercise_base }}
 
 {{$ exercisecontent }}
+{{# round_toc }}
+  <h4>{{#str}} toc, mod_astra {{/str}}</h4>
+  {{> mod_astra/_round_toc }}
+{{/ round_toc }}
+
 <div id="exercise-page-content" data-aplus-chapter="{{{ exercise.url }}}">
     {{{ page.content }}}
+    
+    {{^ page }}
+      {{! Page is not loaded because the round/learning object is not open.
+          This if does not test page.content since it is empty also when the page loading fails to an error. }}
+      
+      {{# not_started }}
+        <p>{{#str}} notopenedyet, mod_astra {{/str}}</p>
+      {{/ not_started }}
+      {{# status_maintenance }}
+        <p>{{#str}} undermaintenance, mod_astra {{/str}}</p>
+      {{/ status_maintenance }}
+    {{/ page }}
 </div>
 
 <div id="submit-progress" class="progress" style="display: none;">
@@ -22,8 +42,7 @@ Context variables:
   </div>
 </div>
 
-{{! not used since this page does not render feedback
-{> mod_astra/_exercise_wait } }}
+{{> mod_astra/_exercise_wait }}
 
 <div id="loading-indicator" class="progress" style="display: none;"
   data-msg-load="{{#str}} loadingexercise, mod_astra {{/str}}"
@@ -45,16 +64,35 @@ Context variables:
 {{/ mod_astra/exercise_base }}
 
 {{#js}}
-require(['jquery', 'theme_boost/tooltip'], function($) {
-    // Add an Ajax exercise event listener to refresh the info column.
+require(['jquery', 'mod_astra/aplus_chapter', 'theme_boost/tooltip'], function($) {
+    // Construct the page chapter element (does nothing on exercise pages since
+    // they have no special divs for embedding child exercises)
+    $(function() {
+      $('#exercise-page-content').aplusChapter();
+    });
+
+    // hack to support two simultaneously open Bootstrap modal dialogs
+    // (feedback modal and submitted file modal on chapter pages)
+    // source: http://stackoverflow.com/a/24914782
+    $(document).on('show.bs.modal', '.modal', function () {
+      var zIndex = 1040 + (10 * $('.modal:visible').length);
+      $(this).css('z-index', zIndex);
+      setTimeout(function() {
+          $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+      }, 0);
+    });
+
+    // Add an Ajax exercise event listener to refresh the info column (on exercise pages, not chapters).
     window.addEventListener("message", function (event) {
         if (event.data.type === "a-plus-refresh-stats") {
-            $("#submit-progress").show();
-            var $stats = $("#exercise-info"),
-                url = $stats.data("url");
-            $stats.load(url, function() {
-                $stats.find('[data-toggle="tooltip"]').tooltip();
-            });
+            //$("#submit-progress").show();
+            var $stats = $("#exercise-info");
+            if ($stats.length) {
+                var url = $stats.data("url");
+                $stats.load(url, function() {
+                    $stats.find('[data-toggle="tooltip"]').tooltip();
+                });
+            }
         }
     });
 });

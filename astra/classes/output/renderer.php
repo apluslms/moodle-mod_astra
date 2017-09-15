@@ -23,21 +23,7 @@ class renderer extends \plugin_renderer_base {
     
     protected function render_exercise_page(\mod_astra\output\exercise_page $page) {
         $data = $page->export_for_template($this);
-        if (isset($data->page->content)) {
-            if (isset($data->exercise)) {
-                $template = 'exercise_page';
-            } else {
-                $template = 'chapter_page';
-            }
-        } else {
-            // show a message that the learning object is not available (not open etc.)
-            if (isset($data->exercise)) {
-                $template = 'exercise_closed_page';
-            } else {
-                $template = 'chapter_closed_page';
-            }
-        }
-        return parent::render_from_template(\mod_astra_exercise_round::MODNAME ."/$template", $data);
+        return parent::render_from_template(\mod_astra_exercise_round::MODNAME .'/exercise_page', $data);
     }
     
     protected function render_submission_page(\mod_astra\output\submission_page $page) {
