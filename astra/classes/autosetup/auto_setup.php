@@ -616,6 +616,9 @@ class auto_setup {
             if (isset($o->status)) {
                 $lobjectRecord->status = $this->parseLearningObjectStatus($o->status, $errors);
             }
+            if (isset($o->use_wide_column)) {
+                $lobjectRecord->usewidecolumn = $this->parseBool($o->use_wide_column, $errors);
+            }
 
             if (isset($o->title)) {
                 $lobjectRecord->name = (string) $o->title;

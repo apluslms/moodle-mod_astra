@@ -102,6 +102,12 @@ abstract class edit_learning_object_form extends \moodleform {
         $mform->addRule('serviceurl', null, 'required', null, 'client');
         $mform->addRule('serviceurl', null, 'maxlength', 255, 'client');
         
+        // use wide column
+        $mform->addElement('advcheckbox', 'usewidecolumn',
+                get_string('usewidecolumn', \mod_astra_exercise_round::MODNAME),
+                '', null, array(0, 1));
+        $mform->addHelpButton('usewidecolumn', 'usewidecolumn', \mod_astra_exercise_round::MODNAME);
+        
         // child class should add other fields and action buttons after calling parent::definition()
     }
     

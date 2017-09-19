@@ -22,7 +22,7 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
     // SQL fragment for selecting all fields in the subtype join query: this avoids the conflict of
     // id columns in both the base table and the subtype table. Id is taken from the subtype and
     // the subtype table should have a column lobjectid which is the id in the base table.
-    const SQL_SELECT_ALL_FIELDS = 'ex.*,lob.status,lob.categoryid,lob.roundid,lob.parentid,lob.ordernum,lob.remotekey,lob.name,lob.serviceurl';
+    const SQL_SELECT_ALL_FIELDS = 'ex.*,lob.status,lob.categoryid,lob.roundid,lob.parentid,lob.ordernum,lob.remotekey,lob.name,lob.serviceurl,lob.usewidecolumn';
     
     // cache of references to other records, used in corresponding getter methods
     protected $category = null;
@@ -236,6 +236,10 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         return $this->record->serviceurl;
     }
     
+    public function getUseWideColumn() {
+        return (bool) $this->record->usewidecolumn;
+    }
+    
     public function isEmpty() {
         return empty($this->record->serviceurl);
     }
@@ -290,6 +294,7 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
             $ctx->parenturl = \mod_astra\urls\urls::exercise($parent);
         }
         $ctx->name = $this->getName();
+        $ctx->use_wide_column = $this->getUseWideColumn();
         $ctx->editurl = \mod_astra\urls\urls::editExercise($this);
         $ctx->removeurl = \mod_astra\urls\urls::deleteExercise($this);
         

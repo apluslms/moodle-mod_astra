@@ -8,6 +8,7 @@ Context variables:
     - infourl (string) AJAX URL for the exercise info box
     - is_submittable (boolean) does the learning object accept submissions (ever at all)?
       True for exercises, false for chapters.
+    - use_wide_column (boolean) if true, the info column is removed and the content has more space
 * submissions (array of objects, the latest submission first), each object has keys 
     url (string), submission_time (int, timestamp), nth (int, ordinal number),
     the variables required by _points_badge.mustache (set status if the submission is not graded)
@@ -29,7 +30,7 @@ Blocks that child templates should override:
 }}
 
 <div class="row">
-<div class="col-lg-9">
+<div class="{{# exercise.use_wide_column }}col-lg-12{{/ exercise.use_wide_column }}{{^ exercise.use_wide_column }}col-lg-9{{/ exercise.use_wide_column }} exercise-column">
   {{$ submissionsnavbar }}
   {{# exercise.is_submittable }}
   <nav>
@@ -95,6 +96,7 @@ Blocks that child templates should override:
   {{$ exercisecontent }}{{/ exercisecontent }}
 </div>
 
+{{^ exercise.use_wide_column }}
 <div class="col-lg-3">
 
     {{$ exerciseinfo }}
@@ -106,6 +108,7 @@ Blocks that child templates should override:
     {{/ exerciseinfo }}
 
 </div>
+{{/ exercise.use_wide_column }}
 </div>
 
 {{> mod_astra/_page_file_modals }}

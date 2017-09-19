@@ -45,10 +45,24 @@ function xmldb_astra_upgrade($oldversion) {
      * highly recommended to read information available at:
      *   http://docs.moodle.org/en/Development:XMLDB_Documentation
      * and to play with the XMLDB Editor (in the admin menu) and its
-     * PHP generation posibilities.
+     * PHP generation possibilities.
      *
      */
 
+    if ($oldversion < 2017091900) {
+
+        // Define field usewidecolumn to be added to astra_lobjects.
+        $table = new xmldb_table('astra_lobjects');
+        $field = new xmldb_field('usewidecolumn', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'serviceurl');
+        
+        // Conditionally launch add field usewidecolumn.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Astra savepoint reached.
+        upgrade_mod_savepoint(true, 2017091900, 'astra');
+    }
 
     /*
      * Finally, return of upgrade result (true, all went good) to Moodle.

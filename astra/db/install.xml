@@ -78,6 +78,8 @@
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name that is displayed to users."/>
         <FIELD NAME="serviceurl" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" 
                COMMENT="URL of the exercise service for this chapter."/>
+        <FIELD NAME="usewidecolumn" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0"
+               COMMENT="If 1 (true), the info column is removed in chapter/exercise pages in order to have more space for the content."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
