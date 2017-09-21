@@ -15,6 +15,7 @@ class mod_astra_category extends mod_astra_database_object {
     const TABLE = 'astra_categories'; // database table name
     const STATUS_READY  = 0;
     const STATUS_HIDDEN = 1;
+    const STATUS_NOTOTAL = 2;
     
     public function getCourse() {
         // return course_modinfo object
@@ -26,6 +27,9 @@ class mod_astra_category extends mod_astra_database_object {
             switch ((int) $this->record->status) {
                 case self::STATUS_READY:
                     return get_string('statusready', mod_astra_exercise_round::MODNAME);
+                    break;
+                case self::STATUS_NOTOTAL:
+                    return get_string('statusnototal', mod_astra_exercise_round::MODNAME);
                     break;
                 //case self::STATUS_HIDDEN:
                 default:
@@ -148,10 +152,9 @@ class mod_astra_category extends mod_astra_database_object {
         if ($includeHidden) {
             $records = $DB->get_records(self::TABLE, array('course' => $courseid));
         } else {
-            $records = $DB->get_records(self::TABLE, array(
-                    'course' => $courseid,
-                    'status' => self::STATUS_READY,
-            ));
+            $sql = 'SELECT * FROM {'. self::TABLE .'} WHERE course = ? AND status != ?';
+            $params = array($courseid, self::STATUS_HIDDEN);
+            $records = $DB->get_records_sql($sql, $params);
         }
         
         $categories = array();
@@ -224,6 +227,7 @@ class mod_astra_category extends mod_astra_database_object {
         $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
         $ctx->status_str = $this->getStatus(true);
         $ctx->status_hidden = ($this->getStatus() === self::STATUS_HIDDEN);
+        $ctx->status_nototal = ($this->getStatus() === self::STATUS_NOTOTAL);
         return $ctx;
     }
 }

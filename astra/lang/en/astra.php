@@ -133,6 +133,7 @@ $string['submissionreceived'] = 'Submission received.';
 $string['gotofeedback'] = 'Go to feedback';
 $string['acceptedforgrading'] = 'Your submission has been accepted for grading.';
 $string['exercisecategory'] = 'Exercise category';
+$string['statusnototal'] = 'No total points';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';

@@ -719,6 +719,9 @@ class auto_setup {
             case 'hidden':
                 return \mod_astra_category::STATUS_HIDDEN;
                 break;
+            case 'nototal':
+                return \mod_astra_category::STATUS_NOTOTAL;
+                break;
             default:
                 $errors[] = \get_string('configbadstatus', \mod_astra_exercise_round::MODNAME, $value);
                 return \mod_astra_category::STATUS_HIDDEN;

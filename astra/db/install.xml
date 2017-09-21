@@ -48,7 +48,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
-               COMMENT="Ready = 0. Hidden = 1"/>
+               COMMENT="Ready = 0. Hidden = 1. No total points = 2."/>
         <FIELD NAME="name" TYPE="char" LENGTH="35" NOTNULL="true" SEQUENCE="false"
                COMMENT="Name that is displayed to users. Name should be unique within a course."/>
         <FIELD NAME="pointstopass" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 

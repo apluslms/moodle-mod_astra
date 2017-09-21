@@ -32,6 +32,7 @@ class edit_category_form extends \moodleform {
             array(
                 \mod_astra_category::STATUS_READY => \get_string('statusready', \mod_astra_exercise_round::MODNAME),
                 \mod_astra_category::STATUS_HIDDEN => \get_string('statushidden', \mod_astra_exercise_round::MODNAME),
+                \mod_astra_category::STATUS_NOTOTAL => \get_string('statusnototal', \mod_astra_exercise_round::MODNAME),
             ));
         $mform->addRule('status', null, 'required', null, 'client');
         
@@ -61,7 +62,7 @@ class edit_category_form extends \moodleform {
             $errors['pointstopass'] = \get_string('negativeerror', \mod_astra_exercise_round::MODNAME);
         }
         
-        foreach (\mod_astra_category::getCategoriesInCourse($this->courseid) as $cat) {
+        foreach (\mod_astra_category::getCategoriesInCourse($this->courseid, true) as $cat) {
             if ($cat->getId() != $this->categoryId && $data['name'] == $cat->getName()) {
                 $errors['name'] = \get_string('duplicatecatname', \mod_astra_exercise_round::MODNAME);
                 break;
