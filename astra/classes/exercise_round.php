@@ -16,6 +16,7 @@ class mod_astra_exercise_round extends mod_astra_database_object {
     const STATUS_READY       = 0;
     const STATUS_HIDDEN      = 1;
     const STATUS_MAINTENANCE = 2;
+    const STATUS_UNLISTED    = 3;
     
     // calendar event types
     const EVENT_DL_TYPE = 'deadline';
@@ -76,6 +77,9 @@ class mod_astra_exercise_round extends mod_astra_database_object {
                     break;
                 case self::STATUS_MAINTENANCE:
                     return get_string('statusmaintenance', self::MODNAME);
+                    break;
+                case self::STATUS_UNLISTED:
+                    return get_string('statusunlisted', self::MODNAME);
                     break;
                 default:
                     return get_string('statushidden', self::MODNAME);
@@ -276,6 +280,7 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         switch($this->getStatus()) {
             case self::STATUS_READY:
             case self::STATUS_MAINTENANCE:
+            case self::STATUS_UNLISTED:
                 $visible = 1;
                 break;
             case self::STATUS_HIDDEN:
@@ -371,16 +376,23 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         $params = array($this->getId());
         
         if (!$includeHidden) {
-            $where .= ' AND status != ?';
+            $notHiddenCats = mod_astra_category::getCategoriesInCourse($this->getCourse()->courseid, false);
+            $notHiddenCatIds = array_keys($notHiddenCats);
+            
+            $where .= ' AND status != ? AND categoryid IN ('. implode(',', $notHiddenCatIds) .')';
             $params[] = mod_astra_learning_object::STATUS_HIDDEN;
         }
-        $exerciseRecords = $DB->get_records_sql(
+        
+        $exerciseRecords = array();
+        $chapterRecords = array();
+        if ($includeHidden || !empty($notHiddenCatIds)) {
+            $exerciseRecords = $DB->get_records_sql(
                 mod_astra_learning_object::getSubtypeJoinSQL(mod_astra_exercise::TABLE) . $where,
                 $params);
-        $chapterRecords = $DB->get_records_sql(
+            $chapterRecords = $DB->get_records_sql(
                 mod_astra_learning_object::getSubtypeJoinSQL(mod_astra_chapter::TABLE) . $where,
                 $params);
-        
+        }
         // gather all learning objects of the round in one array
         $learningObjects = array();
         foreach ($exerciseRecords as $ex) {
@@ -957,6 +969,8 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         $ctx->show_late_submission_point_worth = ($ctx->late_submission_point_worth < 100);
         $ctx->late_submission_penalty = (int) ($this->getLateSubmissionPenalty() * 100); // percent
         $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
+        // show_lobject_points: true if the exercise round point progress panel should display the exercise points for each exercise
+        $ctx->show_lobject_points = ($this->getStatus() === self::STATUS_READY || $this->getStatus() === self::STATUS_UNLISTED);
         $ctx->status_maintenance = ($this->getStatus() === self::STATUS_MAINTENANCE);
         $ctx->introduction = \format_module_intro(self::TABLE, $this->record, $this->cm->id);
         $ctx->show_required_points = ($ctx->status_ready && $this->getPointsToPass() > 0);

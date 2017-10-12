@@ -66,6 +66,7 @@ class edit_round_form extends \moodleform {
                 \mod_astra_exercise_round::STATUS_READY => get_string('statusready', $mod),
                 \mod_astra_exercise_round::STATUS_HIDDEN => get_string('statushidden', $mod),
                 \mod_astra_exercise_round::STATUS_MAINTENANCE => get_string('statusmaintenance', $mod),
+                \mod_astra_exercise_round::STATUS_UNLISTED => get_string('statusunlisted', $mod),
         ));
         
         // order amongst rounds

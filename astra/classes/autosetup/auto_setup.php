@@ -705,6 +705,9 @@ class auto_setup {
             case 'maintenance':
                 return \mod_astra_exercise_round::STATUS_MAINTENANCE;
                 break;
+            case 'unlisted':
+                return \mod_astra_exercise_round::STATUS_UNLISTED;
+                break;
             default:
                 $errors[] = \get_string('configbadstatus', \mod_astra_exercise_round::MODNAME, $value);
                 return \mod_astra_exercise_round::STATUS_HIDDEN;

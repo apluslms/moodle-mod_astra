@@ -57,24 +57,35 @@ class index_page implements \renderable, \templatable {
     protected function getCourseTableOfContentsContext() {
         global $DB;
         
+        // remove rounds with status UNLISTED from the table of contents,
+        // hidden rounds should already be removed from $this->rounds
+        $rounds = \array_filter($this->rounds, function($round) {
+            return $round->getStatus() !== \mod_astra_exercise_round::STATUS_UNLISTED;
+        });
+        
         $roundIds = array();
-        foreach ($this->rounds as $exround) {
+        foreach ($rounds as $exround) {
             $roundIds[] = $exround->getId();
+        }
+        // all visible categories in the course
+        $catIds = array();
+        foreach ($this->courseSummary->getCategorySummaries() as $catSummary) {
+            $catIds[] = $catSummary->getCategory()->getId();
         }
         
         // all learning objects in the course, minimize the number of DB queries
-        if (empty($roundIds)) {
+        if (empty($roundIds) || empty($catIds)) {
             $exerciseRecords = array();
             $chapterRecords = array();
         } else {
             $params = array(\mod_astra_learning_object::STATUS_HIDDEN);
             $exerciseRecords = $DB->get_records_sql(
                     \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_exercise::TABLE) .
-                    ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .') AND lob.status != ?',
+                    ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .') AND lob.status != ? AND lob.categoryid IN ('. \implode(',', $catIds) .')',
                     $params);
             $chapterRecords = $DB->get_records_sql(
                     \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_chapter::TABLE) .
-                    ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .') AND lob.status != ?',
+                    ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .') AND lob.status != ? AND lob.categoryid IN ('. \implode(',', $catIds) .')',
                     $params);
         }
         
@@ -91,7 +102,7 @@ class index_page implements \renderable, \templatable {
         
         $toc = new \stdClass(); // table of contents
         $toc->exercise_rounds = array();
-        foreach ($this->rounds as $exround) {
+        foreach ($rounds as $exround) {
             $roundCtx = $exround->getTemplateContext();
             $roundCtx->has_started = $exround->hasStarted();
             $roundCtx->lobjects = self::buildRoundLobjectsContextForToc($lobjectsByRoundId[$exround->getId()]);
