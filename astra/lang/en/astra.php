@@ -49,6 +49,7 @@ $string['ordernum'] = 'Order';
 $string['ordernum_help'] = 'Set the order in which objects are listed in the course page. Smaller ordinal number comes first.';
 
 // templates
+$string['exercise'] = 'Exercise';
 $string['passed'] = 'Passed';
 $string['nosubmissions'] = 'No submissions';
 $string['requiredpoints'] = '{$a} points required to pass';

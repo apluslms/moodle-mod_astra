@@ -290,8 +290,10 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         $parent = $this->getParentObject();
         if ($parent === null) {
             $ctx->parenturl = null;
+            $ctx->displayurl = $ctx->url;
         } else {
             $ctx->parenturl = \mod_astra\urls\urls::exercise($parent);
+            $ctx->displayurl = ($this->getStatus() === self::STATUS_UNLISTED) ? $ctx->parenturl : $ctx->url;
         }
         $ctx->name = $this->getName();
         $ctx->use_wide_column = $this->getUseWideColumn();
@@ -304,6 +306,8 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         $ctx->status_ready = ($this->getStatus() === self::STATUS_READY);
         $ctx->status_str = $this->getStatus(true);
         $ctx->status_unlisted = ($this->getStatus() === self::STATUS_UNLISTED);
+        $ctx->status_maintenance = ($this->getStatus() === self::STATUS_MAINTENANCE ||
+                $this->getExerciseRound()->getStatus() === mod_astra_exercise_round::STATUS_MAINTENANCE);
         $ctx->is_submittable = $this->isSubmittable();
         
         $ctx->category = $this->getCategory()->getTemplateContext(false);

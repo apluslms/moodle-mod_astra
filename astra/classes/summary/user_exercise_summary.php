@@ -15,28 +15,32 @@ class user_exercise_summary {
     protected $exercise;
     protected $submissionCount;
     protected $bestSubmission;
+    protected $submissions;
     protected $category;
     
     /**
      * Create a summary of a user's status in one exercise. 
      * If $generate is true, the summary is generated here. Otherwise, 
-     * $submissionCount and $bestSubmission must have correct values and 
+     * $submissionCount, $bestSubmission, and $submissions must have correct values and 
      * this method will not generate any database queries.
      * 
      * @param \mod_astra_exercise $ex
      * @param \stdClass $user
      * @param int $submissionCount
      * @param \mod_astra_submission $bestSubmission
+     * @param array $submissions array of \mod_astra_submission objects,
+     *        sorted by submission time (latest first)
      * @param \mod_astra_category $category category of the exercise, to avoid querying the database
      * @param bool $generate
      */
     public function __construct(\mod_astra_exercise $ex, $user, $submissionCount = 0,
-            \mod_astra_submission $bestSubmission = null, \mod_astra_category $category = null,
-            $generate = true) {
+            \mod_astra_submission $bestSubmission = null, array $submissions = null,
+            \mod_astra_category $category = null, $generate = true) {
         $this->user = $user;
         $this->exercise = $ex;
         $this->submissionCount = $submissionCount;
         $this->bestSubmission = $bestSubmission;
+        $this->submissions = $submissions;
         if (is_null($category)) {
             $this->category = $ex->getCategory();
         } else {
@@ -54,10 +58,14 @@ class user_exercise_summary {
         $submissions = $DB->get_recordset(\mod_astra_submission::TABLE, array(
                 'submitter'  => $this->user->id,
                 'exerciseid' => $this->exercise->getId(),
-        ), '', 'id, status, exerciseid, grade, submissiontime');
+            ),
+            'submissiontime DESC',
+            'id, status, submissiontime, exerciseid, submitter, grader,' .
+            'assistfeedback, grade, gradingtime, latepenaltyapplied, servicepoints, servicemaxpoints');
 
         $this->submissionCount = 0;
         $this->bestSubmission = null;
+        $this->submissions = array();
         // find best submission and count
         foreach ($submissions as $record) {
             $sbms = new \mod_astra_submission($record);
@@ -67,6 +75,7 @@ class user_exercise_summary {
                 $this->bestSubmission = $sbms;
             }
             $this->submissionCount += 1;
+            $this->submissions[] = $sbms;
         }
 
         $submissions->close();
@@ -94,6 +103,10 @@ class user_exercise_summary {
     
     public function getBestSubmission() {
         return $this->bestSubmission;
+    }
+    
+    public function getSubmissions() {
+        return $this->submissions;
     }
     
     public function getMaxPoints() {

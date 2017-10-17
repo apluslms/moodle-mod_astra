@@ -25,11 +25,12 @@ class exercise_round_page implements \renderable, \templatable {
         $data->course_module = $this->exround->getTemplateContext();
         $data->module_summary = $this->moduleSummary->getTemplateContext();
         $data->module_summary->classes = 'float-right'; // CSS classes
-        $data->categories = $this->moduleSummary->getExercisesByCategoriesTemplateContext();
+        $data->module_contents = $this->moduleSummary->getModulePointsPanelTemplateContext();
         
         $data->toDateStr = new \mod_astra\output\date_to_string();
         
-        $data->toc = self::getRoundTableOfContentsContext($this->exround);
+        $data->toc = self::getRoundTableOfContentsContext($this->exround,
+                $this->moduleSummary->getLearningObjects());
         
         return $data;
         // It should return an stdClass with properties that are only made of simple types:
@@ -39,13 +40,19 @@ class exercise_round_page implements \renderable, \templatable {
     /**
      * Return table of contents context for an exercise round.
      * @param \mod_astra_exercise_round $exround
-     * @return stdClass
+     * @param \mod_astra_learning_object[] $learningObjects array of learning objects of the round,
+     *        sorted to the display order. If this parameter is not provided,
+     *        the database is queried here.
+     * @return \stdClass
      */
-    public static function getRoundTableOfContentsContext(\mod_astra_exercise_round $exround) {
+    public static function getRoundTableOfContentsContext(\mod_astra_exercise_round $exround,
+            array $learningObjects = null) {
         $toc = $exround->getTemplateContext();
-        $toc->has_started = $exround->hasStarted();
+        if ($learningObjects === null) {
+            $learningObjects = $exround->getLearningObjects(false, true);
+        }
         $toc->lobjects = \mod_astra\output\index_page::buildRoundLobjectsContextForToc(
-                $exround->getLearningObjects(false, false));
+                $learningObjects);
         return $toc;
     }
 }

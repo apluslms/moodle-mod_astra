@@ -1,5 +1,6 @@
 {{!
-Derived from A+ (a-plus/course/templates/course/module.html).
+Derived from A+ (a-plus/course/templates/course/module.html and
+a-plus/exercise/templates/exercise/_user_results.html)
 
 Context variables:
 * course_module stdClass (exercise round) with fields id, openingtime, closingtime, name, 
@@ -12,12 +13,25 @@ Context variables:
 * module_summary stdClass (summary of the student's status in the exercise round)
         fields that are required by _points_badge.mustache
 * toDateStr callable Function that converts a Unix timestamp to a date string
-* categories array of arrays. The outer array must have numeric indexes and the inner arrays must
-        have keys id (category ID), name (category name),
-        exercise_summaries (array of arrays), the inner arrays have keys
-            exercise (object with keys url, name, submissionlisturl, status_unlisted (bool), parenturl, can_view_submissions),
-            exercise_summary (object with keys that are required by _points_badge.mustache)
-
+* module_contents (array of objects) lists the learning objects of the round in the correct
+    display order with the exercise summaries (points) as well, only visible content
+    (no objects with status hidden); keys of the objects
+        - exercise (object with keys)
+            * is_submittable (bool, exercise or chapter)
+            * category (object with keys id, name)
+            * displayurl (string)
+            * name (string)
+            * status_maintenance (bool)
+            * max_submissions_for_user (int) zero if no limit
+            * submissionlisturl (string)
+        - submissions (array of objects) if the exercise is submittable, objects have keys
+            * nth (int)
+            * submission_time (int) Unix timestamp
+            * url (string)
+            * fields required by _points_badge.mustache
+        - exercise_summary (object) if the exercise is submittable
+            * keys that are required by _points_badge.mustache
+            * submission_count (int) how many submissions the user has made
 }}
 <div class="card border-primary module-panel{{# course_module.expired }} module-expired{{/ course_module.expired }}">
   <div class="card-header bg-primary text-white">
@@ -78,53 +92,111 @@ Context variables:
   {{# course_module.show_lobject_points }}
   <table class="table table-striped table-sm results-table">
     <tbody>
-      {{# categories }}
-      <tr class="category-row" data-category="{{ id }}">
-        <td>{{ name }}</td>
+    
+      <tr class="category-row">
+        <th>{{#str}} exercise, mod_astra {{/str}}</th>
+        <th>{{#str}} category, mod_astra {{/str}}</th>
+        <th>{{#str}} submissions, mod_astra {{/str}}</th>
+        <th>{{#str}} points, mod_astra {{/str}}</th>
         {{# course_module.is_course_staff }}
-        <td>{{#str}} coursestaff, mod_astra {{/str}}</td>
+          <th>{{#str}} coursestaff, mod_astra {{/str}}</th>
         {{/ course_module.is_course_staff }}
-        <td>{{#str}} points, mod_astra {{/str}}</td>
       </tr>
-      {{# exercise_summaries }}
-      <tr data-category="{{ id }}">
+      
+      {{# module_contents }}
+
+      {{# exercise.is_submittable }}
+      <tr data-category="{{ exercise.category.id }}">
         <td>
           {{^ course_module.not_started }}
-            {{# exercise.status_unlisted }}
-              <a href="{{{ exercise.parenturl }}}">{{ exercise.name }}</a>
-            {{/ exercise.status_unlisted }}
-            {{^ exercise.status_unlisted }}
-              <a href="{{{ exercise.url }}}">{{ exercise.name }}</a>
-            {{/ exercise.status_unlisted }}
-          {{/ course_module.not_started }}
-          {{# course_module.not_started }}
+          <a href="{{ exercise.displayurl }}" class="{{# exercise.status_maintenance }}maintenance{{/ exercise.status_maintenance }}">
             {{ exercise.name }}
+          </a>
           {{/ course_module.not_started }}
-        </td>
-        {{# course_module.is_course_staff }}
-        <td>
           {{# course_module.not_started }}
-          <a class="btn btn-secondary btn-sm" href="{{{ exercise.url }}}">
-            {{#pix}}i/lock{{/pix}}
-            {{#str}} earlyaccess, mod_astra {{/str}}
-          </a>
+          {{ exercise.name }}
           {{/ course_module.not_started }}
-          {{# exercise.can_view_submissions }}
-          <a class="btn btn-secondary btn-sm" href="{{{ exercise.submissionlisturl }}}">
-            {{#pix}}a/view_list_active{{/pix}}
-            {{#str}} viewsubmissions, mod_astra {{/str}}
-          </a>
-          {{/ exercise.can_view_submissions }}
         </td>
-        {{/ course_module.is_course_staff }}
+        <td>
+          <small>{{ exercise.category.name }}</small>
+        </td>
+        <td class="submissions-dropdown dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button"
+              aria-haspopup="true" aria-expanded="false">
+              <span class="badge badge-secondary badge-pill">
+                {{ exercise_summary.submission_count }}
+                {{# exercise.max_submissions_for_user }}
+                  / {{ exercise.max_submissions_for_user }}
+                {{/ exercise.max_submissions_for_user }}
+              </span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right">
+              {{# submissions }}
+                  <a class="dropdown-item page-modal" href="{{ url }}">
+                      {{ nth }}.
+                      {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
+                      {{> mod_astra/_points_badge }}
+                  </a>
+              {{/ submissions }}
+              {{^ submissions }}
+                  <a class="dropdown-item page-modal" href="#">{{#str}} nosubmissionsyet, mod_astra {{/str}}</a>
+              {{/ submissions }}
+          </div>
+        </td>
         <td>
           {{# exercise_summary }}
             {{> mod_astra/_points_badge }}
           {{/ exercise_summary }}
         </td>
+        {{# course_module.is_course_staff }}
+        <td>
+          {{# course_module.not_started }}
+          <a class="btn btn-secondary btn-sm" href="{{ exercise.displayurl }}">
+            {{#pix}}i/lock{{/pix}}
+            {{#str}} earlyaccess, mod_astra {{/str}}
+          </a>
+          {{/ course_module.not_started }}
+          {{! exercise statistics not yet implemented
+          {^ course_module.not_started }
+            {% exercise_text_stats entry.id %}
+          {/ course_module.not_started }
+          }}
+          <a class="btn btn-secondary btn-sm" href="{{ exercise.submissionlisturl }}">
+            {{#pix}}a/view_list_active{{/pix}}
+            {{#str}} viewsubmissions, mod_astra {{/str}}
+          </a>
+        </td>
+        {{/ course_module.is_course_staff }}
       </tr>
-      {{/ exercise_summaries }}
-      {{/ categories }}
+      {{/ exercise.is_submittable }}
+
+      {{^ exercise.is_submittable }} {{! chapter }}
+      <tr>
+        <td colspan="4">
+          {{^ course_module.not_started }}
+          <strong><a href="{{ exercise.displayurl }}" class="{{# exercise.status_maintenance }}maintenance{{/ exercise.status_maintenance }}">
+            {{ exercise.name }}
+          </a></strong>
+          {{/ course_module.not_started }}
+          {{# course_module.not_started }}
+          <strong>{{ exercise.name }}</strong>
+          {{/ course_module.not_started }}
+        </td>
+        {{# course_module.is_course_staff }}
+        <td>
+          {{# course_module.not_started }}
+          <a class="btn btn-secondary btn-sm" href="{{ exercise.displayurl }}">
+            {{#pix}}i/lock{{/pix}}
+            {{#str}} earlyaccess, mod_astra {{/str}}
+          </a>
+          {{/ course_module.not_started }}
+        </td>
+        {{/ course_module.is_course_staff }}
+      </tr>
+      {{/ exercise.is_submittable }}
+
+      {{/ module_contents }}
+
     </tbody>
   </table>
   {{/ course_module.show_lobject_points }}

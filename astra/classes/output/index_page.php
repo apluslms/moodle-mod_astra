@@ -32,7 +32,7 @@ class index_page implements \renderable, \templatable {
             $moduleSummary = $this->courseSummary->getModuleSummary($round->getId());
             $roundCtx->module_summary = $moduleSummary->getTemplateContext();
             $roundCtx->module_summary->classes = 'float-right'; // CSS classes
-            $roundCtx->categories = $moduleSummary->getExercisesByCategoriesTemplateContext();
+            $roundCtx->module_contents = $moduleSummary->getModulePointsPanelTemplateContext();
             $roundsData[] = $roundCtx;
         }
         $data->rounds = $roundsData;
@@ -63,49 +63,12 @@ class index_page implements \renderable, \templatable {
             return $round->getStatus() !== \mod_astra_exercise_round::STATUS_UNLISTED;
         });
         
-        $roundIds = array();
-        foreach ($rounds as $exround) {
-            $roundIds[] = $exround->getId();
-        }
-        // all visible categories in the course
-        $catIds = array();
-        foreach ($this->courseSummary->getCategorySummaries() as $catSummary) {
-            $catIds[] = $catSummary->getCategory()->getId();
-        }
-        
-        // all learning objects in the course, minimize the number of DB queries
-        if (empty($roundIds) || empty($catIds)) {
-            $exerciseRecords = array();
-            $chapterRecords = array();
-        } else {
-            $params = array(\mod_astra_learning_object::STATUS_HIDDEN);
-            $exerciseRecords = $DB->get_records_sql(
-                    \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_exercise::TABLE) .
-                    ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .') AND lob.status != ? AND lob.categoryid IN ('. \implode(',', $catIds) .')',
-                    $params);
-            $chapterRecords = $DB->get_records_sql(
-                    \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_chapter::TABLE) .
-                    ' WHERE lob.roundid IN ('. \implode(',', $roundIds) .') AND lob.status != ? AND lob.categoryid IN ('. \implode(',', $catIds) .')',
-                    $params);
-        }
-        
-        $lobjectsByRoundId = array(); // organize by round ID
-        foreach ($roundIds as $rid) {
-            $lobjectsByRoundId[$rid] = array();
-        }
-        foreach ($exerciseRecords as $rec) {
-            $lobjectsByRoundId[$rec->roundid][] = new \mod_astra_exercise($rec);
-        }
-        foreach ($chapterRecords as $rec) {
-            $lobjectsByRoundId[$rec->roundid][] = new \mod_astra_chapter($rec);
-        }
-        
         $toc = new \stdClass(); // table of contents
         $toc->exercise_rounds = array();
         foreach ($rounds as $exround) {
             $roundCtx = $exround->getTemplateContext();
-            $roundCtx->has_started = $exround->hasStarted();
-            $roundCtx->lobjects = self::buildRoundLobjectsContextForToc($lobjectsByRoundId[$exround->getId()]);
+            $moduleSummary = $this->courseSummary->getModuleSummary($exround->getId());
+            $roundCtx->lobjects = self::buildRoundLobjectsContextForToc($moduleSummary->getLearningObjects());
             $toc->exercise_rounds[] = $roundCtx;
         }
         return $toc;
@@ -115,31 +78,31 @@ class index_page implements \renderable, \templatable {
      * Return a template context object of the learning objects in an exercise round for
      * the use in a table of contents.
      * @param \mod_astra_learning_object[] $learningObjects learning objects in a round
+     *        sorted in the display order
      * @return \stdClass[]
      */
-    public static function buildRoundLobjectsContextForToc($learningObjects) {
-        $orderSortCallback = function($obj1, $obj2) {
-            $ord1 = $obj1->getOrder();
-            $ord2 = $obj2->getOrder();
-            if ($ord1 < $ord2) {
-                return -1;
-            } else if ($ord1 == $ord2) {
-                return 0;
-            } else {
-                return 1;
+    public static function buildRoundLobjectsContextForToc(array $learningObjects) {
+        
+        $lobjectsByParent = array();
+        foreach ($learningObjects as $obj) {
+            $parentid = $obj->getParentId();
+            $parentid = empty($parentid) ? 'top' : $parentid;
+            if (!$obj->isUnlisted()) {
+                if (!isset($lobjectsByParent[$parentid])) {
+                    $lobjectsByParent[$parentid] = array();
+                }
+                
+                $lobjectsByParent[$parentid][] = $obj;
             }
-        };
+        }
         
         // $parentid may be null to get top-level learning objects
-        $children = function($parentid) use ($learningObjects, &$orderSortCallback) {
-            $child_objs = array();
-            foreach ($learningObjects as $obj) {
-                if ($obj->getParentId() == $parentid && !$obj->isUnlisted())
-                    $child_objs[] = $obj;
+        $children = function($parentid) use ($lobjectsByParent) {
+            $parentid = $parentid === null ? 'top' : $parentid;
+            if (isset($lobjectsByParent[$parentid])) {
+                return $lobjectsByParent[$parentid];
             }
-            // sort children by ordernum, they all have the same parent
-            usort($child_objs, $orderSortCallback);
-            return $child_objs;
+            return array();
         };
         
         $traverse = function($parentid) use (&$children, &$traverse) {

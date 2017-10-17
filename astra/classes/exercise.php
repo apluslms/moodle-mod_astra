@@ -375,19 +375,33 @@ class mod_astra_exercise extends mod_astra_learning_object {
      * @return stdClass[]
      */
     public function getSubmissionsTemplateContext($userid) {
-        $ctx = array();
         // latest submission first
         $submissions = $this->getSubmissionsForStudent($userid, false, 'submissiontime DESC');
+        $objects = array();
         foreach ($submissions as $record) {
-            $sbms = new mod_astra_submission($record);
-            $ctx[] = $sbms->getTemplateContext();
+            $objects[] = new mod_astra_submission($record);
         }
         $submissions->close();
-        // add ordinal numbers
-        $nth = count($ctx);
-        foreach ($ctx as $subCtx) {
-            $subCtx->nth = $nth;
+        
+        return self::submissionsTemplateContext($objects);
+    }
+    
+    /**
+     * Return the template context objects for the given submissions.
+     * The submissions should be submitted by the same user to the same exercise
+     * and the array should be sorted by the submission time (latest submission first).
+     * 
+     * @param array $submissions \mod_astra_submission objects
+     * @return stdClass[] array of context objects
+     */
+    public static function submissionsTemplateContext(array $submissions) {
+        $ctx = array();
+        $nth = count($submissions);
+        foreach ($submissions as $sbms) {
+            $obj = $sbms->getTemplateContext();
+            $obj->nth = $nth;
             $nth--;
+            $ctx[] = $obj;
         }
         
         return $ctx;

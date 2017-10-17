@@ -687,7 +687,7 @@ class mod_astra_submission extends mod_astra_database_object {
             $ctx->has_files = !empty($ctx->files);
             $context = context_module::instance($this->exercise->getExerciseRound()->getCourseModule()->id);
             $ctx->feedback = astra_filter_exercise_content($this->getFeedback(), $context);
-            $ctx->assistant_feedback = astra_filter_exercise_content($this->getAssistantFeedback(), $context);
+            $ctx->assistant_feedback = astra_filter_exercise_content($assistantFeedback, $context);
         }
         
         if ($includeSbmsAndGradingData) {

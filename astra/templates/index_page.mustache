@@ -71,12 +71,18 @@ Context variables:
   
 </div> <!-- close tab-content -->
 
+{{> mod_astra/_page_file_modals }}
+
 {{#js}}
 require(['theme_boost/loader']);
-require(['jquery', 'theme_boost/tooltip'], function($) {
+require(['jquery', 'theme_boost/tooltip', 'mod_astra/aplus_modal'], function($) {
   /* enable Bootstrap tooltips */
   $(function() {
     $('[data-toggle="tooltip"]').tooltip();
+    
+    /* Enable modal dialogs */
+    $('.page-modal').aplusModalLink();
+    $('.file-modal').aplusModalLink({file:true});
   });
 });
 {{/js}}

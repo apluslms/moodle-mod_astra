@@ -977,7 +977,8 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         $ctx->points_to_pass = $this->getPointsToPass();
         $ctx->expired = $this->hasExpired();
         $ctx->open = $this->isOpen();
-        $ctx->not_started = !$this->hasStarted();
+        $ctx->has_started = $this->hasStarted();
+        $ctx->not_started = !$ctx->has_started;
         $ctx->status_str = $this->getStatus(true);
         $ctx->editurl = \mod_astra\urls\urls::editExerciseRound($this);
         $ctx->removeurl = \mod_astra\urls\urls::deleteExerciseRound($this);

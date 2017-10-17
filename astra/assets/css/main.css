@@ -68,6 +68,11 @@ pre.hljs {
     margin-bottom: 0; /* module/round panel titles have too much empty space below them */
 }
 
+.module-panel .dropdown-menu {
+    /* remove the margin set by Moodle */
+    margin-top: 0;
+}
+
 /* point progress and badges */
 .progress {
     position: relative;
@@ -87,6 +92,10 @@ pre.hljs {
 }
 .bg-primary.card-header a {
     color: #fff;
+}
+
+td.submissions-dropdown {
+    text-align: center;
 }
 
 /* point badges in dropdowns should stick to the right side */

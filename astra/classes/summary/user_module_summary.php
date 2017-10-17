@@ -14,6 +14,7 @@ class user_module_summary {
     protected $exround;
     protected $user;
     protected $exerciseSummaries;
+    protected $learningObjects;
     protected $latestSubmissionTime;
     
     /**
@@ -21,18 +22,25 @@ class user_module_summary {
      * If $generate is true, the summary is generated here. Otherwise,
      * $exerciseSummaries must contain all the exercise summaries for the student
      * in this round and
-     * this method will not generate any database queries.
+     * this method will not generate any database queries. Likewise,
+     * $learningObjects must contain the visible learning objects if $generate is false.
      *
      * @param \mod_astra_exercise_round $exround
      * @param \stdClass $user
      * @param array $exerciseSummaries array of user_exercise_summary objects
+     * @param array $learningObjects array of \mod_astra_learning_object objects, i.e.,
+     *        the visible exercises and chapters of the round
      * @param bool $generate
      */
     public function __construct(\mod_astra_exercise_round $exround, $user,
-            array $exerciseSummaries = array(), $generate = true) {
+            array $exerciseSummaries = array(), array $learningObjects = array(),
+            $generate = true) {
         $this->exround = $exround;
         $this->user = $user;
         $this->exerciseSummaries = $exerciseSummaries;
+        $this->learningObjects = (empty($learningObjects) ?
+                $learningObjects :
+                \mod_astra_exercise_round::sortRoundLearningObjects($learningObjects));
         $this->latestSubmissionTime = 0; // time of the latest submission in the round from the user
         foreach ($exerciseSummaries as $exsummary) {
             // the best submissions are not necessarily the latest, but it does not matter
@@ -52,52 +60,63 @@ class user_module_summary {
     protected function generate() {
         global $DB;
         
-        // all exercises in the round, no chapters
-        $exercises = $this->exround->getExercises();
+        // all visible learning objects (exercises and chapters) in the round
+        $lobjects = $this->exround->getLearningObjects(false, true);
+        $this->learningObjects = $lobjects;
         $submissionsByExerciseId = array();
-        foreach ($exercises as $ex) {
-            $submissionsByExerciseId[$ex->getId()] = array(
-                    'count' => 0, // number of submissions
-                    'best'  => null, // best submission
-            );
+        $exerciseIds = array();
+        foreach ($lobjects as $ex) {
+            if ($ex->isSubmittable()) {
+                $submissionsByExerciseId[$ex->getId()] = array(
+                        'count' => 0, // number of submissions
+                        'best'  => null, // best submission
+                        'all'   => array(),
+                );
+                $exerciseIds[] = $ex->getId();
+            }
         }
         
-        // all submissions from the user in any exercise in the exercise round
+        // all submissions from the user in any visible exercise in the exercise round
         $sql = 
-            'SELECT id, status, exerciseid, grade, submissiontime 
+            'SELECT id, status, submissiontime, exerciseid, submitter, grader,
+                 assistfeedback, grade, gradingtime, latepenaltyapplied, servicepoints, servicemaxpoints
              FROM {'. \mod_astra_submission::TABLE .'} '
-           .'WHERE submitter = ? AND exerciseid IN (' .
-                 \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_exercise::TABLE, 'lob.id') .
-                 ' WHERE lob.roundid = ?)';
-        $submissions = $DB->get_recordset_sql($sql, array($this->user->id, $this->exround->getId()));
-        // find best submission for each exercise
-        foreach ($submissions as $record) {
-            $sbms = new \mod_astra_submission($record);
-            $exerciseBest = &$submissionsByExerciseId[$record->exerciseid];
-            $count = $exerciseBest['count'];
-            $best = $exerciseBest['best'];
-            if ($best === null || $sbms->getGrade() > $best->getGrade() || 
-                    ($sbms->getGrade() == $best->getGrade() && 
-                     $sbms->getSubmissionTime() < $best->getSubmissionTime())) {
-                $exerciseBest['best'] = $sbms;
-            }
-            $exerciseBest['count'] += 1;
-            
-            if ($sbms->getSubmissionTime() > $this->latestSubmissionTime) {
-                $this->latestSubmissionTime = $sbms->getSubmissionTime();
-            }
-        }
+           .'WHERE submitter = ? AND exerciseid IN ('. implode(',', $exerciseIds) .')
+             ORDER BY submissiontime DESC';
         
-        $submissions->close();
+        if (!empty($exerciseIds)) {
+            $submissions = $DB->get_recordset_sql($sql, array($this->user->id));
+            // find best submission for each exercise
+            foreach ($submissions as $record) {
+                $sbms = new \mod_astra_submission($record);
+                $exerciseBest = &$submissionsByExerciseId[$record->exerciseid];
+                $best = $exerciseBest['best'];
+                if ($best === null || $sbms->getGrade() > $best->getGrade() || 
+                        ($sbms->getGrade() == $best->getGrade() && 
+                         $sbms->getSubmissionTime() < $best->getSubmissionTime())) {
+                    $exerciseBest['best'] = $sbms;
+                }
+                $exerciseBest['count'] += 1;
+                $exerciseBest['all'][] = $sbms;
+                
+                if ($sbms->getSubmissionTime() > $this->latestSubmissionTime) {
+                    $this->latestSubmissionTime = $sbms->getSubmissionTime();
+                }
+            }
+            
+            $submissions->close();
+        }
         
         // create exercise summary objects
         $this->exerciseSummaries = array();
-        foreach ($exercises as $ex) {
-            
-            $this->exerciseSummaries[] = new user_exercise_summary($ex, $this->user, 
-                    $submissionsByExerciseId[$ex->getId()]['count'], 
-                    $submissionsByExerciseId[$ex->getId()]['best'], 
-                    null, false);
+        foreach ($lobjects as $ex) {
+            if ($ex->isSubmittable()) {
+                $this->exerciseSummaries[] = new user_exercise_summary($ex, $this->user,
+                        $submissionsByExerciseId[$ex->getId()]['count'],
+                        $submissionsByExerciseId[$ex->getId()]['best'],
+                        $submissionsByExerciseId[$ex->getId()]['all'],
+                        null, false);
+            }
         }
     }
     
@@ -153,6 +172,10 @@ class user_module_summary {
         return $this->latestSubmissionTime;
     }
     
+    public function getLearningObjects() {
+        return $this->learningObjects;
+    }
+    
     public function getTemplateContext() {
         $totalPoints = $this->getTotalPoints();
         
@@ -170,39 +193,26 @@ class user_module_summary {
         return $ctx;
     }
     
-    public function getExercisesByCategoriesTemplateContext() {
-        $catContexts = array();
-        $len = 0;
-        /* The exerciseSummaries are in the order they should be displayed, but they
-         * must be grouped by categories here. The same category may be repeated more than
-         * once as the exercises are kept in order. For example, if three exercises have 
-         * categories catA, catB, and catA in this order, then catA is repeated twice. 
-         * The first catA only includes the first exercise.
-         */
-        foreach ($this->exerciseSummaries as $exSummary) {
-            $cat = $exSummary->getExerciseCategory();
-            if (!$cat->isHidden()) {
-                // prepare category context (a category contains at least one exercise)
-                if ($len === 0 || $cat->getId() != $catContexts[$len - 1]['id']) {
-                    $catCtx = array(
-                            'id' => $cat->getId(),
-                            'name' => $cat->getName(),
-                            'exercise_summaries' => array(),
-                    );
-                    $catContexts[] = $catCtx;
-                    $len++;
-                }
-            
-                // exercise context
-                $exSumCtx = array(
-                    'exercise' => $exSummary->getExercise()->getExerciseTemplateContext($this->user),
-                    'exercise_summary' => $exSummary->getTemplateContext(),
-                );
-                // append under the category context
-                $catContexts[$len - 1]['exercise_summaries'][] = $exSumCtx;
+    public function getModulePointsPanelTemplateContext() {
+        // intended for the module_contents variable in exercise_round.mustache
+        $ctx = array();
+        $exSummariesById = array();
+        foreach ($this->exerciseSummaries as $exsum) {
+            $exSummariesById[$exsum->getExercise()->getId()] = $exsum;
+        }
+        foreach ($this->learningObjects as $lobject) {
+            $data = new \stdClass();
+            if ($lobject->isSubmittable()) {
+                $exerciseSummary = $exSummariesById[$lobject->getId()];
+                $data->exercise = $lobject->getExerciseTemplateContext($this->user, false, false);
+                $data->submissions = \mod_astra_exercise::submissionsTemplateContext($exerciseSummary->getSubmissions());
+                $data->exercise_summary = $exerciseSummary->getTemplateContext();
+            } else {
+                $data->exercise = $lobject->getTemplateContext(false);
             }
+            $ctx[] = $data;
         }
         
-        return $catContexts;
+        return $ctx;
     }
 }
