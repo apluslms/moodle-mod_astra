@@ -109,7 +109,7 @@ Context variables:
       <tr data-category="{{ exercise.category.id }}">
         <td>
           {{^ course_module.not_started }}
-          <a href="{{ exercise.displayurl }}" class="{{# exercise.status_maintenance }}maintenance{{/ exercise.status_maintenance }}">
+          <a href="{{{ exercise.displayurl }}}" class="{{# exercise.status_maintenance }}maintenance{{/ exercise.status_maintenance }}">
             {{ exercise.name }}
           </a>
           {{/ course_module.not_started }}
@@ -132,7 +132,7 @@ Context variables:
           </a>
           <div class="dropdown-menu dropdown-menu-right">
               {{# submissions }}
-                  <a class="dropdown-item page-modal" href="{{ url }}">
+                  <a class="dropdown-item page-modal" href="{{{ url }}}">
                       {{ nth }}.
                       {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
                       {{> mod_astra/_points_badge }}
@@ -151,7 +151,7 @@ Context variables:
         {{# course_module.is_course_staff }}
         <td>
           {{# course_module.not_started }}
-          <a class="btn btn-secondary btn-sm" href="{{ exercise.displayurl }}">
+          <a class="btn btn-secondary btn-sm" href="{{{ exercise.displayurl }}}">
             {{#pix}}i/lock{{/pix}}
             {{#str}} earlyaccess, mod_astra {{/str}}
           </a>
@@ -161,7 +161,7 @@ Context variables:
             {% exercise_text_stats entry.id %}
           {/ course_module.not_started }
           }}
-          <a class="btn btn-secondary btn-sm" href="{{ exercise.submissionlisturl }}">
+          <a class="btn btn-secondary btn-sm" href="{{{ exercise.submissionlisturl }}}">
             {{#pix}}a/view_list_active{{/pix}}
             {{#str}} viewsubmissions, mod_astra {{/str}}
           </a>
@@ -174,7 +174,7 @@ Context variables:
       <tr>
         <td colspan="4">
           {{^ course_module.not_started }}
-          <strong><a href="{{ exercise.displayurl }}" class="{{# exercise.status_maintenance }}maintenance{{/ exercise.status_maintenance }}">
+          <strong><a href="{{{ exercise.displayurl }}}" class="{{# exercise.status_maintenance }}maintenance{{/ exercise.status_maintenance }}">
             {{ exercise.name }}
           </a></strong>
           {{/ course_module.not_started }}
@@ -185,7 +185,7 @@ Context variables:
         {{# course_module.is_course_staff }}
         <td>
           {{# course_module.not_started }}
-          <a class="btn btn-secondary btn-sm" href="{{ exercise.displayurl }}">
+          <a class="btn btn-secondary btn-sm" href="{{{ exercise.displayurl }}}">
             {{#pix}}i/lock{{/pix}}
             {{#str}} earlyaccess, mod_astra {{/str}}
           </a>
