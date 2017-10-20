@@ -1,0 +1,93 @@
+{{!
+List the enrolled participants in the course.
+From this page, the teacher may access a student's course overview to
+easily see all the exercise results of one student.
+
+Adapted from A+ (a-plus/course/templates/course/staff/participants.html).
+
+Context variables:
+* users (array of objects), each object has keys
+    - idnumber (string)
+    - firstname (string)
+    - lastname (string)
+    - email (string)
+    - link (string) URL to the user's results page
+* totalcount (int) total number of participants (with the role if filtered by role)
+* rolename (string) if users are filtered by role, the name of the role. Unset otherwise.
+* matchcount (int) total number of matched users after filtering
+* filter (object) keys:
+    - used (bool) true if any filtering is used (excluding roles)
+    - filters (array of objects), keys:
+        * field (string) name of field, e.g., 'First name'
+        * query (string) queried value, e.g., 'John'
+* sortToggler (callable) function that takes a user field name as parameter and
+    returns an ascending or descending sort icon if that field is currently being sorted
+* sorturl (object) URLs for sorting the participants by a column (switching between
+    ascending and descending), keys: idnumber, lastname, firstname, email
+* paginator (callable) function that returns HTML markup for the pagination component
+    (it should know the currently active page and the number of pages)
+}}
+
+<p>
+{{^ rolename }}
+  {{#str}} numberofparticipants, mod_astra {{/str}}
+{{/ rolename }}
+{{# rolename }}
+  {{#str}} numberofparticipantswithrole, mod_astra, {{ rolename }} {{/str}}
+{{/ rolename }}
+<strong id="participants-number">{{ totalcount }}</strong>
+</p>
+
+{{# filter.used }}
+<p>{{#str}} numberofparticipantsfilter, mod_astra {{/str}} <strong id="filtered-participants-number">{{ matchcount }}</strong></p>
+<ul>
+{{# filter.filters }}
+<li>
+  {{ field }}: {{ query }}
+</li>
+{{/ filter.filters }}
+</ul>
+{{/ filter.used }}
+
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th><a href="{{{ sorturl.idnumber }}}" class="order-toggle" id="order-id"
+             title="{{#str}} sortby, mod_astra, {{#str}} idnumber, mod_astra {{/str}} {{/str}}">
+        {{#str}} idnumber, mod_astra {{/str}} {{# sortToggler }} idnumber {{/ sortToggler }}
+      </a></th>
+      <th><a href="{{{ sorturl.lastname }}}" class="order-toggle" id="order-last"
+             title="{{#str}} sortby, mod_astra, {{#str}} lastname, mod_astra {{/str}} {{/str}}">
+        {{#str}} lastname, mod_astra {{/str}} {{# sortToggler }} lastname {{/ sortToggler }}
+      </a></th>
+      <th><a href="{{{ sorturl.firstname }}}" class="order-toggle" id="order-first"
+             title="{{#str}} sortby, mod_astra, {{#str}} firstname, mod_astra {{/str}} {{/str}}">
+        {{#str}} firstname, mod_astra {{/str}} {{# sortToggler }} firstname {{/ sortToggler }}
+      </a></th>
+      <th><a href="{{{ sorturl.email }}}" class="order-toggle" id="order-email"
+             title="{{#str}} sortby, mod_astra, {{#str}} email, mod_astra {{/str}} {{/str}}">
+        {{#str}} email, mod_astra {{/str}} {{# sortToggler }} email {{/ sortToggler }}
+      </a></th>
+    </tr>
+  </thead>
+  <tbody id="participants">
+    {{# users }}
+      <tr>
+        <td>
+          <a href="{{{ link }}}">{{ idnumber }}</a>
+        </td>
+        <td>
+          <a href="{{{ link }}}">{{ lastname }}</a>
+        </td>
+        <td>
+          <a href="{{{ link }}}">{{ firstname }}</a>
+        </td>
+        <td>
+          <a href="{{{ link }}}">{{ email }}</a>
+        </td>
+      </tr>
+    {{/ users }}
+  </tbody>
+</table>
+
+{{#paginator}}{{/paginator}}

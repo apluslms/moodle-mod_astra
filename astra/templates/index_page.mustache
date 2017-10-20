@@ -3,7 +3,7 @@ Show all exercise rounds in the course.
 
 Context variables:
 * rounds (array of objects) each object has fields course_module, module_summary and
-    categories as required by exercise_round.mustache
+    module_contents as required by exercise_round.mustache
 * toDateStr callable Function that converts a Unix timestamp to a date string
 * is_course_staff bool
 * categories (array of objects) each object has fields
@@ -35,32 +35,7 @@ Context variables:
   
   <div role="tabpanel" class="tab-pane fade show active" id="course-summary"
       aria-labelledby="course-summary-tab">
-  <div class="row">
-  {{# categories }}
-    {{# status_ready }}
-    <div class="col-md-3">
-      <div class="card bg-light">
-      <div class="card-body">
-        <h4 class="card-title">{{ name }}</h4>
-        <p class="card-text"><strong class="h2">
-          {{ summary.points }}
-          <small>
-            / {{ summary.max }}
-          </small>
-        </strong></p>
-        {{# summary }}
-          {{> mod_astra/_points_progress }}
-        {{/ summary }}
-      </div>
-      </div>
-    </div>
-    {{/ status_ready }}
-  {{/ categories }}
-  </div>
-
-  {{# rounds }}
-    {{> mod_astra/exercise_round }}
-  {{/ rounds }}
+    {{> mod_astra/user_results }}
   </div> <!-- close tab-pane -->
 
   <div role="tabpanel" class="tab-pane fade" id="course-toc" aria-labelledby="course-toc-tab">

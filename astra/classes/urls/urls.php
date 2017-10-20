@@ -213,6 +213,36 @@ class urls {
         return self::buildUrl('/teachers/mass_regrading.php', $query, $asMdlUrl);
     }
     
+    public static function participantList($courseid, $asMdlUrl = false,
+            array $sort = null, array $filter = null, $roleid = null, $page = null) {
+        $query = array('course' => $courseid);
+        if (isset($sort)) {
+            foreach ($sort as $order => $fieldASC) {
+                // order: which column is the primary column to sort by
+                $query['sort_'. $fieldASC[0]] = $order .'_'. ($fieldASC[1] ? 1 : 0);
+                // $fieldASC[1] == true -> ascending, else descending
+            }
+        }
+        if (isset($filter)) {
+            $query = array_merge($query, $filter);
+        }
+        if (isset($roleid)) {
+            $query['roleid'] = $roleid;
+        }
+        if (isset($page)) {
+            $query['page'] = $page;
+        }
+        return self::buildUrl('/teachers/participants.php', $query, $asMdlUrl);
+    }
+    
+    public static function userResults($courseid, $userid, $asMdlUrl = false) {
+        $query = array(
+                'course' => $courseid,
+                'user'   => $userid,
+        );
+        return self::buildUrl('/teachers/user_results.php', $query, $asMdlUrl);
+    }
+    
     public static function pollSubmissionStatus(\mod_astra_submission $submission, $asMdlUrl = false) {
         $query = array('id' => $submission->getId());
         return self::buildUrl('/poll.php', $query, $asMdlUrl);

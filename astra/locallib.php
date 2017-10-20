@@ -160,3 +160,117 @@ function astra_send_assistant_feedback_notification(mod_astra_submission $submis
 function astra_is_ajax() {
     return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 }
+
+/**
+ * Return enrolled participants in the course.
+ * Filtering the results based on, e.g., the user's last name is supported.
+ * Users may be filtered by role as well (student, teacher, etc.).
+ * The results may be paginated (small subset returned at a time).
+ *
+ * @param \context $context course context
+ * @param array $sort array of arrays that defines the user fields to sort.
+ *        Outer array is indexed from zero and shows the order of the columns
+ *        to sort (primary column first). The keys of the nested arrays are field names
+ *        (like 'idnumber' in the participants_page::allowedFilterFields method)
+ *        and values are boolean: true for ascending sort, false for descending.
+ * @param array $filter array of queries for filtering the user records;
+ *        possible keys: 'idnumber', 'firstname', 'lastname', 'email'.
+ *        The given query value is surrounded with wildcards so that the result
+ *        includes any record containing the queried word. Multiple filters
+ *        are ANDed together so that they must all match.
+ * @param int $roleid include only participants with this role.
+ *        Use -1 for including all roles and 0 for guessing the student role.
+ *        This function has to guess which role is the student role if the id is not provided.
+ * @param number $limitfrom limit the number of records returned, starting from this point
+ * @param number $limitnum number of records to return
+ * @return list(\stdClass[], int, int, int) user records, total number of
+ *         participants with the role, total number of users after filtering,
+ *         role id used for filtering participants (useful if the student role is guessed
+ *         by providing the parameter $roleid 0)
+ */
+function astra_get_participants(\context $context, array $sort = null, array $filter = null,
+        $roleid = 0, $limitfrom = 0, $limitnum = 0) {
+    global $DB;
+
+    // filtering users by role adapted from moodle/user/index.php
+    list($esql, $params) = get_enrolled_sql($context);
+    $joins = array("FROM {user} u");
+    $wheres = array();
+    
+    $select = 'SELECT u.id, u.firstname, u.lastname, u.idnumber, u.email';
+    $joins[] = "JOIN ($esql) e ON e.id = u.id"; // Course enrolled users only.
+
+    if ($roleid !== -1) {
+        // limit results by user role
+        if ($roleid === 0) {
+            // guess the student role
+            $roles = get_profile_roles($context); // map of roleids to role objects
+            foreach ($roles as $role) {
+                if ($role->shortname === 'student') {
+                    $roleid = $role->id;
+                    break;
+                }
+            }
+        }
+        if ($roleid !== 0) {
+            // $roleid must have a real value at this stage, or else it is ignored
+            // We want to query both the current context and parent contexts.
+            list($relatedctxsql, $relatedctxparams) = $DB->get_in_or_equal($context->get_parent_context_ids(true), SQL_PARAMS_NAMED, 'relatedctx');
+            $wheres[] = "u.id IN (SELECT userid FROM {role_assignments} WHERE roleid = :roleid AND contextid $relatedctxsql)";
+            $params = array_merge($params, array('roleid' => $roleid), $relatedctxparams);
+        } else {
+            $roleid = -1;
+        }
+    }
+
+    // total count of participants (with the given role) before filtering
+    $from = implode("\n", $joins);
+    if ($wheres) {
+        $where = 'WHERE ' . implode(' AND ', $wheres);
+    } else {
+        $where = '';
+    }
+    $totalcount = $DB->count_records_sql("SELECT COUNT(u.id) $from $where", $params);
+    
+    // possible filtering, e.g., only users whose lastnames contain a given string
+    if (!empty($filter)) {
+        $allowedFilterFields = \mod_astra\output\participants_page::allowedFilterFields();
+        foreach ($allowedFilterFields as $i => $field) {
+            if (isset($filter[$field])) {
+                $wheres[] = $DB->sql_like($field, ":search$i", false, false);
+                $params["search$i"] = '%'. $DB->sql_like_escape($filter[$field]) .'%';
+                // wildcards before and after the given query
+            }
+        }
+    }
+    
+    //$from = implode("\n", $joins);
+    if ($wheres) {
+        $where = 'WHERE ' . implode(' AND ', $wheres);
+    } else {
+        $where = '';
+    }
+    
+    if (!empty($sort)) {
+        $fields = array();
+        foreach ($sort as $fieldASC) {
+            $f = $fieldASC[0];
+            if (!$fieldASC[1]) {
+                $f .= ' DESC';
+            }
+            $fields[] = $f;
+        }
+        
+        $orderby = ' ORDER BY ' . implode(',', $fields);
+    } else {
+        $orderby = '';
+    }
+    
+    // the count of participants after filtering
+    $matchcount = $DB->count_records_sql("SELECT COUNT(u.id) $from $where", $params);
+    
+    $sql = "$select $from $where $orderby";
+    $users = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum);
+    
+    return array($users, $totalcount, $matchcount, $roleid);
+}

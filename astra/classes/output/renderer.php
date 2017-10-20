@@ -80,4 +80,14 @@ class renderer extends \plugin_renderer_base {
         $data = $page->export_for_template($this);
         return $this->render_from_template(\mod_astra_exercise_round::MODNAME .'/_exercise_info', $data);
     }
+    
+    protected function render_participants_page(\mod_astra\output\participants_page $page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template(\mod_astra_exercise_round::MODNAME .'/participants_page', $data);
+    }
+    
+    protected function render_user_results_page(\mod_astra\output\user_results_page $page) {
+        $data = $page->export_for_template($this);
+        return $this->render_from_template(\mod_astra_exercise_round::MODNAME .'/user_results_page', $data);
+    }
 }

@@ -1,0 +1,58 @@
+{{!
+Page for showing one user's results in all rounds and exercises.
+The user's contact information is also shown.
+
+Context variables:
+* all variables required by user_results.mustache
+* user (object) with keys
+    - idnumber (string)
+    - firstname (string)
+    - lastname (string)
+    - email (string)
+    - picture (string) HTML for the user's profile picture
+}}
+
+<table class="table table-bordered">
+  <tr>
+    <td rowspan="2">
+      {{{ user.picture }}}
+    </td>
+    <th>{{#str}} idnumber, mod_astra {{/str}}</th>
+    <th>{{#str}} lastname, mod_astra {{/str}}</th>
+    <th>{{#str}} firstname, mod_astra {{/str}}</th>
+    <th>{{#str}} email, mod_astra {{/str}}</th>
+  </tr>
+  <tr>
+    <td>{{ user.idnumber }}</td>
+    <td>{{ user.lastname }}</td>
+    <td>{{ user.firstname }}</td>
+    <td>
+      {{# user.email }}
+        <a href="mailto:{{ user.email }}">
+          {{ user.email }}
+        </a>
+      {{/ user.email }}
+      {{^ user.email }}
+        -
+      {{/ user.email }}
+    </td>
+  </tr>
+</table>
+
+{{> mod_astra/user_results }}
+
+{{> mod_astra/_page_file_modals }}
+
+{{#js}}
+require(['theme_boost/loader']);
+require(['jquery', 'theme_boost/tooltip', 'mod_astra/aplus_modal'], function($) {
+  /* enable Bootstrap tooltips */
+  $(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    /* Enable modal dialogs */
+    $('.page-modal').aplusModalLink();
+    $('.file-modal').aplusModalLink({file:true});
+  });
+});
+{{/js}}

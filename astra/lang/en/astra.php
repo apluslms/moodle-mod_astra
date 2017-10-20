@@ -135,6 +135,22 @@ $string['gotofeedback'] = 'Go to feedback';
 $string['acceptedforgrading'] = 'Your submission has been accepted for grading.';
 $string['exercisecategory'] = 'Exercise category';
 $string['statusnototal'] = 'No total points';
+$string['participants'] = 'Participants';
+$string['resultsof'] = 'Results of {$a}';
+$string['numberofparticipants'] = 'Number of participants (any role)';
+$string['numberofparticipantswithrole'] = 'Number of participants (with the role {$a})';
+$string['numberofparticipantsfilter'] = 'Number of matched participants after filtering';
+$string['idnumber'] = 'ID number';
+$string['firstname'] = 'First name';
+$string['lastname'] = 'Last name';
+$string['email'] = 'Email';
+$string['sortasc'] = 'Ascending sort';
+$string['sortdesc'] = 'Descending sort';
+$string['searchresults'] = 'Search results';
+$string['previous'] = 'Previous';
+$string['next'] = 'Next';
+$string['currentparen'] = '(current)';
+$string['sortby'] = 'Sort by {$a}';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';
@@ -337,6 +353,7 @@ $string['exportfilesziperror'] = 'Error in creating the zip archive';
 $string['notenrollednosubmit'] = 'You are not enrolled in the course, hence you may not submit new solutions to exercises.';
 $string['nosecretkeyset'] = 'The Moodle site administrator has not set the mandatory secret key for the Astra plugin.';
 $string['loadingfailed'] = 'Loading failed!';
+$string['usernotenrolled'] = 'The user is not enrolled in the course.';
 
 // Events / logging
 $string['eventsubmitted'] = 'Student submitted a new solution';

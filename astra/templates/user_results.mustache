@@ -1,0 +1,40 @@
+{{!
+Show one user's results in all rounds and exercises, including category total points.
+This template may be included in other templates (Mustache partial).
+
+Context variables:
+* rounds (array of objects) each object has fields course_module, module_summary and
+    module_contents as required by exercise_round.mustache
+* categories (array of objects) each object has fields
+    - name (string) name of the category
+    - summary (object) with fields required by _points_progress.mustache
+    - status_ready (bool) true if status is ready
+* toDateStr callable Function that converts a Unix timestamp to a date string
+}}
+
+<div class="row">
+  {{# categories }}
+    {{# status_ready }}
+    <div class="col-md-3">
+      <div class="card bg-light">
+      <div class="card-body">
+        <h4 class="card-title">{{ name }}</h4>
+        <p class="card-text"><strong class="h2">
+          {{ summary.points }}
+          <small>
+            / {{ summary.max }}
+          </small>
+        </strong></p>
+        {{# summary }}
+          {{> mod_astra/_points_progress }}
+        {{/ summary }}
+      </div>
+      </div>
+    </div>
+    {{/ status_ready }}
+  {{/ categories }}
+</div>
+
+{{# rounds }}
+  {{> mod_astra/exercise_round }}
+{{/ rounds }}
