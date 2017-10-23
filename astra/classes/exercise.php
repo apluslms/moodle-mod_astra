@@ -588,7 +588,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
         if ($exround->hasStarted($when)) {
             // check deviations
             $deviation = mod_astra_deadline_deviation::findDeviation($this->getId(), $user->id);
-            if ($deviation !== null && $when <= $deviation->getNewLateSubmissionDeadline()) {
+            if ($deviation !== null && $when <= $deviation->getNewDeadline()) {
                 return true;
             }
         }

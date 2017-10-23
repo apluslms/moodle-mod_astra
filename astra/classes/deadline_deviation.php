@@ -11,20 +11,12 @@ class mod_astra_deadline_deviation extends mod_astra_deviation_rule {
         return $this->getExercise()->getExerciseRound()->getClosingTime(); // Unix timestamp
     }
     
-    public function getNormalLateSubmissionDeadline() {
-        return $this->getExercise()->getExerciseRound()->getLateSubmissionDeadline(); // Unix timestamp
-    }
-    
     public function getExtraTime() {
         return (int) $this->record->extraminutes; // in minutes
     }
     
     public function getNewDeadline() {
         return self::addMinutesToTimestamp($this->getNormalDeadline(), $this->getExtraTime());
-    }
-    
-    public function getNewLateSubmissionDeadline() {
-        return self::addMinutesToTimestamp($this->getNormalLateSubmissionDeadline(), $this->getExtraTime());
     }
     
     protected static function addMinutesToTimestamp($timestamp, $minutes) {
@@ -36,9 +28,11 @@ class mod_astra_deadline_deviation extends mod_astra_deviation_rule {
     /**
      * Return true if late penalty should be applied in this deviation rule,
      * false otherwise. If true, late penalty is applied when the student submits
-     * after the original deadline. Otherwise, the late penalty is applied when the
-     * student submits after the extended deadline and before the extended late submission
-     * deadline. Submitting after the extended late submission deadline yields zero points.
+     * after the original deadline and before the extended deadline. Otherwise,
+     * the late penalty is not applied during the extension at all.
+     * Submitting after the extended deadline yields zero points, unless normal
+     * late submissions are still open and enabled, in which case the late
+     * penalty is applied normally.
      */
     public function useLatePenalty() {
         return !((bool) $this->record->withoutlatepenalty);

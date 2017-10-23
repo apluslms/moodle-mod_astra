@@ -506,15 +506,19 @@ class mod_astra_submission extends mod_astra_database_object {
         // Check if this submission was done late. If it was, reduce the points
         // with late submission penalty. No less than 0 points are given. This
         // is not done if $noPenalties is true.
-        if (!$noPenalties && $this->isLate()) {
-            $exround = $exercise->getExerciseRound();
-            if ($exround->isLateSubmissionAllowed() && !$this->isLateFromLateDeadline()) {
-                $this->record->latepenaltyapplied = $exround->getLateSubmissionPenalty();
+        $lateCode = $this->isLate();
+        if (!$noPenalties && $lateCode > 0) {
+            if ($lateCode === 1) {
+                // late, use penalty
+                $this->record->latepenaltyapplied =
+                    $this->getExercise()->getExerciseRound()->getLateSubmissionPenalty();
             } else {
-                $this->record->latepenaltyapplied = 1; // zero points
+                // too late (late submission deadline has passed), zero points
+                $this->record->latepenaltyapplied = 1;
             }
             $adjustedGrade -= ($adjustedGrade * $this->record->latepenaltyapplied);
         } else {
+            // in time or penalties are ignored
             $this->record->latepenaltyapplied = null;
         }
         
@@ -571,39 +575,34 @@ class mod_astra_submission extends mod_astra_database_object {
     /**
      * Check if this submission was submitted after the exercise round closing time.
      * Deadline deviation is taken into account.
+     * 
+     * @return int 0, if this submission was submitted in time;
+     *         1, if it was late and the late penalty should be applied;
+     *         2, if it was late and shall not be accepted (gains zero points)
+     *         (i.e., late submissions are not enabled or the submission was late
+     *         from the late submission deadline).
      */
     public function isLate() {
-        if ($this->getSubmissionTime() <= $this->getExercise()->getExerciseRound()->getClosingTime()) {
-            return false;
+        $exround = $this->getExercise()->getExerciseRound();
+        if ($this->getSubmissionTime() <= $exround->getClosingTime()) {
+            return 0;
         }
         // check deadline deviations/extensions for specific students
         $deviation = mod_astra_deadline_deviation::findDeviation($this->getExercise()->getId(), $this->record->submitter);
-        if ($deviation !== null && !$deviation->useLatePenalty() && 
+        if ($deviation !== null && 
                 $this->getSubmissionTime() <= $deviation->getNewDeadline()) {
-            return false;
+            if ($deviation->useLatePenalty()) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
-        return true;
-    }
-    
-    /**
-     * Check if this submission was submitted after the exercise round
-     * late submission deadline (which should be later than the closing time).
-     * @return boolean
-     */
-    public function isLateFromLateDeadline() {
-        $lateSbmsDl = $this->getExercise()->getExerciseRound()->getLateSubmissionDeadline();
-        if ($lateSbmsDl == 0) { // not set
-            return false;
+        
+        if ($exround->isLateSubmissionOpen($this->getSubmissionTime())) {
+            return 1;
         }
-        if ($this->getSubmissionTime() <= $lateSbmsDl) {
-            return false;
-        }
-        // check deviations
-        $deviation = mod_astra_deadline_deviation::findDeviation($this->getExercise()->getId(), $this->record->submitter);
-        if ($deviation !== null && $this->getSubmissionTime() <= $deviation->getNewLateSubmissionDeadline()) {
-            return false;
-        }
-        return true;
+        
+        return 2;
     }
     
     /**
