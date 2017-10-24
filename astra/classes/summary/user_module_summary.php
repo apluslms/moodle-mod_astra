@@ -193,7 +193,8 @@ class user_module_summary {
         return $ctx;
     }
     
-    public function getModulePointsPanelTemplateContext($requireAssistantViewingForSubmissions = false) {
+    public function getModulePointsPanelTemplateContext($requireAssistantViewingForSubmissions = false,
+            $requireAstViewingForAllSbmsLink = true) {
         // intended for the module_contents variable in exercise_round.mustache
         $ctx = array();
         $exSummariesById = array();
@@ -209,6 +210,9 @@ class user_module_summary {
                     $data->submissions = \mod_astra_exercise::submissionsTemplateContext($exerciseSummary->getSubmissions());
                 } else {
                     $data->sbmsrequireastview = true;
+                }
+                if (!$requireAstViewingForAllSbmsLink || $lobject->isAssistantViewingAllowed()) {
+                    $data->showallsbmslink = true;
                 }
                 $data->exercise_summary = $exerciseSummary->getTemplateContext();
             } else {

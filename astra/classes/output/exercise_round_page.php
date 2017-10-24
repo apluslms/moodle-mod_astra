@@ -22,10 +22,12 @@ class exercise_round_page implements \renderable, \templatable {
         $data = new \stdClass();
         $ctx = \context_module::instance($this->exround->getCourseModule()->id);
         $data->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $ctx);
+        $isEditingTeacher = has_capability('mod/astra:addinstance', $ctx);
         $data->course_module = $this->exround->getTemplateContext();
         $data->module_summary = $this->moduleSummary->getTemplateContext();
         $data->module_summary->classes = 'float-right'; // CSS classes
-        $data->module_contents = $this->moduleSummary->getModulePointsPanelTemplateContext();
+        $data->module_contents = $this->moduleSummary->getModulePointsPanelTemplateContext(
+                false, !$isEditingTeacher);
         
         $data->toDateStr = new \mod_astra\output\date_to_string();
         

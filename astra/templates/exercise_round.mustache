@@ -31,6 +31,8 @@ Context variables:
             * fields required by _points_badge.mustache
         - sbmsrequireastview (bool) true if the submissions array is hidden (empty)
             only because the exercise configuration has not enabled assistant viewing
+        - showallsbmslink (bool) true if the view all submissions link may be shown
+            to the user (assuming that the user is part of the course staff)
         - exercise_summary (object) if the exercise is submittable
             * keys that are required by _points_badge.mustache
             * submission_count (int) how many submissions the user has made
@@ -170,10 +172,12 @@ Context variables:
             {% exercise_text_stats entry.id %}
           {/ course_module.not_started }
           }}
+          {{# showallsbmslink }}
           <a class="btn btn-secondary btn-sm" href="{{{ exercise.submissionlisturl }}}">
             {{#pix}}a/view_list_active{{/pix}}
             {{#str}} viewsubmissions, mod_astra {{/str}}
           </a>
+          {{/ showallsbmslink }}
         </td>
         {{/ course_module.is_course_staff }}
       </tr>

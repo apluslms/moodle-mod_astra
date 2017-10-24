@@ -76,13 +76,13 @@ class exercise_page implements \renderable, \templatable {
         $data->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $ctx);
         $data->is_editing_teacher = \has_capability('mod/astra:addinstance', $ctx);
         if ($this->learningObject->isSubmittable()) {
-            $data->is_manual_grader = 
+            /*$data->is_manual_grader = 
                 ($this->learningObject->isAssistantGradingAllowed() && \has_capability('mod/astra:grademanually', $ctx)) ||
-                $data->is_editing_teacher;
+                $data->is_editing_teacher;*/
             $data->can_inspect = ($this->learningObject->isAssistantViewingAllowed() && $data->is_course_staff) ||
                 $data->is_editing_teacher;
         } else {
-            $data->is_manual_grader = \has_capability('mod/astra:grademanually', $ctx);
+            //$data->is_manual_grader = \has_capability('mod/astra:grademanually', $ctx);
             $data->can_inspect = $data->is_course_staff;
         }
         

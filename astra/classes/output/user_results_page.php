@@ -35,7 +35,8 @@ class user_results_page implements \renderable, \templatable {
             $moduleSummary = $this->courseSummary->getModuleSummary($round->getId());
             $roundCtx->module_summary = $moduleSummary->getTemplateContext();
             $roundCtx->module_summary->classes = 'float-right'; // CSS classes
-            $roundCtx->module_contents = $moduleSummary->getModulePointsPanelTemplateContext(!$isEditingTeacher);
+            $roundCtx->module_contents = $moduleSummary->getModulePointsPanelTemplateContext(
+                    !$isEditingTeacher, !$isEditingTeacher);
             $roundsData[] = $roundCtx;
         }
         $data->rounds = $roundsData;

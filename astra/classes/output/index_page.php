@@ -24,6 +24,7 @@ class index_page implements \renderable, \templatable {
         $data = new \stdClass();
         $ctx = \context_course::instance($this->course->id);
         $data->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $ctx);
+        $isEditingTeacher = has_capability('mod/astra:addinstance', $ctx);
         
         $roundsData = array();
         foreach ($this->rounds as $round) {
@@ -32,7 +33,8 @@ class index_page implements \renderable, \templatable {
             $moduleSummary = $this->courseSummary->getModuleSummary($round->getId());
             $roundCtx->module_summary = $moduleSummary->getTemplateContext();
             $roundCtx->module_summary->classes = 'float-right'; // CSS classes
-            $roundCtx->module_contents = $moduleSummary->getModulePointsPanelTemplateContext();
+            $roundCtx->module_contents = $moduleSummary->getModulePointsPanelTemplateContext(
+                    false, !$isEditingTeacher);
             $roundsData[] = $roundCtx;
         }
         $data->rounds = $roundsData;

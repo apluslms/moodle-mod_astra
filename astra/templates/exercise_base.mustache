@@ -14,7 +14,6 @@ Context variables:
     the variables required by _points_badge.mustache (set status if the submission is not graded)
 * is_course_staff (bool)
 * is_editing_teacher (bool) can user edit exercises?
-* is_manual_grader (bool) can user grade submissions manually?
 * can_inspect (bool) can user inspect submission?
 * toDateStr callable Function that converts a Unix timestamp to a date string
 * submission (stdClass), set if viewing one specific submission, with fields
@@ -75,12 +74,12 @@ Blocks that child templates should override:
                   {{#str}} editexercise, mod_astra {{/str}}
               </a>
               {{/ is_editing_teacher }}
-              {{# is_manual_grader }}
+              {{# can_inspect }}
               <a href="{{{ exercise.submissionlisturl }}}" class="btn btn-secondary btn-sm">
                   {{#pix}}a/view_list_active{{/pix}}
                   {{#str}} viewallsubmissions, mod_astra {{/str}}
               </a>
-              {{/ is_manual_grader }}
+              {{/ can_inspect }}
           </p>
       </li>
       {{/ is_course_staff }}

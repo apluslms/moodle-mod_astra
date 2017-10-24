@@ -29,7 +29,9 @@ class submission_plain_page implements \renderable, \templatable {
     public function export_for_template(\renderer_base $output) {
         $data = new \stdClass();
         $ctx = \context_module::instance($this->exround->getCourseModule()->id);
-        $data->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $ctx);
+        $data->is_course_staff =
+            ($this->exercise->isAssistantViewingAllowed() && \has_capability('mod/astra:viewallsubmissions', $ctx)) ||
+            \has_capability('mod/astra:addinstance', $ctx);
         
         $data->exercise = $this->exercise->getExerciseTemplateContext($this->user, false, false);
         $data->submission = $this->submission->getTemplateContext(true, false);

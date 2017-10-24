@@ -34,9 +34,9 @@ class submission_page implements \renderable, \templatable {
         $ctx = \context_module::instance($this->exround->getCourseModule()->id);
         $data->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $ctx);
         $data->is_editing_teacher = \has_capability('mod/astra:addinstance', $ctx);
-        $data->is_manual_grader =
+        /*$data->is_manual_grader =
                 ($this->exercise->isAssistantGradingAllowed() && \has_capability('mod/astra:grademanually', $ctx)) ||
-                $data->is_editing_teacher;
+                $data->is_editing_teacher;*/
         $data->can_inspect = ($this->exercise->isAssistantViewingAllowed() && $data->is_course_staff) ||
                 $data->is_editing_teacher;
         
