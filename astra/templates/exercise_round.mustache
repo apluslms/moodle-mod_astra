@@ -29,6 +29,8 @@ Context variables:
             * submission_time (int) Unix timestamp
             * url (string)
             * fields required by _points_badge.mustache
+        - sbmsrequireastview (bool) true if the submissions array is hidden (empty)
+            only because the exercise configuration has not enabled assistant viewing
         - exercise_summary (object) if the exercise is submittable
             * keys that are required by _points_badge.mustache
             * submission_count (int) how many submissions the user has made
@@ -139,7 +141,14 @@ Context variables:
                   </a>
               {{/ submissions }}
               {{^ submissions }}
-                  <a class="dropdown-item page-modal" href="#">{{#str}} nosubmissionsyet, mod_astra {{/str}}</a>
+                  <a class="dropdown-item page-modal" href="#">
+                    {{^ sbmsrequireastview }}
+                      {{#str}} nosubmissionsyet, mod_astra {{/str}}
+                    {{/ sbmsrequireastview }}
+                    {{# sbmsrequireastview }}
+                      {{#str}} assistviewingnotallowed, mod_astra {{/str}}
+                    {{/ sbmsrequireastview}}
+                  </a>
               {{/ submissions }}
           </div>
         </td>

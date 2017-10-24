@@ -207,6 +207,8 @@ class user_module_summary {
                 $data->exercise = $lobject->getExerciseTemplateContext($this->user, false, false);
                 if (!$requireAssistantViewingForSubmissions || $lobject->isAssistantViewingAllowed()) {
                     $data->submissions = \mod_astra_exercise::submissionsTemplateContext($exerciseSummary->getSubmissions());
+                } else {
+                    $data->sbmsrequireastview = true;
                 }
                 $data->exercise_summary = $exerciseSummary->getTemplateContext();
             } else {
