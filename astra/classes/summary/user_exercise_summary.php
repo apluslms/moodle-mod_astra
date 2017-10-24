@@ -160,7 +160,7 @@ class user_exercise_summary {
             $ctx->percentage = round(100 * $ctx->points / $ctx->max);
             $ctx->required_percentage = round(100 * $ctx->required / $ctx->max);
         } else {
-            $ctx->percentage = 100;
+            $ctx->percentage = 0;
             $ctx->required_percentage = 0;
         }
         $ctx->penaltyapplied = $this->getPenalty();

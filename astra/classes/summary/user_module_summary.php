@@ -188,7 +188,7 @@ class user_module_summary {
         $ctx->max = $this->getMaxPoints();
         $ctx->points_to_pass = $this->getRequiredPoints();
         $ctx->required = $this->getRequiredPoints();
-        $ctx->percentage = ($ctx->max == 0) ? 100 : round(100 * $ctx->points / $ctx->max);
+        $ctx->percentage = ($ctx->max == 0) ? 0 : round(100 * $ctx->points / $ctx->max);
         $ctx->required_percentage = ($ctx->max == 0) ? 0 : round(100 * $ctx->required / $ctx->max);
         return $ctx;
     }
