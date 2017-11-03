@@ -26,7 +26,19 @@ Context variables:
     ascending and descending), keys: idnumber, lastname, firstname, email
 * paginator (callable) function that returns HTML markup for the pagination component
     (it should know the currently active page and the number of pages)
+* filterform (string) HTML of the form used to filter the list of participants
 }}
+
+<p>
+  <a href="#filter-form-container" class="btn btn-secondary" data-toggle="collapse"
+      aria-expanded="false" aria-controls="filter-form-container">
+    {{#str}} showhidesearch, mod_astra {{/str}}
+  </a>
+</p>
+<div class="collapse" id="filter-form-container">
+  <h3>{{#str}} searchforparticipants, mod_astra {{/str}}</h3>
+  {{{ filterform }}}
+</div>
 
 <p>
 {{^ rolename }}
@@ -91,3 +103,8 @@ Context variables:
 </table>
 
 {{#paginator}}{{/paginator}}
+
+{{#js}}
+/* Ensure that the Bootstrap collapse component is activated. */
+require(['theme_boost/loader']);
+{{/js}}

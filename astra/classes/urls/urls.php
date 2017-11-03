@@ -214,7 +214,8 @@ class urls {
     }
     
     public static function participantList($courseid, $asMdlUrl = false,
-            array $sort = null, array $filter = null, $roleid = null, $page = null) {
+            array $sort = null, array $filter = null, $roleid = null, $page = null,
+            $pagesize = null) {
         $query = array('course' => $courseid);
         if (isset($sort)) {
             foreach ($sort as $order => $fieldASC) {
@@ -231,6 +232,9 @@ class urls {
         }
         if (isset($page)) {
             $query['page'] = $page;
+        }
+        if (isset($pagesize)) {
+            $query['pagesize'] = $pagesize;
         }
         return self::buildUrl('/teachers/participants.php', $query, $asMdlUrl);
     }

@@ -141,6 +141,7 @@ $string['numberofparticipants'] = 'Number of participants (any role)';
 $string['numberofparticipantswithrole'] = 'Number of participants (with the role {$a})';
 $string['numberofparticipantsfilter'] = 'Number of matched participants after filtering';
 $string['idnumber'] = 'ID number';
+$string['idnumber_help'] = 'ID number (student ID) of the user';
 $string['firstname'] = 'First name';
 $string['lastname'] = 'Last name';
 $string['email'] = 'Email';
@@ -151,6 +152,10 @@ $string['previous'] = 'Previous';
 $string['next'] = 'Next';
 $string['currentparen'] = '(current)';
 $string['sortby'] = 'Sort by {$a}';
+$string['selectuserrole'] = 'Select user role';
+$string['resultsperpage'] = 'Results per page';
+$string['searchforparticipants'] = 'Search for participants';
+$string['showhidesearch'] = 'Show/hide search';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';

@@ -7,13 +7,15 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/locallib.php');
 
 class participants_page implements \renderable, \templatable {
     
-    const PAGE_SIZE = 50;
+    const PAGE_SIZE = 100;
     
     protected $course;
     protected $sort;
     protected $filter;
     protected $roleid;
     protected $page;
+    protected $pagesize;
+    protected $filterform;
     
     /**
      * Page for listing the participants in the course.
@@ -32,16 +34,21 @@ class participants_page implements \renderable, \templatable {
      * @param int $roleid include only participants with this role.
      *        Use -1 for including all roles and 0 for guessing the student role.
      *        This function has to guess which role is the student role if the id is not provided.
-     * @param int $page which result page should be shown? Each page may contain up to PAGE_SIZE
+     * @param int $page which result page should be shown? Each page may contain up to $pagesize
      *        rows. Pages are numbered starting from zero.
+     * @param int $pagesize how many participants are shown on a single page?
+     * @param \mod_astra\form\filter_participants_form $filterform filter form for rendering on the page
      */
     public function __construct(\stdClass $course, array $sort = null, array $filter = null,
-            $roleid = 0, $page = 0) {
+            $roleid = 0, $page = 0, $pagesize = self::PAGE_SIZE,
+            \mod_astra\form\filter_participants_form $filterform = null) {
         $this->course = $course;
         $this->sort = $sort;
         $this->filter = $filter;
         $this->roleid = $roleid === null ? 0 : $roleid;
         $this->page = $page === null ? 0 : $page;
+        $this->pagesize = isset($pagesize) ? min(max($pagesize, 10), 1000) : self::PAGE_SIZE;
+        $this->filterform = $filterform;
     }
     
     public static function allowedFilterFields() {
@@ -62,7 +69,7 @@ class participants_page implements \renderable, \templatable {
         
         list($enrolled_users, $totalcount, $matchcount, $roleid) = astra_get_participants(
                 $ctx, $this->sort, $this->filter, $this->roleid,
-                $this->page * self::PAGE_SIZE, self::PAGE_SIZE);
+                $this->page * $this->pagesize, $this->pagesize);
         $users = array();
         foreach ($enrolled_users as $u) {
             $user = new \stdClass();
@@ -131,17 +138,21 @@ class participants_page implements \renderable, \templatable {
                 }
             }
             $data->sorturl->{$field} = \mod_astra\urls\urls::participantList($this->course->id, false,
-                    $sortfield, $this->filter, $roleid, $this->page === 0 ? null : $this->page);
+                    $sortfield, $this->filter, $roleid, $this->page === 0 ? null : $this->page,
+                    $this->pagesize);
         }
         
         $courseid = $this->course->id;
         $sort2 = $this->sort;
         $filter = $this->filter;
-        $data->paginator = new pagination($this->page, (int) ceil($matchcount / self::PAGE_SIZE),
-                function($pageIdx) use ($courseid, $sort2, $filter, $roleid) {
+        $pagesize = $this->pagesize;
+        $data->paginator = new pagination($this->page, (int) ceil($matchcount / $this->pagesize),
+                function($pageIdx) use ($courseid, $sort2, $filter, $roleid, $pagesize) {
             return \mod_astra\urls\urls::participantList($courseid, false,
-                    $sort2, $filter, $roleid, $pageIdx);
+                    $sort2, $filter, $roleid, $pageIdx, $pagesize);
         });
+        
+        $data->filterform = $this->filterform->render();
         
         //$data->toDateStr = new \mod_astra\output\date_to_string();
         
