@@ -28,7 +28,8 @@ Context variables:
         * status_str (string) status as human-readable string
         * editurl (string) URL for editing the exercise
         * removeurl (string) URL for deleting the exercise
-        * url (string) URL for viewing the exercise
+        * displayurl (string) URL for viewing the exercise (if the exercise is embedded
+          to a chapter, then the link opens the chapter)
         * submissionlisturl (string) URL to the all submissions list
 * create_module_url (string) URL for creating a new exercise round
 * renumber_action_url (string) URL for form action that renumbers exercises
@@ -126,7 +127,7 @@ Context variables:
                     <a class="btn btn-secondary btn-sm" href="{{{ removeurl }}}">
                         {{#pix}}t/delete{{/pix}} {{#str}} remove, mod_astra {{/str}}
                     </a>
-                    <a class="btn btn-link btn-sm" href="{{{ url }}}">
+                    <a class="btn btn-link btn-sm" href="{{{ displayurl }}}">
                         {{#str}} openexercise, mod_astra {{/str}}
                     </a>
                     {{# submissionlisturl }}
