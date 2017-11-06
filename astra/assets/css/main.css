@@ -175,7 +175,14 @@ table.submission-info .list-unstyled {
 becomes too narrow and Moodle has set a max height. While Moodle is using Bootstrap 4 alpha,
 it is too difficult to use responsive, collapsing navbars. */
 [data-aplus-exercise] > .exercise-content > nav.navbar {
-    max-height: unset;
+    max-height: none;
+    /* Aalto MyCourses theme sets a constant height, padding-top and box shadow
+    that do not work well for Astra */
+    height: unset;
+    padding: 0.5rem 1rem;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
 }
 
 /* results table */
