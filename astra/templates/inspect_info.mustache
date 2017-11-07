@@ -3,7 +3,9 @@ Submission info box.
 Derived from A+ (a-plus/exercise/templates/exercise/staff/_assess_info.html).
 
 Context variables:
-* submitted_name (string) in the format "fullname (student id)"
+* submitter_name (string) in the format "fullname (student id)"
+* submitter_results_url (string) URL to the user results page of the submitter
+* submitter_profile_pic (string) HTML of the submitter's Moodle profile picture that links to the profile page
 * status (string) human-readable status of the submission
 * submission_time (int) Unix timestamp
 * points (int) points of the submission
@@ -23,7 +25,7 @@ Context variables:
     <div class="card-body">
         <dl>
             <dt>{{#str}} submitters, mod_astra {{/str}}</dt>
-            <dd>{{ submitter_name }}</dd>
+            <dd><a href="{{{ submitter_results_url }}}">{{ submitter_name }}</a> {{{ submitter_profile_pic }}}</dd>
             <dt>{{#str}} status, mod_astra {{/str}}</dt>
             <dd>{{ status }}</dd>
             <dt>{{#str}} submissiontime, mod_astra {{/str}}</dt>

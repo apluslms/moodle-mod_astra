@@ -647,6 +647,8 @@ class mod_astra_submission extends mod_astra_database_object {
     }
     
     public function getTemplateContext($includeFeedbackAndFiles = false, $includeSbmsAndGradingData = false) {
+        global $OUTPUT;
+        
         $ctx = new stdClass();
         $ctx->url = \mod_astra\urls\urls::submission($this);
         $ctx->poll_url = \mod_astra\urls\urls::pollSubmissionStatus($this);
@@ -671,6 +673,13 @@ class mod_astra_submission extends mod_astra_database_object {
             $ctx->late_penalty_applied_percent = (int) round($ctx->late_penalty_applied * 100);
         }
         $ctx->submitter_name = $this->getSubmitterName();
+        $courseid = $this->getExercise()->getExerciseRound()->getCourse()->courseid;
+        $user = $this->getSubmitter();
+        $ctx->submitter_results_url = \mod_astra\urls\urls::userResults(
+                $courseid, $user->id);
+        $ctx->submitter_profile_pic = $OUTPUT->user_picture($user, array(
+                'courseid' => $courseid,
+        ));
         $assistantFeedback = $this->getAssistantFeedback();
         $ctx->has_assistant_feedback = !empty($assistantFeedback); // empty supports only variables
         
