@@ -170,9 +170,9 @@ function astra_is_ajax() {
  * @param \context $context course context
  * @param array $sort array of arrays that defines the user fields to sort.
  *        Outer array is indexed from zero and shows the order of the columns
- *        to sort (primary column first). The keys of the nested arrays are field names
+ *        to sort (primary column first). The nested arrays contain two elements: field names
  *        (like 'idnumber' in the participants_page::allowedFilterFields method)
- *        and values are boolean: true for ascending sort, false for descending.
+ *        and boolean values (true for ascending sort, false for descending).
  * @param array $filter array of queries for filtering the user records;
  *        possible keys: 'idnumber', 'firstname', 'lastname', 'email'.
  *        The given query value is surrounded with wildcards so that the result
