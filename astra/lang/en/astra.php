@@ -156,6 +156,17 @@ $string['selectuserrole'] = 'Select user role';
 $string['resultsperpage'] = 'Results per page';
 $string['searchforparticipants'] = 'Search for participants';
 $string['showhidesearch'] = 'Show/hide search';
+$string['submittedafter'] = 'Submitted after';
+$string['submittedbefore'] = 'Submitted before';
+$string['gradegreq'] = 'Grade greater than or equal to';
+$string['gradeless'] = 'Grade less than or equal to';
+$string['hasassistfeedback'] = 'Submissions that have received assistant feedback';
+$string['searchforsubmissions'] = 'Search for submissions';
+$string['yesassistfeedback'] = 'Has assistant feedback';
+$string['noassistfeedback'] = 'No assistant feedback';
+$string['anystatus'] = 'Any status';
+$string['anystatusnoterror'] = 'Any status except error';
+$string['numbersubmissionsmatched'] = '{$a} submissions matched the query';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';
@@ -359,6 +370,7 @@ $string['notenrollednosubmit'] = 'You are not enrolled in the course, hence you 
 $string['nosecretkeyset'] = 'The Moodle site administrator has not set the mandatory secret key for the Astra plugin.';
 $string['loadingfailed'] = 'Loading failed!';
 $string['usernotenrolled'] = 'The user is not enrolled in the course.';
+$string['lowermustbeless'] = 'The lower bound must be less than or equal to the upper bound.';
 
 // Events / logging
 $string['eventsubmitted'] = 'Student submitted a new solution';

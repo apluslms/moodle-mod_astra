@@ -191,31 +191,123 @@ class mod_astra_exercise extends mod_astra_learning_object {
     }
     
     /**
-     * Return all submissions to this exercise.
+     * Return all submissions to this exercise. Name and idnumber fields of
+     * the submitter are included in the records.
      * @param bool $excludeErrors if true, submissions with status error are excluded
-     * @return Moodle recordset (iterator) of database records (stdClass). 
-     * The caller of this method must call the close() method on the recordset.
+     * @param array $filter queries for filtering the submissions. Possible keys:
+     * idnumber, firstname, lastname (user data of the submitter);
+     * status (one of submission status constants), submissiontimebef, submissiontimeaft,
+     * gradeless, gradegreater (greater than or equal to),
+     * hasassistfeedback (supports values from the filter submissions form)
+     * @param array $sort which attributes are used to sort the results?
+     * Outer array is indexed from zero and shows the order of the columns
+     * to sort (primary column first). The nested arrays contain two elements: field names
+     * (like 'idnumber' in the all_submissions_page::allowedFilterFields method)
+     * and boolean values (true for ascending sort, false for descending).
+     * @param number $limitfrom limit the number of records returned, starting from this point
+     * @param number $limitnum number of records to return (zero for no limit)
+     * @return list($submissions, $count), $submissions is a Moodle recordset (iterator)
+     * of database records (stdClass). The caller of this method must call the close()
+     * method on the recordset. $count is the total number of records that match the
+     * query (useful if $limitnum is used to limit the number of records returned).
      */
-    public function getAllSubmissions($excludeErrors = false) {
+    public function getAllSubmissions($excludeErrors = false, array $filter = null,
+            array $sort = null, $limitfrom = 0, $limitnum = 0) {
         global $DB;
         
-        // exclude fields feedback, submissiondata, gradingdata
-        $fields = 'id,status,submissiontime,hash,exerciseid,submitter,grader,assistfeedback,grade,gradingtime,latepenaltyapplied,servicepoints,servicemaxpoints';
-        $orderBy = 'submitter ASC, submissiontime DESC';
+        // SELECT fields
+        // exclude fields feedback, submissiondata, and gradingdata from submissions
+        $sbmsFieldsArray = array('id','status','submissiontime','hash','exerciseid','submitter',
+                'grader','assistfeedback','grade','gradingtime','latepenaltyapplied',
+                'servicepoints','servicemaxpoints');
+        $sbmsFieldsArray = array_map(function ($attr) {
+            return 's.' . $attr; // prepend the table alias prefix
+        }, $sbmsFieldsArray);
+        // name and idnumber from the Moodle user table
+        $userFields = get_all_user_name_fields(true, 'u') . ',u.idnumber';
+        $fields = implode(',', $sbmsFieldsArray) . ',' . $userFields;
+        
+        // WHERE conditions from the filter parameter
+        $params = array();
+        $wheres = array();
+        $wheres[] = "s.exerciseid = :exerciseid";
+        $params['exerciseid'] = $this->getId();
         
         if ($excludeErrors) {
-            // exclude submissions with status error
-            $submissions = $DB->get_recordset_select(mod_astra_submission::TABLE,
-                    'exerciseid = ? AND status != ?', array(
-                            $this->getId(),
-                            mod_astra_submission::STATUS_ERROR,
-                    ), $orderBy, fields);
-        } else {
-            $submissions = $DB->get_recordset(mod_astra_submission::TABLE, array(
-                    'exerciseid' => $this->getId(),
-            ), $orderBy, $fields);
+            $wheres[] = 's.status <> :error';
+            $params['error'] = mod_astra_submission::STATUS_ERROR;
         }
-        return $submissions;
+        
+        // some fields use SQL LIKE comparison in the where clause
+        $likeCompareFields = array('idnumber', 'firstname', 'lastname');
+        foreach ($likeCompareFields as $field) {
+            if (isset($filter[$field])) {
+                $wheres[] = $DB->sql_like($field, ":$field", false, false);
+                $params[$field] = '%' . $DB->sql_like_escape($filter[$field]) . '%';
+            }
+        }
+        
+        if (isset($filter['status']) && $filter['status'] >= 0) {
+            $wheres[] = 's.status = :status';
+            $params['status'] = $filter['status'];
+        }
+        if (isset($filter['submissiontimebef'])) {
+            $wheres[] = 's.submissiontime <= :submissiontimebef';
+            $params['submissiontimebef'] = $filter['submissiontimebef'];
+        }
+        if (isset($filter['submissiontimeaft'])) {
+            $wheres[] = 's.submissiontime >= :submissiontimeaft';
+            $params['submissiontimeaft'] = $filter['submissiontimeaft'];
+        }
+        if (isset($filter['gradeless'])) {
+            $wheres[] = 's.grade <= :gradeless';
+            $params['gradeless'] = $filter['gradeless'];
+        }
+        if (isset($filter['gradegreater'])) {
+            $wheres[] = 's.grade >= :gradegreater';
+            $params['gradegreater'] = $filter['gradegreater'];
+        }
+        if (isset($filter['hasassistfeedback'])) {
+            if ($filter['hasassistfeedback'] === 'yes') {
+                $wheres[] = '(s.assistfeedback IS NOT NULL AND '
+                    . $DB->sql_isnotempty(mod_astra_submission::TABLE, 's.assistfeedback', true, true)
+                    . ')';
+            } else if ($filter['hasassistfeedback'] === 'no') {
+                $wheres[] = '(s.assistfeedback IS NULL OR '
+                    . $DB->sql_isempty(mod_astra_submission::TABLE, 's.assistfeedback', true, true)
+                    . ')';
+            }
+        }
+        
+        $sqlEnd =
+            "FROM {". mod_astra_submission::TABLE ."} s
+             JOIN {user} u ON u.id = s.submitter";
+        
+        $sql = "SELECT $fields " . $sqlEnd;
+        $sqlCount = "SELECT COUNT(*) " . $sqlEnd;
+        
+        if (!empty($wheres)) {
+            $where = ' WHERE '. implode(' AND ', $wheres);
+            $sql .= $where;
+            $sqlCount .= $where;
+        }
+        if (!empty($sort)) {
+            $sortfields = array();
+            foreach ($sort as $fieldASC) {
+                $f = $fieldASC[0];
+                if (!$fieldASC[1]) {
+                    $f .= ' DESC';
+                }
+                $sortfields[] = $f;
+            }
+            
+            $sql .= ' ORDER BY ' . implode(',', $sortfields);
+        }
+        
+        $submissions = $DB->get_recordset_sql($sql, $params, $limitfrom, $limitnum);
+        $count = $DB->count_records_sql($sqlCount, $params);
+        
+        return array($submissions, $count);
     }
     
     /**

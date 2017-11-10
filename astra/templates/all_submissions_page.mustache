@@ -4,9 +4,10 @@ Derived from A+ (a-plus/exercise/templates/exercise/staff/list_submissions.html 
 a-plus/exercise/templates/exercise/staff/_submissions_table.html).
 
 Context variables:
-* count (int) number of submissions
+* count (int) total number of submissions (after applying search filters)
 * submissions (array of objects), each object has fields 
-    - submitter_name (string) in the format "fullname (student id)"
+    - fullname (string) full name of the submitter
+    - idnumber (string) ID number of the submitter
     - submission_time (int, Unix timestamp)
     - late_penalty_applied (float, 0-1), null if no late penalty
     - late_penalty_applied_percent (int, 0-100)
@@ -14,19 +15,72 @@ Context variables:
     - points (int)
     - has_assistant_feedback (bool) true if there is any assistant feedback for this submission
     - inspecturl (string) URL to inspect this submission
+    - submitter_results_url (string) URL to the user results page of the submitter
+* filter (object) keys:
+    - used (bool) true if any filtering is used
+    - filters (array of objects), keys:
+        * field (string) name of field, e.g., 'First name'
+        * query (string) queried value, e.g., 'John'
+* sortToggler (callable) function that takes a user field name as parameter and
+    returns an ascending or descending sort icon if that field is currently being sorted
+* sorturl (object) URLs for sorting the submissions by a column (switching between
+    ascending and descending), keys: idnumber, lastname, submissiontime, status, grade
+* paginator (callable) function that returns HTML markup for the pagination component
+    (it should know the currently active page and the number of pages)
+* filterform (string) HTML of the form used to filter submissions
 * toDateStr callable Function that converts a Unix timestamp to a date string
 }}
 
 <p>
+  <a href="#sbms-filter-form-container" class="btn btn-secondary" data-toggle="collapse"
+      aria-expanded="false" aria-controls="sbms-filter-form-container">
+    {{#str}} showhidesearch, mod_astra {{/str}}
+  </a>
+</p>
+<div class="collapse" id="sbms-filter-form-container">
+  <h3>{{#str}} searchforsubmissions, mod_astra {{/str}}</h3>
+  {{{ filterform }}}
+</div>
+
+{{^ filter.used }}
+<p>
     {{#str}} numbersubmissions, mod_astra, {{ count }} {{/str}}
 </p>
-<table class="table table-bordered filtered-table">
+{{/ filter.used  }}
+{{# filter.used }}
+<p>{{#str}} numbersubmissionsmatched, mod_astra, {{ count }} {{/str}}</p>
+<ul>
+{{# filter.filters }}
+<li>
+  {{ field }}: {{ query }}
+</li>
+{{/ filter.filters }}
+</ul>
+{{/ filter.used }}
+
+<table class="table table-bordered table-sm">
     <thead>
         <tr>
-            <th>{{#str}} submitters, mod_astra {{/str}}</th>
-            <th>{{#str}} submissiontime, mod_astra {{/str}}</th>
-            <th>{{#str}} status, mod_astra {{/str}}</th>
-            <th>{{#str}} grade, mod_astra {{/str}}</th>
+            <th><a href="{{{ sorturl.lastname }}}" class="order-toggle"
+                title="{{#str}} sortby, mod_astra, {{#str}} lastname, mod_astra {{/str}} {{/str}}">
+              {{#str}} submitters, mod_astra {{/str}} {{# sortToggler }} lastname {{/ sortToggler }}
+            </a></th>
+            <th><a href="{{{ sorturl.idnumber }}}" class="order-toggle"
+                title="{{#str}} sortby, mod_astra, {{#str}} idnumber, mod_astra {{/str}} {{/str}}">
+              {{#str}} idnumber, mod_astra {{/str}} {{# sortToggler }} idnumber {{/ sortToggler }}
+            </a></th>
+            <th><a href="{{{ sorturl.submissiontime }}}" class="order-toggle"
+                title="{{#str}} sortby, mod_astra, {{#str}} submissiontime, mod_astra {{/str}} {{/str}}">
+              {{#str}} submissiontime, mod_astra {{/str}} {{# sortToggler }} submissiontime {{/ sortToggler }}
+            </a></th>
+            <th><a href="{{{ sorturl.status }}}" class="order-toggle"
+                title="{{#str}} sortby, mod_astra, {{#str}} status, mod_astra {{/str}} {{/str}}">
+              {{#str}} status, mod_astra {{/str}} {{# sortToggler }} status {{/ sortToggler }}
+            </a></th>
+            <th><a href="{{{ sorturl.grade }}}" class="order-toggle"
+                title="{{#str}} sortby, mod_astra, {{#str}} grade, mod_astra {{/str}} {{/str}}">
+              {{#str}} grade, mod_astra {{/str}} {{# sortToggler }} grade {{/ sortToggler }}
+            </a></th>
             <th>{{#str}} inspect, mod_astra {{/str}}</th>
         </tr>
     </thead>
@@ -34,13 +88,16 @@ Context variables:
         {{# submissions }}
         <tr>
             <td>
-                {{ submitter_name }}
+                <a href="{{{ submitter_results_url }}}">{{ fullname }}</a>
+            </td>
+            <td>
+                {{ idnumber }}
             </td>
             <td>
                 {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
                 {{# late_penalty_applied }}
                 <span class="badge badge-warning">
-                    {{#str}} late, mod_astra {{/str}} <small>-{{ late_penalty_applied_percent }}%</small>
+                    {{#str}} late, mod_astra {{/str}} -{{ late_penalty_applied_percent }}%
                 </span>
                 {{/ late_penalty_applied }}
             </td>
@@ -69,11 +126,9 @@ Context variables:
     </tbody>
 </table>
 
+{{#paginator}}{{/paginator}}
+
 {{#js}}
-require(['jquery', 'mod_astra/aplus_tablefilter'], function($) {
-  /* Enable table filter */
-  $(function() {
-    $('.filtered-table').aplusTableFilter();
-  });
-});
+/* Ensure that the Bootstrap collapse component is activated. */
+require(['theme_boost/loader']);
 {{/js}}

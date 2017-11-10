@@ -88,8 +88,25 @@ class urls {
         return self::buildUrl('/teachers/inspect.php', $query, $asMdlUrl);
     }
     
-    public static function submissionList(\mod_astra_exercise $ex, $asMdlUrl = false) {
+    public static function submissionList(\mod_astra_exercise $ex, $asMdlUrl = false,
+            array $sort = null, array $filter = null, $page = null, $pagesize = null) {
         $query = array('id' => $ex->getId());
+        if (isset($sort)) {
+            foreach ($sort as $order => $fieldASC) {
+                // order: which column is the primary column to sort by
+                $query['sort_'. $fieldASC[0]] = $order .'_'. ($fieldASC[1] ? 1 : 0);
+                // $fieldASC[1] == true -> ascending, else descending
+            }
+        }
+        if (isset($filter)) {
+            $query = array_merge($query, $filter);
+        }
+        if (isset($page)) {
+            $query['page'] = $page;
+        }
+        if (isset($pagesize)) {
+            $query['pagesize'] = $pagesize;
+        }
         return self::buildUrl('/teachers/submission_list.php', $query, $asMdlUrl);
     }
     
