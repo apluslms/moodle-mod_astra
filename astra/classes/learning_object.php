@@ -284,7 +284,76 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         return $DB->delete_records(self::TABLE, array('id' => $this->getId()));
     }
     
-    public function getTemplateContext($includeCourseModule = true) {
+    protected function getSiblingContext($next = true) {
+        // if $next true, get the next sibling; if false, get the previous sibling
+        global $DB;
+        
+        $context = context_module::instance($this->getExerciseRound()->getCourseModule()->id);
+        $isTeacher = has_capability('moodle/course:manageactivities', $context);
+        $isAssistant = has_capability('mod/astra:viewallsubmissions', $context);
+        
+        $order = $this->getOrder();
+        $parentid = $this->getParentId();
+        $params = array(
+                'roundid' => $this->record->roundid,
+                'ordernum' => $order,
+                'parentid' => $parentid,
+        );
+        $where = 'roundid = :roundid';
+        $where .= ' AND ordernum '. ($next ? '>' : '<') .' :ordernum';
+        // skip some uncommon details in the hierarchy of the round content and assume that
+        // siblings are in the same level (they have the same parent)
+        if ($parentid === null) {
+            $where .= " AND parentid IS NULL";
+        } else {
+            $where .= " AND parentid = :parentid";
+        }
+        if ($isAssistant && !$isTeacher) {
+            // assistants do not see hidden objects
+            $where .= ' AND status <> :status';
+            $params['status'] = self::STATUS_HIDDEN;
+        } else if (!$isTeacher) {
+            // students see normally enabled objects
+            $where .= ' AND status = :status';
+            $params['status'] = self::STATUS_READY;
+        }
+        $sort = 'ordernum '. ($next ? 'ASC' : 'DESC');
+        
+        $results = $DB->get_records_select(self::TABLE, $where, $params, $sort, '*', 0, 1);
+        
+        if (!empty($results)) {
+            // the next object is in the same round
+            $record = reset($results);
+            $record->lobjectid = $record->id;
+            // hack: the record does not contain the data of the learning object subtype since the DB query did not join the tables
+            unset($record->id);
+            // use the chapter class here since this abstract learning object class may not be instantiated
+            // the subtype of the learning object is not needed here
+            $sibling = new mod_astra_chapter($record);
+            $ctx = new stdClass();
+            $ctx->name = $sibling->getName();
+            $ctx->link = \mod_astra\urls\urls::exercise($sibling);
+            $ctx->accessible = $this->getExerciseRound()->hasStarted();
+            return $ctx;
+        } else {
+            // the sibling is the next/previous round
+            if ($next) {
+                return $this->getExerciseRound()->getNextSiblingContext();
+            } else {
+                return $this->getExerciseRound()->getPreviousSiblingContext();
+            }
+        }
+    }
+    
+    public function getNextSiblingContext() {
+        return $this->getSiblingContext(true);
+    }
+    
+    public function getPreviousSiblingContext() {
+        return $this->getSiblingContext(false);
+    }
+    
+    public function getTemplateContext($includeCourseModule = true, $includeSiblings = false) {
         $ctx = new stdClass();
         $ctx->url = \mod_astra\urls\urls::exercise($this);
         $parent = $this->getParentObject();
@@ -311,6 +380,11 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         $ctx->is_submittable = $this->isSubmittable();
         
         $ctx->category = $this->getCategory()->getTemplateContext(false);
+        
+        if ($includeSiblings) {
+            $ctx->next = $this->getNextSiblingContext();
+            $ctx->previous = $this->getPreviousSiblingContext();
+        }
         
         return $ctx;
     }

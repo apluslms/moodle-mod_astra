@@ -3,9 +3,14 @@ Show one exercise round.
 
 Context variables:
 * variables required by exercise_round.mustache
+    - course_module requires additional fields used in _siblings.mustache
 * toc (object) table of contents context for the round, has fields as required by
         _round_toc.mustache
 }}
+
+{{# course_module }}
+{{> mod_astra/_siblings }}
+{{/ course_module }}
 
 <!-- Nav tabs -->
 <ul class="nav nav-tabs" role="tablist">
@@ -39,6 +44,10 @@ Context variables:
   </div> <!-- close tab-pane -->
 
 </div> <!-- close tab-content -->
+
+{{# course_module }}
+{{> mod_astra/_siblings }}
+{{/ course_module }}
 
 {{> mod_astra/_page_file_modals }}
 

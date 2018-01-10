@@ -60,6 +60,12 @@ pre.hljs {
     list-style: none;
 }
 
+.siblings>.btn {
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* cards, exercise round box */
 .module-panel table {
     margin: 0;
@@ -420,4 +426,13 @@ a.bg-dark:focus, a.bg-dark:hover {
 
 .ml-3 {
   margin-left: 1rem !important;
+}
+
+.d-none {
+  display: none !important;
+}
+@media (min-width: 992px) {
+  .d-lg-block {
+    display: block !important;
+  }
 }

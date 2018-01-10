@@ -40,7 +40,8 @@ class submission_page implements \renderable, \templatable {
         $data->can_inspect = ($this->exercise->isAssistantViewingAllowed() && $data->is_course_staff) ||
                 $data->is_editing_teacher;
         
-        $data->exercise = $this->exercise->getExerciseTemplateContext($this->user);
+        $data->indexurl = \mod_astra\urls\urls::roundsIndex($this->exround->getCourseModule()->course);
+        $data->exercise = $this->exercise->getExerciseTemplateContext($this->user, true, true, true);
         $data->submissions = $this->exercise->getSubmissionsTemplateContext($this->user->id);
         $data->submission = $this->submission->getTemplateContext(true);
         

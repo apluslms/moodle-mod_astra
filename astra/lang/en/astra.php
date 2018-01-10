@@ -167,6 +167,7 @@ $string['noassistfeedback'] = 'No assistant feedback';
 $string['anystatus'] = 'Any status';
 $string['anystatusnoterror'] = 'Any status except error';
 $string['numbersubmissionsmatched'] = '{$a} submissions matched the query';
+$string['courseoverview'] = 'Course overview';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';

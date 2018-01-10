@@ -9,6 +9,7 @@ Context variables:
     - is_submittable (boolean) does the learning object accept submissions (ever at all)?
       True for exercises, false for chapters.
     - use_wide_column (boolean) if true, the info column is removed and the content has more space
+    - next and previous objects as required by _siblings.mustache
 * submissions (array of objects, the latest submission first), each object has keys 
     url (string), submission_time (int, timestamp), nth (int, ordinal number),
     the variables required by _points_badge.mustache (set status if the submission is not graded)
@@ -27,6 +28,10 @@ Blocks that child templates should override:
 * submissionsnavbar (includes the submissions navbar (not the same as Moodle page navbar),
     override if the submissions navbar is not needed, e.g., on a chapter page)
 }}
+
+{{# exercise }}
+{{> mod_astra/_siblings }}
+{{/ exercise }}
 
 <div class="row">
 <div class="{{# exercise.use_wide_column }}col-lg-12{{/ exercise.use_wide_column }}{{^ exercise.use_wide_column }}col-lg-9{{/ exercise.use_wide_column }} exercise-column">
@@ -109,6 +114,10 @@ Blocks that child templates should override:
 </div>
 {{/ exercise.use_wide_column }}
 </div>
+
+{{# exercise }}
+{{> mod_astra/_siblings }}
+{{/ exercise }}
 
 {{> mod_astra/_page_file_modals }}
 

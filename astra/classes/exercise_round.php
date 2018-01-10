@@ -956,7 +956,54 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         return $max + 1;
     }
     
-    public function getTemplateContext() {
+    protected function getSiblingContext($next = true) {
+        // if $next true, get the next sibling; if false, get the previous sibling
+        global $DB;
+        
+        $context = context_course::instance($this->record->course);
+        $isTeacher = has_capability('moodle/course:manageactivities', $context);
+        $isAssistant = has_capability('mod/astra:viewallsubmissions', $context);
+        
+        $where = 'course = :course';
+        $where .= ' AND ordernum '. ($next ? '>' : '<') .' :ordernum';
+        $params = array(
+                'course' => $this->record->course,
+                'ordernum' => $this->getOrder(),
+        );
+        if ($isAssistant && !$isTeacher) {
+            // assistants do not see hidden rounds
+            $where .= ' AND status <> :status';
+            $params['status'] = self::STATUS_HIDDEN;
+        } else if (!$isTeacher) {
+            // students see normally enabled rounds
+            $where .= ' AND status = :status';
+            $params['status'] = self::STATUS_READY;
+        }
+        // order the DB query so that the first record is the next/previous sibling
+        $results = $DB->get_records_select(self::TABLE, $where, $params,
+                'ordernum '. ($next ? 'ASC' : 'DESC'),
+                '*', 0, 1);
+        
+        $ctx = null;
+        if (!empty($results)) {
+            $sibling = new self(reset($results));
+            $ctx = new stdClass();
+            $ctx->name = $sibling->getName();
+            $ctx->link = \mod_astra\urls\urls::exerciseRound($sibling);
+            $ctx->accessible = $sibling->hasStarted();
+        }
+        return $ctx;
+    }
+    
+    public function getNextSiblingContext() {
+        return $this->getSiblingContext(true);
+    }
+    
+    public function getPreviousSiblingContext() {
+        return $this->getSiblingContext(false);
+    }
+    
+    public function getTemplateContext($includeSiblings = false) {
         $ctx = new stdClass();
         $ctx->id = $this->getId();
         $ctx->openingtime = $this->getOpeningTime();
@@ -987,6 +1034,11 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         $ctx->addnewchapterurl = \mod_astra\urls\urls::createChapter($this);
         $context = context_module::instance($this->getCourseModule()->id);
         $ctx->is_course_staff = \has_capability('mod/astra:viewallsubmissions', $context);
+        
+        if ($includeSiblings) {
+            $ctx->next = $this->getNextSiblingContext();
+            $ctx->previous = $this->getPreviousSiblingContext();
+        }
         
         return $ctx;
     }

@@ -13,8 +13,8 @@ class mod_astra_chapter extends mod_astra_learning_object {
         return (bool) $this->record->generatetoc;
     }
     
-    public function getTemplateContext($includeCourseModule = true) {
-        $ctx = parent::getTemplateContext($includeCourseModule);
+    public function getTemplateContext($includeCourseModule = true, $includeSiblings = false) {
+        $ctx = parent::getTemplateContext($includeCourseModule, $includeSiblings);
         $ctx->generate_toc = $this->shouldGenerateTableOfContents();
         return $ctx;
     }

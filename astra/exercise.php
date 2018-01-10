@@ -15,6 +15,7 @@ $id = required_param('id', PARAM_INT); // learning object ID
 
 $learningObject = mod_astra_learning_object::createFromId($id);
 $exround = $learningObject->getExerciseRound();
+$category = $learningObject->getCategory();
 list($course, $cm) = get_course_and_cm_from_instance($exround->getId(), mod_astra_exercise_round::TABLE);
 
 require_login($course, false, $cm);
@@ -22,7 +23,7 @@ require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
 // this should prevent guest access
 require_capability('mod/astra:view', $context);
-if ((!$cm->visible || $exround->isHidden() || $learningObject->isHidden()) &&
+if ((!$cm->visible || $exround->isHidden() || $learningObject->isHidden() || $category->isHidden()) &&
         !has_capability('moodle/course:manageactivities', $context)) {
     // show hidden exercise only to teachers
     throw new required_capability_exception($context,

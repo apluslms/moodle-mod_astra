@@ -500,8 +500,9 @@ class mod_astra_exercise extends mod_astra_learning_object {
     }
     
     public function getExerciseTemplateContext(stdClass $user = null,
-            $includeTotalSubmitterCount = true, $includeCourseModule = true) {
-        $ctx = parent::getTemplateContext($includeCourseModule);
+            $includeTotalSubmitterCount = true, $includeCourseModule = true,
+            $includeSiblings = false) {
+        $ctx = parent::getTemplateContext($includeCourseModule, $includeSiblings);
         $ctx->submissionlisturl = \mod_astra\urls\urls::submissionList($this);
         $ctx->infourl = \mod_astra\urls\urls::exerciseInfo($this);
         

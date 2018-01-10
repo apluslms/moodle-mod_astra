@@ -111,14 +111,15 @@ class exercise_page implements \renderable, \templatable {
             }
         }
         
+        $data->indexurl = \mod_astra\urls\urls::roundsIndex($this->exround->getCourseModule()->course);
         if ($this->learningObject->isSubmittable()) {
-            $data->exercise = $this->learningObject->getExerciseTemplateContext($this->user, true, true);
+            $data->exercise = $this->learningObject->getExerciseTemplateContext($this->user, true, true, true);
             $data->submissions = $this->learningObject->getSubmissionsTemplateContext($this->user->id);
             $data->submission = false;
 
             $data->summary = $this->exerciseSummary->getTemplateContext();
         } else {
-            $data->exercise = $this->learningObject->getTemplateContext(false);
+            $data->exercise = $this->learningObject->getTemplateContext(false, true);
             if ($this->learningObject->shouldGenerateTableOfContents()) {
                 $data->round_toc = \mod_astra\output\exercise_round_page::getRoundTableOfContentsContext($this->exround);
             } else {
