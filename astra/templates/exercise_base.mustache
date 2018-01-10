@@ -9,10 +9,13 @@ Context variables:
     - is_submittable (boolean) does the learning object accept submissions (ever at all)?
       True for exercises, false for chapters.
     - use_wide_column (boolean) if true, the info column is removed and the content has more space
+    - max_submissions_for_user (int) if submittable exercise and submissions are limited
     - next and previous objects as required by _siblings.mustache
 * submissions (array of objects, the latest submission first), each object has keys 
     url (string), submission_time (int, timestamp), nth (int, ordinal number),
     the variables required by _points_badge.mustache (set status if the submission is not graded)
+* summary (object) required by _exercise_info.mustache if the exerciseinfo block is used and
+  the exercise is submittable. The field summary.submission_count is used in this template.
 * is_course_staff (bool)
 * is_editing_teacher (bool) can user edit exercises?
 * can_inspect (bool) can user inspect submission?
@@ -48,6 +51,12 @@ Blocks that child templates should override:
           <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button"
               aria-haspopup="true" aria-expanded="false">
               {{#str}} mysubmissions, mod_astra {{/str}}
+              <span class="badge badge-secondary">
+                {{ summary.submission_count }}
+                {{# exercise.max_submissions_for_user }}
+                  / {{ exercise.max_submissions_for_user }}
+                {{/ exercise.max_submissions_for_user }}
+              </span>
           </a>
           <div class="dropdown-menu">
               {{# submissions }}
