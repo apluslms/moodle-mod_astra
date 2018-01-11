@@ -88,7 +88,7 @@ define(['jquery'], function(jQuery) {
 			// For active elements the element to which the poll plugin is attached remains the same, so to
 			// be able to submit the same form several times the plugin data needs to be removed when the
 			// evaluation and polling is finished.
-			if ($.data(this.element.context, "plugin_" + pluginName)) $.removeData(this.element.context, "plugin_" + pluginName);
+			if ($.data(this.element.get(0), "plugin_" + pluginName)) $.removeData(this.element.get(0), "plugin_" + pluginName);
 			
 			//var suburl = this.url.substr(0, this.url.length - "poll/".length); // changed from A+
 			// added a data attribute for reading the final target URL since in Moodle it can not be a substring of the poll URL
@@ -110,8 +110,8 @@ define(['jquery'], function(jQuery) {
 				}
 				var res_elem = this.element.find(".ae_result").text(message);
 				if (res_elem.height() === 0) res_elem.height("auto");
-				if ($.data(this.element.context, "plugin_" + pluginName)) {
-					$.removeData(this.element.context, "plugin_" + pluginName);
+				if ($.data(this.element.get(0), "plugin_" + pluginName)) {
+					$.removeData(this.element.get(0), "plugin_" + pluginName);
 				}
 			} else {
 				if (messageType == "error") {
