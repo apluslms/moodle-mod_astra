@@ -679,7 +679,10 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 		updateInputs: function(data) {
 			data = data.submission_data;
 			var exercise = this;
-			var [exer, input_list, grader_inputs] = exercise.matchInputs(exercise.element);
+			var tmp = exercise.matchInputs(exercise.element);
+			var exer = tmp[0];
+			var input_list = tmp[1];
+			var grader_inputs = tmp[2];
 			// Submission data can contain many inputs
 			$(data).each(function(i, input) {
 				var grader_id = input[0];
