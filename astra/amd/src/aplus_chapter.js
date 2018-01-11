@@ -509,7 +509,10 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 				var outputs = $.find('[data-inputs~="' + input_id + '"]');
 
 				$.each(outputs,	function(i, element) {
-					var [exercise, valid, formData] = input.generateFormData(element, form_element);
+					var tmp = input.generateFormData(element, form_element);
+					var exercise = tmp[0];
+					var valid = tmp[1];
+					var formData = tmp[2];
 					var output_id = exercise.chapterID;
 					var output = $("#" + output_id);
 					var out_content = output.find(exercise.settings.ae_result_selector);
