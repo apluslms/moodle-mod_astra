@@ -63,7 +63,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			this.quizSuccess = $(this.settings.quiz_success_selector);
 			
 			// do not include active element inputs to exercise groups
-			this.element.find("[" + this.settings.active_element_attr +	"='in']").aplusExercise(this, {input: true});
+			this.element.find("[" + this.settings.active_element_attr + "='in']").aplusExercise(this, {input: true});
 			
 			this.exercises = this.element
 				.find("[" + this.settings.exercise_url_attr + "]")
@@ -451,8 +451,10 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 		// Construct form data from input element values
 		generateFormData: function(output, form_element) {
 			output = $(output);
-
-			var [exercise, inputs, expected_inputs] = this.matchInputs(output);
+			var tmp = this.matchInputs(output);
+			var exercise = tmp[0];
+			var inputs = tmp[1];
+			var expected_inputs = tmp[2];
 			// Form data to be sent for evaluation
 			var formData = new FormData();
 			var input_id = this.chapterID;
@@ -593,7 +595,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			} else {
 				expected_inputs = [];
 			}
-			return	[exercise, inputs, expected_inputs];
+			return [exercise, inputs, expected_inputs];
 		},
 
 		updateSummary: function(input) {
