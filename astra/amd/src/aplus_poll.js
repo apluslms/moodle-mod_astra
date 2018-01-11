@@ -64,7 +64,7 @@ define(['jquery'], function(jQuery) {
 				})
 				.done(function(data) {
 					poller.count++;
-					if (data.trim() === "ready" || data.trim() === "error") {
+					if (data.trim() === "ready" || data.trim() === "error" || data.trim() === "unofficial") {
 						poller.ready();
 					} else if (poller.element.is(":visible")) {
 						if (poller.count < poller.settings.poll_delays.length) {
@@ -83,7 +83,13 @@ define(['jquery'], function(jQuery) {
 		},
 
 		ready: function() {
-			this.element.hide();
+			//this.element.hide();
+			
+			// For active elements the element to which the poll plugin is attached remains the same, so to
+			// be able to submit the same form several times the plugin data needs to be removed when the
+			// evaluation and polling is finished.
+			if ($.data(this.element.context, "plugin_" + pluginName)) $.removeData(this.element.context, "plugin_" + pluginName);
+			
 			//var suburl = this.url.substr(0, this.url.length - "poll/".length); // changed from A+
 			// added a data attribute for reading the final target URL since in Moodle it can not be a substring of the poll URL
 			var ready_url = this.element.attr(this.settings.ready_url_attr);
@@ -97,8 +103,20 @@ define(['jquery'], function(jQuery) {
 		message: function(messageType) {
 			this.element.find(this.settings.message_selector).removeClass("progress-bar-animated")
 				.text(this.element.attr(this.settings.message_attr[messageType]));
-			if (messageType == "error") {
-				this.element.find(this.settings.message_selector).addClass("bg-danger");
+			if (this.element.data("aplus-active-element")) {
+				var message = "There was an error while evaluating the element."
+				if (messageType == "timeout") {
+					message = "Evaluation was timed out.";
+				}
+				var res_elem = this.element.find(".ae_result").text(message);
+				if (res_elem.height() === 0) res_elem.height("auto");
+				if ($.data(this.element.context, "plugin_" + pluginName)) {
+					$.removeData(this.element.context, "plugin_" + pluginName);
+				}
+			} else {
+				if (messageType == "error") {
+					this.element.find(this.settings.message_selector).addClass("bg-danger");
+				}
 			}
 		},
 
@@ -112,9 +130,10 @@ define(['jquery'], function(jQuery) {
 		});
 	};
 
-  $.aplusExerciseDetectWaits = function(callback) {
-    $(".exercise-wait").aplusExercisePoll(callback);
-  };
+	$.aplusExerciseDetectWaits = function(callback, selector) {
+		selector = selector || ".exercise-wait";
+		$(selector).aplusExercisePoll(callback);
+	};
 
 })(jQuery, window, document);
 
