@@ -640,6 +640,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 							} else {
 								exercise.chapter.modalContent(content);
 							}
+						}
 					}).fail(function() {
 						exercise.chapter.modalError(exercise.chapter.messages.error);
 					});
