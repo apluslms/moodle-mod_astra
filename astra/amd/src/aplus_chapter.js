@@ -687,17 +687,22 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			var input_list = tmp[1];
 			var grader_inputs = tmp[2];
 			// Submission data can contain many inputs
-			$(data).each(function(i, input) {
-				var grader_id = input[0];
+			// Changed from A+: submission_data returned from the server has a different format
+			// A+ uses arrays like [["name", "value"], []...] while Astra uses an object: {name: value}
+			for (input in data) {
+				if (!data.hasOwnProperty(input)) {
+					continue;
+				}
+				var grader_id = input;
 				var input_id = input_list[$.inArray(grader_id, grader_inputs)];
-				var input_data = input[1];
+				var input_data = data[input];
 				if ($("#" + input_id).data("type") !== "file") {
 					// Store the value of the input to be used later for submitting active
 					// element evaluation requests
 					$($.find("#" + input_id)).data("value", input_data);
 					$("#" +input_id + "_input_id").val(input_data);
 				}
-			});
+			}
 		},
 
 		loadLastSubmission: function(input) {

@@ -45,14 +45,15 @@ header('Content-Type: application/json');
 $data = $submission->getRecord();
 // remove unnecessary properties
 unset($data->hash);
-unset($data->feedback);
-unset($data->assistfeedback);
 unset($data->servicepoints);
 unset($data->servicemaxpoints);
-unset($data->gradingdata);
 // rename fields to match the name in A+, decode JSON fields
 $data->submission_data = $submission->getSubmissionData();
 unset($data->submissiondata);
+$data->grading_data = $submission->getGradingData();
+unset($data->gradingdata);
+$data->assistant_feedback = $submission->getAssistantFeedback();
+unset($data->assistfeedback);
 // status as human-readable string
 $data->status = strtolower($submission->getStatus(true));
 
