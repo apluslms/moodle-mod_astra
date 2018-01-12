@@ -379,7 +379,11 @@ class mod_astra_exercise extends mod_astra_learning_object {
                 mod_astra_exercise_round::TABLE,
                 $this->getExerciseRound()->getId(),
                 $userid);
-        return (int) $grades->items[$this->getGradebookItemNumber()]->grades[$userid]->grade;
+        $itemNum = $this->getGradebookItemNumber();
+        if (isset($grades->items[$itemNum]->grades[$userid])) {
+            return (int) $grades->items[$itemNum]->grades[$userid]->grade;
+        }
+        return 0;
     }
     
     /**
@@ -402,6 +406,11 @@ class mod_astra_exercise extends mod_astra_learning_object {
         global $CFG;
         require_once($CFG->libdir.'/gradelib.php');
         
+        if ($this->getMaxPoints() == 0) {
+            // skip if the max points are zero (no grading)
+            return GRADE_UPDATE_OK;
+        }
+        
         // transform integer grades to objects (if the first array value is integer)
         if (is_int(reset($grades))) {
             $grades = mod_astra_exercise_round::gradeArrayToGradeObjects($grades);
@@ -422,6 +431,12 @@ class mod_astra_exercise extends mod_astra_learning_object {
      */
     public function writeAllGradesToGradebook() {
         global $DB;
+        
+        if ($this->getMaxPoints() == 0) {
+            // skip if the max points are zero (no grading)
+            return array();
+        }
+        
         // get all user IDs of the students that have submitted to this exercise
         $table = mod_astra_submission::TABLE;
         $submitters = $DB->get_recordset_sql('SELECT DISTINCT submitter FROM {'. $table .'} WHERE exerciseid = ?',

@@ -630,7 +630,11 @@ class mod_astra_submission extends mod_astra_database_object {
     public function writeToGradebook($updateRoundGrade = true) {
         global $CFG;
         require_once($CFG->libdir.'/gradelib.php');
-
+        
+        if ($this->exercise->getMaxPoints() == 0) {
+            // skip if the max points are zero (no grading)
+            return GRADE_UPDATE_OK;
+        }
         $ret =  grade_update('mod/'. mod_astra_exercise_round::TABLE,
                 $this->getExercise()->getExerciseRound()->getCourse()->courseid,
                 'mod',
