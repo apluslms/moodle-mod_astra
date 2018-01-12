@@ -539,8 +539,11 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 						var content = $(data);
 
 						if (! content.find('.alert-danger').length) {
-							var poll_url = content.find(".exercise-wait").attr("data-poll-url");
+							var pollerElem = content.find(".exercise-wait");
+							var poll_url = pollerElem.attr("data-poll-url");
+							var ready_url = pollerElem.attr("data-ready-url");
 							output.attr('data-poll-url', poll_url);
+							output.attr('data-ready-url', ready_url);
 
 							exercise.updateSubmission(content);
 						} else if (content.find('.alert-danger').contents().text()
