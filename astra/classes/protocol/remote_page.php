@@ -20,6 +20,9 @@ class remote_page {
     protected $astrajQueryScriptElements; // \DOMNode[], script elements in the document with data-astra-jquery attribute
     protected $response_headers = array();
     
+    protected $learningObject; // the learning object in Astra that corresponds to the URL
+    // used for fixing relative URLs in some cases
+    
     /**
      * Create a remote page: a HTML page whose content and metadata are
      * downloaded from a server.
@@ -246,6 +249,16 @@ class remote_page {
             }
         }
         return $q;
+    }
+    
+    /**
+     * Set the learning object that corresponds to the remote page (URL).
+     * Set it before calling any load method so that the information of
+     * the learning object may be used in fixing relative URLs in the remote page.
+     * @param \mod_astra_learning_object $lobject
+     */
+    public function setLearningObject(\mod_astra_learning_object $lobject) {
+        $this->learningObject = $lobject;
     }
     
     /**
@@ -781,9 +794,14 @@ class remote_page {
     protected function _fixRelativeUrls($domain, $path, $tagName, $attrName) {
         global $DB;
         
-        $pattern = '%^(#|.+://|//)%';
-        $chapter_pattern = '%(\.\./)?(?P<roundkey>[\w-]+)/(?P<chapterkey>[\w-]+)(\.html)?(?P<anchor>#.+)?$%';
+        // regular expressions for detecting certain kinds of URLs
         // recognize absolute URLs (https:// or //) or anchor URLs (#someid)
+        $pattern = '%^(#|.+://|//)%';
+        // link between chapters when the chapters are in different rounds
+        $chapter_pattern = '%(\.\./)?(?P<roundkey>[\w-]+)/(?P<chapterkey>[\w-]+)(\.html)?(?P<anchor>#.+)?$%';
+        // link between chapters in the same round
+        $chapter_same_round = '%^(?P<chapterkey>[\w-]+)(\.html)(?P<anchor>#.+)?$%';
+        
         foreach ($this->DOMdoc->getElementsByTagName($tagName) as $elem) {
             if ($elem->nodeType == \XML_ELEMENT_NODE && $elem->hasAttribute($attrName)) {
                 $value = $elem->getAttribute($attrName);
@@ -794,6 +812,7 @@ class remote_page {
                 if ($elem->hasAttribute('data-aplus-chapter')) {
                     // Custom transform for RST chapter to chapter links
                     // (the link must refer to Moodle, not the exercise service)
+                    $chapter_record = null;
                     $matches = array();
                     if (preg_match($chapter_pattern, $value, $matches)) {
                         // find the chapter with the remote key and the exercise round key
@@ -802,18 +821,26 @@ class remote_page {
                                 ' JOIN {'. \mod_astra_exercise_round::TABLE .'} round ON round.id = lob.roundid ' .
                                 ' WHERE lob.remotekey = ? AND round.remotekey = ?',
                                 array($matches['chapterkey'], $matches['roundkey']));
-                        if ($chapter_record) {
-                            $chapter = new \mod_astra_chapter($chapter_record);
-                            $url = \mod_astra\urls\urls::exercise($chapter);
-                            // keep the original URL anchor if it exists (#someid at the end)
-                            if (isset($matches['anchor'])) {
-                                $url .= $matches['anchor'];
-                            }
-                            // replace the URL with the Moodle URL of the chapter
-                            $elem->setAttribute($attrName, $url);
-                        }
+                        
+                    } else if ($this->learningObject !== null && preg_match($chapter_same_round, $value, $matches)) {
+                        // find the chapter with the remote key in the same round as the current exercise
+                        $chapter_record = $DB->get_record_sql(
+                                \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_chapter::TABLE) .
+                                ' JOIN {'. \mod_astra_exercise_round::TABLE .'} round ON round.id = lob.roundid ' .
+                                ' WHERE lob.remotekey = ? AND round.id = ?',
+                                array($matches['chapterkey'], $this->learningObject->getExerciseRound()->getId()));
                     }
-                    // if the reg exp does not match, we cannot fix the URL at all
+                    
+                    if ($chapter_record) {
+                        $chapter = new \mod_astra_chapter($chapter_record);
+                        $url = \mod_astra\urls\urls::exercise($chapter);
+                        // keep the original URL anchor if it exists (#someid at the end)
+                        if (isset($matches['anchor'])) {
+                            $url .= $matches['anchor'];
+                        }
+                        // replace the URL with the Moodle URL of the chapter
+                        $elem->setAttribute($attrName, $url);
+                    }
                     
                 } else if (\preg_match($pattern, $value) === 0) {
                     // not absolute URL

@@ -661,6 +661,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
             throw $e;
         } // PHP 5.4 has no finally block
         
+        $remotePage->setLearningObject($this);
         $page = $remotePage->loadFeedbackPage($this, $submission, $noPenalties);
         
         if ($deleteFiles) {

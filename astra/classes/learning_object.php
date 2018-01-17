@@ -451,6 +451,7 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         try {
             $remotePage = new \mod_astra\protocol\remote_page($serviceUrl, false, null, null,
                     $api_key, $last_modified);
+            $remotePage->setLearningObject($this);
             return $remotePage->loadExercisePage($this);
         } catch (\mod_astra\protocol\service_connection_exception $e) {
             // error logging
