@@ -104,7 +104,7 @@ define(['jquery'], function(jQuery) {
 			this.element.find(this.settings.message_selector).removeClass("progress-bar-animated")
 				.text(this.element.attr(this.settings.message_attr[messageType]));
 			if (this.element.data("aplus-active-element")) {
-				var message = "There was an error while evaluating the element."
+				var message = "There was an error while evaluating the element.";
 				if (messageType == "timeout") {
 					message = "Evaluation was timed out.";
 				}

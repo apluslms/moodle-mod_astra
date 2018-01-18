@@ -689,7 +689,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			// Submission data can contain many inputs
 			// Changed from A+: submission_data returned from the server has a different format
 			// A+ uses arrays like [["name", "value"], []...] while Astra uses an object: {name: value}
-			for (input in data) {
+			for (var input in data) {
 				if (!data.hasOwnProperty(input)) {
 					continue;
 				}
