@@ -33,6 +33,12 @@ if ($itemnumber == 0) {
             has_capability('mod/astra:addinstance', $context)) {
         redirect(\mod_astra\urls\urls::submissionList($exercise, true));
     } else {
-        redirect(\mod_astra\urls\urls::exercise($exercise, true));
+        // embedded chapter exercises must link to the chapter page, not the independent exercise page
+        $parent = $exercise->getParentObject();
+        if ($parent && $exercise->isUnlisted()) {
+            redirect(\mod_astra\urls\urls::exercise($parent, true));
+        } else {
+            redirect(\mod_astra\urls\urls::exercise($exercise, true));
+        }
     }
 }
