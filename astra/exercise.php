@@ -121,6 +121,14 @@ if (astra_is_ajax()) {
     // no Moodle header/footer in the output
 } else {
 
+    if (!has_capability('mod/astra:viewallsubmissions', $context)
+            && $learningObject->getParentObject()
+            && $learningObject->isUnlisted()) {
+        // students may not open the independent exercise page if the exercise is embedded in a chapter
+        redirect(\mod_astra\urls\urls::exercise($learningObject, true, false));
+        exit(0);
+    }
+    
     // Print the page header.
     // add CSS and JS
     astra_page_require($PAGE);

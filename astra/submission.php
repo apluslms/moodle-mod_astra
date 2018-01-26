@@ -48,6 +48,15 @@ if (astra_is_ajax()) {
     // no Moodle header/footer in the output
 } else {
 
+    if (!has_capability('mod/astra:viewallsubmissions', $context)
+            && $exercise->getParentObject()
+            && $exercise->isUnlisted()) {
+        // students may not open the independent submission page if the exercise is embedded in a chapter
+        // redirect to the chapter page in which the student may open submission feedback in modal dialogs
+        redirect(\mod_astra\urls\urls::exercise($exercise, true, false));
+        exit(0);
+    }
+    
     // Print the page header.
     // add CSS and JS
     astra_page_require($PAGE);
