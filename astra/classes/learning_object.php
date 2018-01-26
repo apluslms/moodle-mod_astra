@@ -359,11 +359,10 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         $parent = $this->getParentObject();
         if ($parent === null) {
             $ctx->parenturl = null;
-            $ctx->displayurl = $ctx->url;
         } else {
             $ctx->parenturl = \mod_astra\urls\urls::exercise($parent);
-            $ctx->displayurl = ($this->getStatus() === self::STATUS_UNLISTED) ? $ctx->parenturl : $ctx->url;
         }
+        $ctx->displayurl = \mod_astra\urls\urls::exercise($this, false, false);
         $ctx->name = $this->getName();
         $ctx->use_wide_column = $this->getUseWideColumn();
         $ctx->editurl = \mod_astra\urls\urls::editExercise($this);

@@ -117,6 +117,7 @@ $string['assessfeedback'] = 'Grader feedback';
 $string['assessfeedback_help'] = 'HTML formatting is allowed. This WILL override machine feedback.';
 $string['feedbackto'] = 'Feedback to {$a}';
 $string['youhavenewfeedback'] = 'You have new personal feedback to exercise <a href="{$a->exurl}">{$a->exname}</a>, <a href="{$a->sbmsurl}">submission {$a->sbmscounter}</a>.';
+$string['youhavenewfeedbacknosbmsurl'] = 'You have new personal feedback to exercise <a href="{$a->exurl}">{$a->exname}</a>, submission {$a->sbmscounter}.';
 $string['numbersubmissions'] = '{$a} submissions';
 $string['inspect'] = 'Inspect';
 $string['gradingsubmission'] = 'Grading submission...';

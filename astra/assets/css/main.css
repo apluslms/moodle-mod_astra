@@ -161,6 +161,12 @@ td.submissions-dropdown {
 [data-aplus-no-summary] .exercise-summary {
     display: none;
 }
+/* Moodle sets rules with :target selector that cause visual issues in chapter pages
+when URLs with anchors are used (#id). The rules use !important. */
+body.path-mod-astra #page-content :target {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
 .form-inline .form-group div {
     display: inline-block;
 }

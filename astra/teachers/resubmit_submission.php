@@ -20,7 +20,7 @@ require_capability('mod/astra:grademanually', $context);
 if (!$exercise->isAssistantGradingAllowed() && !has_capability('mod/astra:addinstance', $context)) {
     // assistant grading not allowed and the user is not an editing teacher
     throw new moodle_exception('assistgradingnotallowed', mod_astra_exercise_round::MODNAME,
-            \mod_astra\urls\urls::exercise($exercise));
+            \mod_astra\urls\urls::exercise($exercise, false, false));
 }
 
 

@@ -89,7 +89,7 @@ function astra_navbar_add_exercise(moodle_page $page, $cmid, mod_astra_learning_
  */
 function astra_navbar_add_one_exercise(navigation_node $previousNode, mod_astra_learning_object $learningObject) {
     return $previousNode->add($learningObject->getName(),
-            \mod_astra\urls\urls::exercise($learningObject, true),
+            \mod_astra\urls\urls::exercise($learningObject, true, false),
             navigation_node::TYPE_CUSTOM,
             null, 'ex'.$learningObject->getId());
 }
@@ -127,12 +127,19 @@ function astra_navbar_add_inspect_submission(navigation_node $prevNode, mod_astr
 function astra_send_assistant_feedback_notification(mod_astra_submission $submission,
         stdClass $fromUser, stdClass $toUser) {
     $str = new stdClass();
-    $str->exname = $submission->getExercise()->getName();
-    $str->exurl = \mod_astra\urls\urls::exercise($submission->getExercise());
+    $exercise = $submission->getExercise();
+    $str->exname = $exercise->getName();
+    $str->exurl = \mod_astra\urls\urls::exercise($exercise, false, false);
     $str->sbmsurl = \mod_astra\urls\urls::submission($submission);
     $sbmsCounter = $submission->getCounter();
     $str->sbmscounter = $sbmsCounter;
-    $msg_start = get_string('youhavenewfeedback', \mod_astra_exercise_round::MODNAME, $str);
+    if (!($exercise->getParentObject() && $exercise->isUnlisted())) {
+        $msg_start = get_string('youhavenewfeedback', \mod_astra_exercise_round::MODNAME, $str);
+    } else {
+        // there is no direct URL to open the feedback if the exercise is embedded in a chapter
+        // (the feedback is shown in a modal dialog in the chapter)
+        $msg_start = get_string('youhavenewfeedbacknosbmsurl', \mod_astra_exercise_round::MODNAME, $str);
+    }
     $full_msg = "<p>$msg_start</p>". $submission->getAssistantFeedback();
     
     $message = new \core\message\message();
@@ -148,7 +155,7 @@ function astra_send_assistant_feedback_notification(mod_astra_submission $submis
     $message->notification = 1;
     $message->contexturl = \mod_astra\urls\urls::submission($submission);
     $message->contexturlname = get_string('submissionnumber', \mod_astra_exercise_round::MODNAME, $sbmsCounter);
-    $message->courseid = $submission->getExercise()->getExerciseRound()->getCourse()->courseid;
+    $message->courseid = $exercise->getExerciseRound()->getCourse()->courseid;
     
     return message_send($message);
 }

@@ -12,8 +12,8 @@ class urls {
         return $CFG->wwwroot .'/mod/'. \mod_astra_exercise_round::TABLE;
     }
     
-    private static function buildUrl($path, array $query, $asMoodleUrl = false, $escaped = true) {
-        $url = new \moodle_url(self::baseURL() . $path, $query);
+    private static function buildUrl($path, array $query, $asMoodleUrl = false, $escaped = true, $anchor = null) {
+        $url = new \moodle_url(self::baseURL() . $path, $query, $anchor);
         if ($asMoodleUrl) {
             return $url;
         } else {
@@ -48,10 +48,26 @@ class urls {
         return self::exercise($ex, $asMdlUrl); // POST to the exercise page
     }
     
-    // also used for other learning objects (chapters), not just exercises
-    public static function exercise(\mod_astra_learning_object $ex, $asMdlUrl = false) {
-        $query = array('id' => $ex->getId());
-        return self::buildUrl('/exercise.php', $query, $asMdlUrl);
+    /**
+     * Return URL to a learning object (exercise or chapter).
+     * @param \mod_astra_learning_object $ex
+     * @param boolean $asMdlUrl if true, return an instance moodle_url, string otherwise.
+     * @param boolean $directURL if false and the exercise is embedded in a chapter (i.e.,
+     *     it has a parent and its status is unlisted), return the URL of the parent (chapter).
+     *     Otherwise, return URL to the exercise object itself (independent exercise page).
+     * @return \moodle_url|string
+     */
+    public static function exercise(\mod_astra_learning_object $ex, $asMdlUrl = false, $directURL = true) {
+        $anchor = null;
+        $parent = $ex->getParentObject();
+        if (!$directURL && $parent && $ex->isUnlisted()) {
+            $id = $parent->getId();
+            $anchor = 'chapter-exercise-' . $ex->getOrder();
+        } else {
+            $id = $ex->getId();
+        }
+        $query = array('id' => $id);
+        return self::buildUrl('/exercise.php', $query, $asMdlUrl, true, $anchor);
     }
     
     public static function editExercise(\mod_astra_learning_object $ex, $asMdlUrl = false) {

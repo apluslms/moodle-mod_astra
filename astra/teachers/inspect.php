@@ -19,7 +19,7 @@ require_capability('mod/astra:viewallsubmissions', $context);
 if (!$exercise->isAssistantViewingAllowed() && !has_capability('mod/astra:addinstance', $context)) {
     // assistant viewing not allowed and the user is not an editing teacher
     throw new moodle_exception('assistviewingnotallowed', mod_astra_exercise_round::MODNAME,
-            \mod_astra\urls\urls::exercise($exercise));
+            \mod_astra\urls\urls::exercise($exercise, false, false));
 }
 
 // add CSS and JS
