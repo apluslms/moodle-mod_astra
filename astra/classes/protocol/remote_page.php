@@ -798,7 +798,7 @@ class remote_page {
         // recognize absolute URLs (https:// or //) or anchor URLs (#someid)
         $pattern = '%^(#|.+://|//)%';
         // link between chapters when the chapters are in different rounds
-        $chapter_pattern = '%(\.\./)?(?P<roundkey>[\w-]+)/(?P<chapterkey>[\w-]+)(\.html)?(?P<anchor>#.+)?$%';
+        $chapter_pattern = '%(\.\./)?(?P<roundkey>[\w-]+)/(?P<chapterkey>[\w-]+)(\.html)(?P<anchor>#.+)?$%';
         // link between chapters in the same round
         $chapter_same_round = '%^(?P<chapterkey>[\w-]+)(\.html)(?P<anchor>#.+)?$%';
         
@@ -809,7 +809,7 @@ class remote_page {
                     continue;
                 }
                 
-                if ($elem->hasAttribute('data-aplus-chapter')) {
+                if (self::isInternalLink($elem, $value)) {
                     // Custom transform for RST chapter to chapter links
                     // (the link must refer to Moodle, not the exercise service)
                     $chapter_record = null;
@@ -866,5 +866,37 @@ class remote_page {
                 }
             }
         }
+    }
+    
+    /**
+     * Return true if the element is an internal chapter link.
+     * @param DOMElement $elem
+     * @param string $value link (URL) target of the element
+     * @return boolean
+     */
+    protected static function isInternalLink($elem, $value) {
+        if ($elem->hasAttribute('data-aplus-chapter')) {
+            return true;
+        }
+        $isHtml = '%\.html(#.+)?$%';
+        if (preg_match($isHtml, $value) === 0) {
+            // not HTML, which implies not a chapter
+            return false;
+        }
+        // while the exercise service is not always including the data-aplus-chapter attribute
+        // correctly, we need to check other attributes to find internal chapter links
+        $classAttr = $elem->getAttribute('class');
+        $classes = explode(' ', $classAttr);
+        
+        $internalSeen = false;
+        $referenceSeen = false;
+        foreach ($classes as $cl) {
+            if ($cl === 'internal') {
+                $internalSeen = true;
+            } else if ($cl === 'reference') {
+                $referenceSeen = true;
+            }
+        }
+        return ($internalSeen && $referenceSeen);
     }
 }
