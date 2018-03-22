@@ -228,7 +228,7 @@ class edit_round_form extends \moodleform {
                 }
             }
 
-            if (empty($data['latesbmspenalty'])) {
+            if (!isset($data['latesbmspenalty']) || $data['latesbmspenalty'] === '') {
                 $errors['latesbmspenalty'] = get_string('mustbesetwithlate', $mod);
             } else {
                 // late submission penalty must be between 0 and 1
