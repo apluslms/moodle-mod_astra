@@ -166,6 +166,9 @@ class auto_setup {
             \rebuild_course_cache($courseid, true);
         }
         
+        // sort the grade items in the gradebook
+        astra_sort_gradebook_items($courseid);
+        
         // clean up obsolete categories
         foreach (\mod_astra_category::getCategoriesInCourse($courseid, true) as $cat) {
             if ($cat->getStatus() == \mod_astra_category::STATUS_HIDDEN &&

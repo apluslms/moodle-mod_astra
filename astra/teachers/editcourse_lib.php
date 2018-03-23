@@ -156,6 +156,73 @@ function astra_update_exercise_gradebook_item_names($courseid) {
 }
 
 /**
+ * Sort Astra items in the Moodle gradebook corresponding to the hierarchical
+ * order of the course content.
+ * @param int $courseid
+ */
+function astra_sort_gradebook_items($courseid) {
+    global $CFG;
+    require_once($CFG->libdir . '/grade/grade_item.php');
+    
+    // retrieve gradebook grade items in the course 
+    $params = array( // keys are column names of the grade_items table
+            'courseid' => $courseid,
+    );
+    $gradeitems = grade_item::fetch_all($params);
+    // fetch_all returns an array of grade_item instances or false if none found
+    if (empty($gradeitems)) {
+        return;
+    }
+    
+    // retrieve the rounds and exercises of the course in the sorted order
+    // store them in a different format that helps with sorting grade_items
+    $rounds = mod_astra_exercise_round::getExerciseRoundsInCourse($courseid, false);
+    $order = 1;
+    $courseOrder = array();
+    foreach ($rounds as $round) {
+        $roundItems = array(0 => $order++);
+        // round itself comes before the exercises, the round always has grade itemnumber zero
+        foreach ($round->getExercises(true, true) as $ex) {
+            $roundItems[$ex->getGradebookItemNumber()] = $order++;
+        }
+        $courseOrder[$round->getId()] = $roundItems;
+        // $courseOrder[round ID][grade item number] = order (int) of the grade item
+    }
+    
+    // callback functions for sorting the $gradeitems array
+    $compare = function($x, $y) {
+      if ($x < $y) {
+          return -1;
+      } else if ($x > $y) {
+          return 1;
+      }
+      return 0;
+    };
+    
+    $sortfunc = function($a, $b) use ($courseOrder, &$compare) {
+        if ($a->itemtype === 'mod' && $a->itemmodule === mod_astra_exercise_round::TABLE
+                && $b->itemtype === 'mod' && $b->itemmodule === mod_astra_exercise_round::TABLE) {
+            // both grade_items are for Astra
+            // $grade_item->iteminstance is the round id and itemnumber is set by the plugin
+            // (zero for rounds and greater for exercises)
+            return $compare($courseOrder[$a->iteminstance][$a->itemnumber],
+                    $courseOrder[$b->iteminstance][$b->itemnumber]);
+        }
+        // at least one grade item originates from outside Astra:
+        // sort them according to the old sort order
+        return $compare($a->sortorder, $b->sortorder);
+    };
+    
+    // sort $gradeitems array and then renumber the sortorder fields
+    usort($gradeitems, $sortfunc);
+    $sortorder = 1;
+    foreach ($gradeitems as $item) {
+        $item->set_sortorder($sortorder);
+        $sortorder += 1;
+    }
+}
+
+/**
  * Return an array of course section numbers (0-N) that contain Astra exercise rounds.
  * @param int $courseid Moodle course ID
  * @return array of section numbers
