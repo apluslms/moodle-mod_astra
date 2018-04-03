@@ -106,6 +106,10 @@ if ($fromform = $form->get_data()) {
                 // reduce max points of previous round
                 $learningObject->getExerciseRound()->updateMaxPoints();
             }
+            
+            // sort the grade items in the gradebook
+            astra_sort_gradebook_items($courseid);
+            
         } else {
             // chapters do not have any grading, so the gradebook requires no special changes
             $updatedChapter = new mod_astra_chapter($fromform);
@@ -121,6 +125,10 @@ if ($fromform = $form->get_data()) {
         $exround = mod_astra_exercise_round::createFromId($fromform->roundid);
         if ($type == 'exercise') {
             $learningObject = $exround->createNewExercise($fromform, $category);
+            if ($learningObject !== null) {
+                // sort the grade items in the gradebook
+                astra_sort_gradebook_items($courseid);
+            }
         } else {
             $learningObject = $exround->createNewChapter($fromform, $category);
         }

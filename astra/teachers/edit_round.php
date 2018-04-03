@@ -95,6 +95,9 @@ if ($fromform = $form->get_data()) {
         try {
             \update_module($fromform); // throws moodle_exception
             $message = get_string('modeditsuccess', mod_astra_exercise_round::MODNAME);
+            
+            // sort the grade items in the gradebook
+            astra_sort_gradebook_items($courseid);
         } catch (\Exception $e) {
             $message = get_string('modeditfailure', mod_astra_exercise_round::MODNAME);
             $message .= ' '. $e->getMessage();
