@@ -75,7 +75,11 @@ Context variables:
                     {{# exercise.points_to_pass }}
                       {{#str}} requiredpoints, mod_astra, {{ exercise.points_to_pass }} {{/str}}. 
                     {{/ exercise.points_to_pass }}
-                    {{! TODO show personal deadline deviation }}
+                    {{# exercise.dl_extended_minutes }}
+                      {{#str}} deadline, mod_astra {{/str}} {{# toDateStr }}{{ exercise.deadline }}{{/ toDateStr }}
+                      {{#str}} withyourextension, mod_astra {{/str}}
+                    {{/ exercise.dl_extended_minutes }}
+                    {{^ exercise.dl_extended_minutes }}
                     {{# module.is_late_submission_open }}
                       {{#str}} latesbmsdl, mod_astra {{/str}} {{# toDateStr }}{{ module.late_submission_deadline }}{{/ toDateStr }}
                       {{# module.show_late_submission_point_worth }}
@@ -85,6 +89,7 @@ Context variables:
                     {{^ module.is_late_submission_open }}
                       {{#str}} deadline, mod_astra {{/str}} {{# toDateStr }}{{ module.closingtime }}{{/ toDateStr }}
                     {{/ module.is_late_submission_open }}
+                    {{/ exercise.dl_extended_minutes }}
                 </small>
             </span>
           {{# exercise.can_view_submissions }}
