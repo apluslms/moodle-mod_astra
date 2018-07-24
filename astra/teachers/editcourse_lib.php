@@ -176,7 +176,7 @@ function astra_sort_gradebook_items($courseid) {
     
     // retrieve the rounds and exercises of the course in the sorted order
     // store them in a different format that helps with sorting grade_items
-    $rounds = mod_astra_exercise_round::getExerciseRoundsInCourse($courseid, false);
+    $rounds = mod_astra_exercise_round::getExerciseRoundsInCourse($courseid, true);
     $order = 1;
     $courseOrder = array();
     foreach ($rounds as $round) {
