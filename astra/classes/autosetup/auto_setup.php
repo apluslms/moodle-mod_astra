@@ -76,21 +76,21 @@ class auto_setup {
         // parse categories
         $categories = $this->configure_categories($courseid, $conf->categories, $errors);
         
-        // section 0 is always visible in the MyCourses theme (course home page)
+        // section 0 should always exist and be visible by default (course home page)
         /* NOTE: new activities become "orphaned" and unavailable when they are added to sections that
          do not exist in the course, manually adding new sections to the course fixes it ->
          table course_format_options, field name=numsections and value=int
          */
         // if the section has activities before creating the assignments,
         // the section contents need to be sorted afterwards
-        $section_row = $DB->get_record('course_sections', array(
-                'course'  => $courseid,
-                'section' => $sectionNumber,
-        ), 'id, sequence', IGNORE_MISSING);
-        if ($section_row === false || \trim($section_row->sequence) == false) {
+        $course_modinfo = get_fast_modinfo($courseid, -1);
+        $section_info = $course_modinfo->get_section_info($sectionNumber);
+        if ($section_info === null) {
             $must_sort = false;
+            $section_visible = false;
         } else {
-            $must_sort = true;
+            $must_sort = trim($section_info->sequence) != false;
+            $section_visible = $section_info->visible;
         }
         
         // check whether the config defines course assistants and whether we can promote them
@@ -134,7 +134,8 @@ class auto_setup {
         foreach ($conf->modules as $module) {
             try {
                 list($module_order, $exercise_order) = $this->configure_exercise_round(
-                        $courseid, $sectionNumber, $module, $module_order, $exercise_order, $categories,
+                        $courseid, $sectionNumber, $section_visible, $module,
+                        $module_order, $exercise_order, $categories,
                         $seen_modules, $seen_exercises, $errors, $assistant_users, $teacher_role_id);
             } catch (\Exception $e) {
                 $errors[] = $e->getMessage();
@@ -237,6 +238,7 @@ class auto_setup {
      * or creates a new one, similarly for the exercises.
      * @param int $courseid Moodle course ID where the exercise round is added/modified
      * @param int $sectionNumber Moodle course section number (0-N) which a new round is added to
+     * @param int|boolean $sectionVisible true if the course section is visible
      * @param \stdClass $module configuration JSON
      * @param int $module_order ordering number for modules, if config JSON does not specify it
      * @param int $exercise_order ordering number for exercises, if exercises
@@ -250,8 +252,8 @@ class auto_setup {
      * has the "allow assistant grading" setting.
      * @param int Moodle role ID of the role that assistants are given (usually non-editing teacher).
      */
-    protected function configure_exercise_round($courseid, $sectionNumber, \stdClass $module,
-            $module_order, $exercise_order, array &$categories,
+    protected function configure_exercise_round($courseid, $sectionNumber, $sectionVisible,
+            \stdClass $module, $module_order, $exercise_order, array &$categories,
             array &$seen_modules, array &$seen_exercises, array &$errors,
             array $assistant_users, $teacher_role_id) {
         global $DB;
@@ -368,7 +370,9 @@ class auto_setup {
         );
         
         // Moodle course module visibility
-        $roundRecord->visible = ($roundRecord->status != \mod_astra_exercise_round::STATUS_HIDDEN) ? 1 : 0;
+        $roundRecord->visible =
+            ($roundRecord->status != \mod_astra_exercise_round::STATUS_HIDDEN && $sectionVisible)
+            ? 1 : 0;
         $roundRecord->visibleoncoursepage = 1; // zero only used for stealth activities
         
         if (isset($roundRecord->id)) {
