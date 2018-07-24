@@ -316,7 +316,6 @@ $string['apikey_help'] = 'API key to authorize access to the exercise service.';
 $string['sectionnum'] = 'Moodle course section number';
 $string['sectionnum_help'] = 'Number (0-N) of the Moodle course section, to which new exercise round activities should be added. Section zero is the course home page, the next section is number 1 and so on (see the navigation in the course page).';
 $string['apply'] = 'Apply';
-$string['createreminder'] = 'Reminder: in MyCourses, you must have the &quot;Advanced teacher&quot; role to create Astra exercises.';
 $string['backtocourse'] = 'Back to the course';
 $string['autosetupsuccess'] = 'Configuration was downloaded and applied successfully.';
 $string['autosetuperror'] = 'There were errors in the automatic setup.';

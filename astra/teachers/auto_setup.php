@@ -43,7 +43,6 @@ $output = $PAGE->get_renderer(mod_astra_exercise_round::MODNAME);
 echo $output->header();
 echo $output->heading_with_help(get_string('autosetup', mod_astra_exercise_round::MODNAME),
         'autosetup', mod_astra_exercise_round::MODNAME);
-echo '<p>'. get_string('createreminder', mod_astra_exercise_round::MODNAME) .'</p>';
 
 // Form processing and displaying is done here
 if ($fromform = $form->get_data()) {
