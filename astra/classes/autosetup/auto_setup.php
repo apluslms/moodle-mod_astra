@@ -369,6 +369,7 @@ class auto_setup {
         
         // Moodle course module visibility
         $roundRecord->visible = ($roundRecord->status != \mod_astra_exercise_round::STATUS_HIDDEN) ? 1 : 0;
+        $roundRecord->visibleoncoursepage = $roundRecord->visible;
         
         if (isset($roundRecord->id)) {
             // update existing exercise round

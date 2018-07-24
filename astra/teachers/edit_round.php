@@ -77,6 +77,7 @@ if ($fromform = $form->get_data()) {
     $fromform->course = $courseid;
     // add settings for the Moodle course module
     $fromform->visible = ($fromform->status != \mod_astra_exercise_round::STATUS_HIDDEN) ? 1 : 0;
+    $fromform->visibleoncoursepage = $fromform->visible;
     
     // update name with new ordernum
     $courseconf = mod_astra_course_config::getForCourseId($courseid);
