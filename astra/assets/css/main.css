@@ -202,6 +202,15 @@ table.results-table .category-row {
     font-weight: bold;
 }
 
+/* Aalto MyCourses theme removes carets from dropdowns, enable them again */
+.path-mod-astra #region-main .dropdown-toggle::after {
+    display: inline-block !important;
+}
+/* Aalto MyCourses theme removes border radius from badges */
+.path-mod-astra #region-main .badge {
+    border-radius: 0.5rem;
+}
+
 /*#########################################
 ###########################################*/
 
