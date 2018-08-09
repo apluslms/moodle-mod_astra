@@ -281,3 +281,85 @@ function astra_get_participants(\context $context, array $sort = null, array $fi
     
     return array($users, $totalcount, $matchcount, $roleid);
 }
+
+/**
+ * Picks the selected language's value from |lang:value|lang:value| -format text.
+ * Adapted from A+ (a-plus/lib/localization_syntax.py)
+ * @param string $entry
+ */
+function astra_parse_localization(string $text) : string {
+    if (strpos($text, '|') !== false) {
+        $current_lang = current_language();
+        $variants = explode('|', $text);
+        $exercise_number = $variants[0]; // Leading numbers or an empty string
+        $langs = array();
+        foreach ($variants as $variant) {
+            $parts = explode(':', $variant);
+            if (count($parts) !== 2) {
+                continue;
+            }
+            list($lang, $val) = $parts;
+            $langs[$lang] = $val;
+            
+            if ($lang === $current_lang) {
+                return $exercise_number . $val;
+            }
+        }
+        
+        if (isset($langs['en'])) {
+            return $exercise_number . $langs['en'];
+        } else if (!empty($langs)) {
+            return $exercise_number . reset($langs);
+        }
+        
+        return $exercise_number;
+    }
+    return $text;
+}
+
+/**
+ * Pick the value for the current language from the given text that
+ * may contain HTML span elements in the format of the Moodle multilang filter.
+ * (<span lang="en" class="multilang">English value</span>)
+ * @param string $text
+ * @return string
+ */
+function astra_parse_multilang_filter_localization(string $text) : string {
+    $offset = 0;
+    $pos = stripos($text, '<span', $offset);
+    if ($pos === false) {
+        // no multilang values
+        return $text;
+    }
+    $start = substr($text, 0, $pos); // substring preceding any multilang spans
+    $current_lang = current_language();
+    
+    $multilang_span_pattern = '/<span(?:\s+lang="(?P<lang>[a-zA-Z0-9_-]+)"|\s+class="multilang"){2}\s*>(?P<value>[^<]*)<\/span>/i';
+    $langs = array();
+    
+    while ($pos !== false) {
+        $offset = $pos;
+        $matches = array();
+        if (preg_match($multilang_span_pattern, $text, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+            $lang = $matches['lang'][0];
+            $value = $matches['value'][0];
+            if ($lang === $current_lang) {
+                return $start . $value;
+            }
+            $langs[$lang] = $value;
+            
+            // move offset over the span
+            $offset = $matches[0][1] + strlen($matches[0][0]);
+        }
+        
+        // find the next span
+        $pos = stripos($text, '<span', $offset);
+    }
+    
+    if (isset($langs['en'])) {
+        return $start . $langs['en'];
+    } else if (!empty($langs)) {
+        return $start . reset($langs);
+    }
+    return $text;
+}

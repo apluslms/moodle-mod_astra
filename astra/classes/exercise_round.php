@@ -22,6 +22,7 @@ class mod_astra_exercise_round extends mod_astra_database_object {
     const EVENT_DL_TYPE = 'deadline';
     
     private $cm; // Moodle course module as cm_info instance
+    private $courseConfig;
     
     public function __construct($astra) {
         parent::__construct($astra);
@@ -57,8 +58,41 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         return get_fast_modinfo($this->record->course);
     }
     
+    /**
+     * Return the (Astra) course configuration object of the course.
+     * May return null if there is no configuration.
+     * @return NULL|mod_astra_course_config
+     */
+    public function getCourseConfig() {
+        if (is_null($this->courseConfig)) {
+            $this->courseConfig = mod_astra_course_config::getForCourseId($this->record->course);
+        }
+        return $this->courseConfig;
+    }
+    
+    /**
+     * Check if the given language is configured for the course.
+     * Return the language code that should be used with the backend.
+     * The given language is used if it is available to the course.
+     * @param string $selected_lang the preferred language code
+     * @return string the language to use
+     */
+    public function checkCourseLang(string $selected_lang) {
+        $courseConf = $this->getCourseConfig();
+        if (!$courseConf) {
+            return $selected_lang;
+        }
+        $courseLanguages = $courseConf->getLanguages();
+        if (in_array($selected_lang, $courseLanguages)) {
+            return $selected_lang;
+        }
+        return $courseLanguages[0];
+    }
+    
     public function getName() {
-        return $this->record->name;
+        require_once(dirname(dirname(__FILE__)) .'/locallib.php');
+
+        return astra_parse_multilang_filter_localization($this->record->name);
     }
     
     public function getIntro($format = false) {

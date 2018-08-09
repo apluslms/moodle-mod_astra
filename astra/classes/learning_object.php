@@ -207,8 +207,9 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         require_once(dirname(dirname(__FILE__)) .'/locallib.php');
         // number formatting based on A+ (a-plus/exercise/exercise_models.py)
         
+        $name = astra_parse_localization($this->record->name);
         if ($includeOrder && $this->getOrder() >= 0) {
-            $conf = mod_astra_course_config::getForCourseId($this->getExerciseRound()->getCourse()->courseid);
+            $conf = $this->getExerciseRound()->getCourseConfig();
             if ($conf !== null) {
                 $contentNumbering = $conf->getContentNumbering();
                 $moduleNumbering = $conf->getModuleNumbering();
@@ -221,19 +222,47 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
                 $number = $this->getNumber();
                 if ($moduleNumbering == mod_astra_course_config::MODULE_NUMBERING_ARABIC ||
                         $moduleNumbering == mod_astra_course_config::MODULE_NUMBERING_HIDDEN_ARABIC) {
-                    return $this->getExerciseRound()->getOrder() . "$number {$this->record->name}";
+                    return $this->getExerciseRound()->getOrder() . "$number $name";
                 }
                 // leave out the module number ($number starts with a dot)
-                return substr($number, 1) .' '. $this->record->name;
+                return substr($number, 1) .' '. $name;
             } else if ($contentNumbering == mod_astra_course_config::CONTENT_NUMBERING_ROMAN) {
-                return astra_roman_numeral($this->getOrder()) .' '. $this->record->name;
+                return astra_roman_numeral($this->getOrder()) .' '. $name;
             }
         }
-        return $this->record->name;
+        return $name;
     }
     
     public function getServiceUrl() {
-        return $this->record->serviceurl;
+        $value = $this->record->serviceurl;
+        if (substr($value, 0, 1) === '|') {
+            // multiple language versions
+            // example: |fi:http://grader.org/static/intro_fi.html|en:http://grader.org/static/intro_en.html|
+            $current_lang = current_language();
+            $variants = array_filter(explode('|', $value));
+            // filter empty strings
+            $langs = array();
+            foreach ($variants as $variant) {
+                $parts = explode(':', $variant, 2);
+                // the first colon (:) separates the language code from the value
+                // URLs usually have colons in the value too
+                if (count($parts) !== 2) {
+                    continue;
+                }
+                list($lang, $val) = $parts;
+                $langs[$lang] = $val;
+                
+                if ($lang === $current_lang) {
+                    return $val;
+                }
+            }
+            if (isset($langs['en'])) {
+                return $langs['en'];
+            } else if (!empty($langs)) {
+                return reset($langs);
+            }
+        }
+        return $value;
     }
     
     public function getUseWideColumn() {
@@ -405,7 +434,7 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
      */
     public function load($userid) {
         $page = new \mod_astra\protocol\exercise_page($this);
-        $language = current_language(); // e.g., 'en'
+        $language = $this->exerciseRound->checkCourseLang(current_language()); // e.g., 'en'
         $cache = new \mod_astra\cache\exercise_cache($this, $language, $userid);
         
         $page->content = $cache->get_content();
@@ -434,8 +463,7 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
     public function loadPage($userid, $language = 'en', $last_modified = null) {
         global $DB;
         
-        $courseConfig = mod_astra_course_config::getForCourseId(
-                $this->getExerciseRound()->getCourse()->courseid);
+        $courseConfig = $this->getExerciseRound()->getCourseConfig();
         $api_key = ($courseConfig ? $courseConfig->getApiKey() : null);
         if (empty($api_key)) {
             $api_key = null; // $courseConfig gives an empty string if not set

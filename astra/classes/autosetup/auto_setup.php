@@ -16,6 +16,7 @@ require_once($CFG->dirroot .'/enrol/locallib.php');
 class auto_setup {
     
     protected $numerate_ignoring_modules = false;
+    protected $languages;
     
     public function __construct() {
     }
@@ -39,13 +40,18 @@ class auto_setup {
         } catch (\mod_astra\protocol\remote_page_exception $e) {
             return array($e->getMessage());
         }
-        // save API key and config URL
-        \mod_astra_course_config::updateOrCreate($courseid, $sectionNumber, $api_key, $url);
         
         $conf = \json_decode($response);
         if ($conf === null) {
+            // save API key and config URL
+            \mod_astra_course_config::updateOrCreate($courseid, $sectionNumber, $api_key, $url);
             return array(\get_string('configjsonparseerror', \mod_astra_exercise_round::MODNAME));
         }
+        
+        $lang = isset($conf->lang) ? $conf->lang : null;
+        // save API key and config URL
+        \mod_astra_course_config::updateOrCreate($courseid, $sectionNumber, $api_key, $url,
+                null, null, $lang);
         
         return $setup->configure_content($courseid, $sectionNumber, $conf);
     }
@@ -64,6 +70,12 @@ class auto_setup {
     public function configure_content($courseid, $sectionNumber, $conf) {
         global $DB;
 
+        $lang = isset($conf->lang) ? $conf->lang : array('en');
+        if (!is_array($lang)) {
+            $lang = array($lang);
+        }
+        $this->languages = $lang;
+        
         if (!isset($conf->categories) || ! \is_object($conf->categories)) {
             return array(\get_string('configcategoriesmissing', \mod_astra_exercise_round::MODNAME));
         }
@@ -286,9 +298,9 @@ class auto_setup {
         }
         $moduleName = null;
         if (isset($module->title)) {
-            $moduleName = (string) $module->title;
+            $moduleName = $this->formatLocalizationForActivityName($module->title);
         } else if (isset($module->name)) {
-            $moduleName = (string) $module->name;
+            $moduleName = $this->formatLocalizationForActivityName($module->name);
         }
         if (!isset($moduleName)) {
             $moduleName = '-';
@@ -466,7 +478,7 @@ class auto_setup {
             }
             $catRecord = new \stdClass();
             $catRecord->course = $courseid;
-            $catRecord->name = $cat->name;
+            $catRecord->name = $this->formatLocalization($cat->name);
             if (isset($cat->status)) {
                 $catRecord->status = $this->parseCategoryStatus($cat->status, $errors);
             }
@@ -619,7 +631,7 @@ class auto_setup {
             }
             
             if (isset($o->url)) {
-                $lobjectRecord->serviceurl = (string) $o->url;
+                $lobjectRecord->serviceurl = $this->formatLocalization($o->url);
             }
             if (isset($o->status)) {
                 $lobjectRecord->status = $this->parseLearningObjectStatus($o->status, $errors);
@@ -629,9 +641,9 @@ class auto_setup {
             }
 
             if (isset($o->title)) {
-                $lobjectRecord->name = (string) $o->title;
+                $lobjectRecord->name = $this->formatLocalization($o->title);
             } else if (isset($o->name)) {
-                $lobjectRecord->name = (string) $o->name;
+                $lobjectRecord->name = $this->formatLocalization($o->name);
             }
             if (empty($lobjectRecord->name)) {
                 $lobjectRecord->name = '-';
@@ -680,6 +692,45 @@ class auto_setup {
             }
         }
         return $n;
+    }
+    
+    /**
+     * Parse localised elements into |lang:val|lang:val| -format strings.
+     * Adapted from A+ (a-plus/lib/localization_syntax.py)
+     * @param object|string $elem
+     * @return string
+     */
+    protected function formatLocalization($elem) : string {
+        if (is_object($elem)) {
+            $res = '';
+            foreach ($elem as $lang => $val) {
+                if (in_array($lang, $this->languages)) {
+                    $res .= "|$lang:$val";
+                }
+            }
+            return $res . '|';
+        }
+        return $elem;
+    }
+    
+    /**
+     * Parse localised elements into multilang spans used by the Moodle multilang filter.
+     * (<span lang="en" class="multilang">English text</span>)
+     * Adapted from A+ (a-plus/lib/localization_syntax.py)
+     * @param object|string $elem
+     * @return string
+     */
+    protected function formatLocalizationForActivityName($elem) : string {
+        if (is_object($elem)) {
+            $res = array();
+            foreach ($elem as $lang => $val) {
+                if (in_array($lang, $this->languages)) {
+                    $res[] = "<span lang=\"$lang\" class=\"multilang\">$val</span>";
+                }
+            }
+            return implode(' ', $res);
+        }
+        return $elem;
     }
     
     protected function parseLearningObjectStatus($value, &$errors) {

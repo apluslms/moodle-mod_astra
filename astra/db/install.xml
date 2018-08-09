@@ -8,7 +8,8 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course id that this Astra activity belongs to."/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name that is displayed to users."/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"
+               COMMENT="Name that is displayed to users. In multilang courses, uses span elements in the multilang filter format."/>
         <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false" 
                COMMENT="General introduction of the activity (exercise round). Used by Moodle feature MOD_INTRO."/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of the intro field (MOODLE, HTML, MARKDOWN...)"/>
@@ -50,7 +51,7 @@
         <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
                COMMENT="Ready = 0. Hidden = 1. No total points = 2."/>
         <FIELD NAME="name" TYPE="char" LENGTH="35" NOTNULL="true" SEQUENCE="false"
-               COMMENT="Name that is displayed to users. Name should be unique within a course."/>
+               COMMENT="Name that is displayed to users. Name should be unique within a course. If the value starts with |, it contains multiple language versions |en:val|fi:val|"/>
         <FIELD NAME="pointstopass" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
                COMMENT="Min points to pass a category."/>
       </FIELDS>
@@ -75,9 +76,10 @@
                COMMENT="Order for listing the learning objects under the round. Smaller comes first."/>
         <FIELD NAME="remotekey" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" 
                COMMENT="Unique exercise key in the exercise service server. ('key' in exercise service configuration.) Should be unique within the round."/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name that is displayed to users."/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"
+               COMMENT="Name that is displayed to users. If the value starts with |, it contains multiple language versions |en:val|fi:val|"/>
         <FIELD NAME="serviceurl" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" 
-               COMMENT="URL of the exercise service for this chapter."/>
+               COMMENT="URL of the exercise service for this chapter. If the value starts with |, it contains multiple language versions |en:val|fi:val|."/>
         <FIELD NAME="usewidecolumn" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0"
                COMMENT="If 1 (true), the info column is removed in chapter/exercise pages in order to have more space for the content."/>
       </FIELDS>
@@ -198,6 +200,8 @@
                COMMENT="Numbering style for exercise rounds."/>
         <FIELD NAME="contentnumbering" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false"
                COMMENT="Numbering style for exercises (content under rounds)."/>
+        <FIELD NAME="lang" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="en" SEQUENCE="false"
+               COMMENT="Language of the course defined by the backend. Example single value: en, multiple values: |en|fi|"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

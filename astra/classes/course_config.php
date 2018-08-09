@@ -19,8 +19,10 @@ class mod_astra_course_config extends mod_astra_database_object {
     const CONTENT_NUMBERING_ARABIC = 1;
     const CONTENT_NUMBERING_ROMAN  = 2;
     
+    const DEFAULT_LANGUAGES = array('en');
+    
     public static function updateOrCreate($courseid, $sectionNumber, $api_key = null, $config_url = null,
-            $module_numbering = null, $content_numbering = null) {
+            $module_numbering = null, $content_numbering = null, $language = null) {
         global $DB;
         
         $row = $DB->get_record(self::TABLE, array('course' => $courseid), '*', IGNORE_MISSING);
@@ -36,6 +38,9 @@ class mod_astra_course_config extends mod_astra_database_object {
             }
             if ($content_numbering !== null) {
                 $newRow->contentnumbering = $content_numbering;
+            }
+            if ($language !== null) {
+                $newRow->lang = self::prepareLangString($language);
             }
             $id = $DB->insert_record(self::TABLE, $newRow);
             return $id != 0;
@@ -56,8 +61,20 @@ class mod_astra_course_config extends mod_astra_database_object {
             if ($content_numbering !== null) {
                 $row->contentnumbering = $content_numbering;
             }
+            if ($language !== null) {
+                $row->lang = self::prepareLangString($language);
+            }
             return $DB->update_record(self::TABLE, $row);
         }
+    }
+    
+    public static function prepareLangString($langs) : string {
+        if (empty($langs)) {
+            return '';
+        } else if (is_array($langs)) {
+            return '|' . implode('|', $langs) . '|';
+        }
+        return substr($langs, 0, 5); // at most five first characters
     }
     
     public static function getForCourseId($courseid) {
@@ -96,5 +113,19 @@ class mod_astra_course_config extends mod_astra_database_object {
     
     public function getContentNumbering() {
         return (int) $this->record->contentnumbering;
+    }
+    
+    public function getLanguages() : array {
+        $langs = $this->record->lang;
+        if (empty($langs)) {
+            return self::DEFAULT_LANGUAGES;
+        } else if (substr($langs, 0, 1) === '|') {
+            // starts with the pipe |
+            $arr = array_filter(explode('|', $langs));
+            // filter empty values
+            return empty($arr) ? self::DEFAULT_LANGUAGES : $arr;
+        } else {
+            return array($langs);
+        }
     }
 }

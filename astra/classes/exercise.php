@@ -621,7 +621,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
             $api_key = null; // $courseConfig gives an empty string if not set
         }
         
-        $language = current_language();
+        $language = $this->exerciseRound->checkCourseLang(current_language());
         
         $serviceUrl = $this->buildServiceUrl(\mod_astra\urls\urls::asyncGradeSubmission($submission),
                 $submission->getRecord()->submitter, $submission->getCounter(), $language);

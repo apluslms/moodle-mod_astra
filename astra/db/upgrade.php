@@ -63,6 +63,21 @@ function xmldb_astra_upgrade($oldversion) {
         // Astra savepoint reached.
         upgrade_mod_savepoint(true, 2017091900, 'astra');
     }
+    
+    if ($oldversion < 2018080900) {
+        
+        // Define field lang to be added to astra_course_settings.
+        $table = new xmldb_table('astra_course_settings');
+        $field = new xmldb_field('lang', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, 'en', 'contentnumbering');
+        
+        // Conditionally launch add field usewidecolumn.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Astra savepoint reached.
+        upgrade_mod_savepoint(true, 2018080900, 'astra');
+    }
 
     /*
      * Finally, return of upgrade result (true, all went good) to Moodle.
