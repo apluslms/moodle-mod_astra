@@ -79,6 +79,7 @@ abstract class edit_learning_object_form extends \moodleform {
         }
         $mform->addElement('select', 'parentid', \get_string('parentexercise', \mod_astra_exercise_round::MODNAME),
                 $parentChoices);
+        $mform->addHelpButton('parentid', 'parentexercise', \mod_astra_exercise_round::MODNAME);
         
         // order amongst exercises in the round
         $mform->addElement('text', 'ordernum', \get_string('ordernum', \mod_astra_exercise_round::MODNAME));
