@@ -10,8 +10,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['modulename'] = 'Astra exercise round';
-$string['modulenameplural'] = 'Astra exercise rounds';
+$string['modulename'] = 'Astra exercise';
+$string['modulenameplural'] = 'Astra exercises';
 $string['noastras'] = 'No Astra exercises in this course';
 $string['modulename_help'] = 'External Astra exercises (Aalto SCI Dept. of Computer Science)'; // when type is selected for a new activity
 
