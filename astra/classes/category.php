@@ -39,10 +39,10 @@ class mod_astra_category extends mod_astra_database_object {
         return (int) $this->record->status;
     }
     
-    public function getName() {
+    public function getName(string $lang = null) {
         require_once(dirname(dirname(__FILE__)) .'/locallib.php');
         
-        return astra_parse_localization($this->record->name);
+        return astra_parse_localization($this->record->name, $lang);
     }
     
     public function getPointsToPass() {

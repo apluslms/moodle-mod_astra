@@ -126,19 +126,24 @@ function astra_navbar_add_inspect_submission(navigation_node $prevNode, mod_astr
  */
 function astra_send_assistant_feedback_notification(mod_astra_submission $submission,
         stdClass $fromUser, stdClass $toUser) {
+    global $CFG;
+    // use the recipient's language
+    $lang = empty($toUser->lang) ? $CFG->lang : $toUser->lang;
+    $man = get_string_manager();
+    
     $str = new stdClass();
     $exercise = $submission->getExercise();
-    $str->exname = $exercise->getName();
+    $str->exname = $exercise->getName(true, $lang);
     $str->exurl = \mod_astra\urls\urls::exercise($exercise, false, false);
     $str->sbmsurl = \mod_astra\urls\urls::submission($submission);
     $sbmsCounter = $submission->getCounter();
     $str->sbmscounter = $sbmsCounter;
     if (!($exercise->getParentObject() && $exercise->isUnlisted())) {
-        $msg_start = get_string('youhavenewfeedback', \mod_astra_exercise_round::MODNAME, $str);
+        $msg_start = $man->get_string('youhavenewfeedback', \mod_astra_exercise_round::MODNAME, $str, $lang);
     } else {
         // there is no direct URL to open the feedback if the exercise is embedded in a chapter
         // (the feedback is shown in a modal dialog in the chapter)
-        $msg_start = get_string('youhavenewfeedbacknosbmsurl', \mod_astra_exercise_round::MODNAME, $str);
+        $msg_start = $man->get_string('youhavenewfeedbacknosbmsurl', \mod_astra_exercise_round::MODNAME, $str, $lang);
     }
     $full_msg = "<p>$msg_start</p>". $submission->getAssistantFeedback();
     
@@ -147,14 +152,15 @@ function astra_send_assistant_feedback_notification(mod_astra_submission $submis
     $message->name = 'assistant_feedback_notification';
     $message->userfrom = $fromUser;
     $message->userto = $toUser;
-    $message->subject = get_string('feedbackto', \mod_astra_exercise_round::MODNAME, $str->exname);
+    $message->subject = $man->get_string('feedbackto', \mod_astra_exercise_round::MODNAME, $str->exname, $lang);
     $message->fullmessage = $full_msg;
     $message->fullmessageformat = FORMAT_HTML;
     $message->fullmessagehtml = $full_msg;
     $message->smallmessage = $msg_start;
     $message->notification = 1;
     $message->contexturl = \mod_astra\urls\urls::submission($submission);
-    $message->contexturlname = get_string('submissionnumber', \mod_astra_exercise_round::MODNAME, $sbmsCounter);
+    $message->contexturlname = $man->get_string('submissionnumber', \mod_astra_exercise_round::MODNAME,
+            $sbmsCounter, $lang);
     $message->courseid = $exercise->getExerciseRound()->getCourse()->courseid;
     
     return message_send($message);
@@ -286,10 +292,12 @@ function astra_get_participants(\context $context, array $sort = null, array $fi
  * Picks the selected language's value from |lang:value|lang:value| -format text.
  * Adapted from A+ (a-plus/lib/localization_syntax.py)
  * @param string $entry
+ * @param null|string $preferred_lang the language to use. If null, the current language is used.
+ * @return string
  */
-function astra_parse_localization(string $text) : string {
+function astra_parse_localization(string $text, string $preferred_lang = null) : string {
     if (strpos($text, '|') !== false) {
-        $current_lang = current_language();
+        $current_lang = $preferred_lang !== null ? $preferred_lang : current_language();
         $variants = explode('|', $text);
         $exercise_number = $variants[0]; // Leading numbers or an empty string
         $langs = array();
@@ -322,9 +330,10 @@ function astra_parse_localization(string $text) : string {
  * may contain HTML span elements in the format of the Moodle multilang filter.
  * (<span lang="en" class="multilang">English value</span>)
  * @param string $text
+ * @param null|string $preferred_lang the language to use. If null, the current language is used.
  * @return string
  */
-function astra_parse_multilang_filter_localization(string $text) : string {
+function astra_parse_multilang_filter_localization(string $text, string $preferred_lang = null) : string {
     $offset = 0;
     $pos = stripos($text, '<span', $offset);
     if ($pos === false) {
@@ -332,7 +341,7 @@ function astra_parse_multilang_filter_localization(string $text) : string {
         return $text;
     }
     $start = substr($text, 0, $pos); // substring preceding any multilang spans
-    $current_lang = current_language();
+    $current_lang = $preferred_lang !== null ? $preferred_lang : current_language();
     
     $multilang_span_pattern = '/<span(?:\s+lang="(?P<lang>[a-zA-Z0-9_-]+)"|\s+class="multilang"){2}\s*>(?P<value>[^<]*)<\/span>/i';
     $langs = array();

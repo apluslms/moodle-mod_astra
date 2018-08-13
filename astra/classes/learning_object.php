@@ -203,11 +203,11 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         return ".{$this->record->ordernum}";
     }
     
-    public function getName($includeOrder = true) {
+    public function getName($includeOrder = true, string $lang = null) {
         require_once(dirname(dirname(__FILE__)) .'/locallib.php');
         // number formatting based on A+ (a-plus/exercise/exercise_models.py)
         
-        $name = astra_parse_localization($this->record->name);
+        $name = astra_parse_localization($this->record->name, $lang);
         if ($includeOrder && $this->getOrder() >= 0) {
             $conf = $this->getExerciseRound()->getCourseConfig();
             if ($conf !== null) {
