@@ -368,8 +368,7 @@ function astra_print_recent_mod_activity($activity, $courseid, $detail, $modname
     
     $modname = $modnames[mod_astra_exercise_round::TABLE]; // localized module name
     echo '<div class="title">';
-    echo '<img src="' . $OUTPUT->pix_url('icon', mod_astra_exercise_round::MODNAME) . '" '.
-            'class="icon" alt="' . $modname . '">';
+    echo $OUTPUT->pix_icon('icon', $modname, mod_astra_exercise_round::MODNAME);
     echo '<a href="' . \mod_astra\urls\urls::submission($activity->submission) . '">';
     echo $activity->name;
     echo '</a>';
