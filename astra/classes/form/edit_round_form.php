@@ -239,7 +239,7 @@ class edit_round_form extends \moodleform {
         }
 
         // check that remote keys of exercise rounds are unique within a course
-        foreach (\mod_astra_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
+        foreach (\mod_astra_exercise_round::getExerciseRoundsInCourse($courseid, true) as $exround) {
             if ($editRoundId != $exround->getId() && $data['remotekey'] == $exround->getRemoteKey()) {
                 $errors['remotekey'] = get_string('duplicateroundremotekey', $mod);
             }
