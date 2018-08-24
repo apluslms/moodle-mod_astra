@@ -893,8 +893,18 @@ class mod_astra_exercise_round extends mod_astra_database_object {
             $records = $DB->get_records(self::TABLE, array('course' => $courseid),
                 $sort);
         } else {
-            $records = $DB->get_records_select(self::TABLE, 'course = ? AND status != ?',
+            // exclude hidden rounds
+            $astraRecords = $DB->get_records_select(self::TABLE, 'course = ? AND status != ?',
                 array($courseid, self::STATUS_HIDDEN), $sort);
+            // check course_module visibility too since the status may be ready,
+            // but the course_module is not visible
+            $records = array();
+            $courseModules = get_fast_modinfo($courseid)->instances[self::TABLE];
+            foreach ($astraRecords as $id => $rec) {
+                if ($courseModules[$id]->visible) {
+                    $records[$id] = $rec;
+                }
+            }
         }
         
         $rounds = array();
