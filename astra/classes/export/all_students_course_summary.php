@@ -76,9 +76,13 @@ class all_students_course_summary {
             
             $this->exerciseIds = array();
             $this->exercises = array();
+            $courseModules = get_fast_modinfo($courseId)->instances[\mod_astra_exercise_round::TABLE];
             foreach ($exerciseRecords as $rec) {
-                // check that the round is not hidden, if necessary
-                if ($includeHidden || $roundRecords[$rec->roundid]->status != \mod_astra_exercise_round::STATUS_HIDDEN) {
+                // check that the round is not hidden (both the course module
+                // visibility and the round status), if necessary
+                if ($includeHidden ||
+                        ($roundRecords[$rec->roundid]->status != \mod_astra_exercise_round::STATUS_HIDDEN
+                            && $courseModules[$rec->roundid]->visible)) {
                     $this->exerciseIds[] = $rec->lobjectid;
                     $this->exercises[$rec->lobjectid] = new \mod_astra_exercise($rec);
                 }
