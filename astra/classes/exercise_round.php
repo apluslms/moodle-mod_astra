@@ -89,8 +89,13 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         return $courseLanguages[0];
     }
     
-    public function getName(string $lang = null) {
+    public function getName(string $lang = null, bool $includeAllLang = false) {
         require_once(dirname(dirname(__FILE__)) .'/locallib.php');
+
+        if ($includeAllLang) {
+            // do not parse multilang values
+            return $this->record->name;
+        }
 
         return astra_parse_multilang_filter_localization($this->record->name, $lang);
     }
@@ -523,7 +528,7 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         require_once($CFG->libdir .'/grade/grade_item.php');
 
         $item = array();
-        $item['itemname'] = clean_param($this->getName(), PARAM_NOTAGS);
+        $item['itemname'] = $this->getName(null, true);
 
         // update activity grading information ($item)
         if ($this->getMaxPoints() > 0) {

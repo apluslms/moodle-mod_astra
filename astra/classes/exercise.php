@@ -323,7 +323,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
         require_once($CFG->libdir .'/grade/grade_item.php');
         
         $item = array();
-        $item['itemname'] = clean_param($this->getName(), PARAM_NOTAGS);
+        $item['itemname'] = $this->getName(true, null, true);
         
         // update exercise grading information ($item)
         if ($this->getMaxPoints() > 0) {

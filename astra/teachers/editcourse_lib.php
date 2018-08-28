@@ -108,7 +108,7 @@ function astra_renumber_rounds_and_exercises($courseid,
     foreach (\mod_astra_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
         $roundOrder += 1;
         $exround->setOrder($roundOrder);
-        $name = \mod_astra_exercise_round::updateNameWithOrder($exround->getName(),
+        $name = \mod_astra_exercise_round::updateNameWithOrder($exround->getName(null, true),
                 $roundOrder, $moduleNumberingStyle);
         $exround->setName($name);
         $exround->save();
@@ -133,7 +133,7 @@ function astra_renumber_rounds_and_exercises($courseid,
  */
 function astra_rename_rounds_with_numbers($courseid, $moduleNumberingStyle) {
     foreach (\mod_astra_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
-        $name = \mod_astra_exercise_round::updateNameWithOrder($exround->getName(),
+        $name = \mod_astra_exercise_round::updateNameWithOrder($exround->getName(null, true),
                 $exround->getOrder(), $moduleNumberingStyle);
         $exround->setName($name);
         $exround->save();

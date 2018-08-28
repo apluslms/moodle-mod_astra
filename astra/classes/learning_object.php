@@ -203,11 +203,20 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         return ".{$this->record->ordernum}";
     }
     
-    public function getName($includeOrder = true, string $lang = null) {
+    /**
+     * Return the name of the learning object.
+     * @param bool $includeOrder if true, the name is prepended with the content number.
+     * @param null|string $lang the preferred language if the name is defined
+     * for multiple languages. If null, the current language is used.
+     * @param bool $multilang if true, the name includes multiple languages and
+     * is returned in the format of the Moodle multilang filter (<span lang="en" class="multilang">).
+     * @return string
+     */
+    public function getName(bool $includeOrder = true, string $lang = null, bool $multilang = false) {
         require_once(dirname(dirname(__FILE__)) .'/locallib.php');
+
         // number formatting based on A+ (a-plus/exercise/exercise_models.py)
-        
-        $name = astra_parse_localization($this->record->name, $lang);
+        $number = '';
         if ($includeOrder && $this->getOrder() >= 0) {
             $conf = $this->getExerciseRound()->getCourseConfig();
             if ($conf !== null) {
@@ -217,20 +226,31 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
                 $contentNumbering = mod_astra_course_config::getDefaultContentNumbering();
                 $moduleNumbering = mod_astra_course_config::getDefaultModuleNumbering();
             }
-            
+
             if ($contentNumbering == mod_astra_course_config::CONTENT_NUMBERING_ARABIC) {
                 $number = $this->getNumber();
                 if ($moduleNumbering == mod_astra_course_config::MODULE_NUMBERING_ARABIC ||
                         $moduleNumbering == mod_astra_course_config::MODULE_NUMBERING_HIDDEN_ARABIC) {
-                    return $this->getExerciseRound()->getOrder() . "$number $name";
+                    $number = $this->getExerciseRound()->getOrder() . $number . ' ';
+                } else {
+                    // leave out the module number ($number starts with a dot)
+                    $number = substr($number, 1) . ' ';
                 }
-                // leave out the module number ($number starts with a dot)
-                return substr($number, 1) .' '. $name;
             } else if ($contentNumbering == mod_astra_course_config::CONTENT_NUMBERING_ROMAN) {
-                return astra_roman_numeral($this->getOrder()) .' '. $name;
+                $number = astra_roman_numeral($this->getOrder()) . ' ';
             }
         }
-        return $name;
+
+        $name = astra_parse_localization($this->record->name, $lang, $multilang);
+        if (is_array($name) && count($name) > 1) {
+            // multilang name with spans
+            $spans = array();
+            foreach ($name as $langcode => $val) {
+                $spans[] = "<span lang=\"$langcode\" class=\"multilang\">$val</span>";
+            }
+            return $number . implode(' ', $spans);
+        }
+        return $number . $name;
     }
     
     public function getServiceUrl() {

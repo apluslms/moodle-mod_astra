@@ -293,9 +293,12 @@ function astra_get_participants(\context $context, array $sort = null, array $fi
  * Adapted from A+ (a-plus/lib/localization_syntax.py)
  * @param string $entry
  * @param null|string $preferred_lang the language to use. If null, the current language is used.
- * @return string
+ * @param bool $includeAll if true, all values in $text are returned in an array
+ * indexed by the lang codes. If $text is a string without any multilang values,
+ * it is returned directly.
+ * @return string|array
  */
-function astra_parse_localization(string $text, string $preferred_lang = null) : string {
+function astra_parse_localization(string $text, string $preferred_lang = null, bool $includeAll = false) {
     if (strpos($text, '|') !== false) {
         $current_lang = $preferred_lang !== null ? $preferred_lang : current_language();
         $variants = explode('|', $text);
@@ -309,12 +312,14 @@ function astra_parse_localization(string $text, string $preferred_lang = null) :
             list($lang, $val) = $parts;
             $langs[$lang] = $val;
             
-            if ($lang === $current_lang) {
+            if (!$includeAll && $lang === $current_lang) {
                 return $exercise_number . $val;
             }
         }
-        
-        if (isset($langs['en'])) {
+
+        if ($includeAll) {
+            return $langs;
+        } else if (isset($langs['en'])) {
             return $exercise_number . $langs['en'];
         } else if (!empty($langs)) {
             return $exercise_number . reset($langs);
