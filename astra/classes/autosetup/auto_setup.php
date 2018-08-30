@@ -17,6 +17,7 @@ class auto_setup {
     
     protected $numerate_ignoring_modules = false;
     protected $languages;
+    protected $json; // the whole parsed configuration
     
     public function __construct() {
     }
@@ -70,6 +71,7 @@ class auto_setup {
     public function configure_content($courseid, $sectionNumber, $conf) {
         global $DB;
 
+        $this->json = $conf;
         $lang = isset($conf->lang) ? $conf->lang : array('en');
         if (!is_array($lang)) {
             $lang = array($lang);
@@ -325,7 +327,10 @@ class auto_setup {
             if ($p !== null)
                 $roundRecord->pointstopass = $p;
         }
-        
+        if (!isset($roundRecord->pointstopass)) {
+            $roundRecord->pointstopass = 0; // default
+        }
+
         if (isset($module->open)) {
             $d = $this->parseDate($module->open, $errors);
             if ($d !== null)
@@ -386,7 +391,14 @@ class auto_setup {
             ($roundRecord->status != \mod_astra_exercise_round::STATUS_HIDDEN && $sectionVisible)
             ? 1 : 0;
         $roundRecord->visibleoncoursepage = 1; // zero only used for stealth activities
-        
+
+        // the max points of the round depend on the exercises in the round
+        if (isset($module->children)) {
+            $roundRecord->grade = $this->get_total_max_points($module->children, $categories);
+        } else {
+            $roundRecord->grade = 0;
+        }
+
         if (isset($roundRecord->id)) {
             // update existing exercise round
             // settings for the Moodle course module
@@ -419,10 +431,7 @@ class auto_setup {
             $exercise_order = $this->configure_learning_objects($categories, $exround, $module->children,
                     $seen_exercises, $errors, null, $exercise_order);
         }
-        
-        // update round max points after configuring the exercises of the round
-        $exround->updateMaxPoints();
-        
+
         // Add course assistants automatically to the Moodle course.
         // In Moodle, we can promote a user's role within an activity. Only exercise rounds
         // are represented as activities in this plugin, hence a user gains non-editing teacher
@@ -460,7 +469,41 @@ class auto_setup {
         
         return array($module_order, $exercise_order);
     }
-    
+
+    /**
+     * Return the total summed max points from the given visible learning objects
+     * (that are assumed to be in the same round).
+     * @param array $conf array of objects
+     * @return number the total max points
+     */
+    protected function get_total_max_points(array $conf, array $categories) {
+        $totalMax = 0;
+        $errors = array();
+        foreach ($conf as $o) {
+            $status = \mod_astra_learning_object::STATUS_READY;
+            if (isset($o->status)) {
+                $status = $this->parseLearningObjectStatus($o->status, $errors);
+            }
+            $catStatus = \mod_astra_category::STATUS_READY;
+            if (isset($categories[$o->category])) {
+                $cat = $categories[$o->category];
+                $catStatus = $cat->getStatus();
+            }
+            $visible = ($status != \mod_astra_learning_object::STATUS_HIDDEN
+                    && $catStatus != \mod_astra_category::STATUS_HIDDEN);
+            if (isset($o->max_points) && $visible) {
+                $maxpoints = $this->parseInt($o->max_points, $errors);
+                if ($maxpoints !== null) {
+                    $totalMax += $maxpoints;
+                }
+            }
+            if (isset($o->children)) {
+                $totalMax += $this->get_total_max_points($o->children, $categories);
+            }
+        }
+        return $totalMax;
+    }
+
     /**
      * Configure exercise categories in the course using the configuration JSON.
      * @param int $courseid Moodle course ID
@@ -678,7 +721,7 @@ class auto_setup {
                 // create new
                 if (isset($o->max_submissions)) {
                     // create new exercise
-                    $learningObject = $exround->createNewExercise($lobjectRecord, $categories[$o->category]);
+                    $learningObject = $exround->createNewExercise($lobjectRecord, $categories[$o->category], false);
                 } else {
                     // chapter
                     $learningObject = $exround->createNewChapter($lobjectRecord, $categories[$o->category]);

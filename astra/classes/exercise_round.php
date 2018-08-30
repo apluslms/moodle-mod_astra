@@ -796,8 +796,11 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         
         $astra->timecreated = time();
         // Round max points depend on the max points of the exercises. A new round has
-        // no exercises yet.
-        $astra->grade = 0;
+        // no exercises yet. The auto setup should compute the max points since
+        // it knows the exercises that will be added to the round.
+        if (!isset($astra->grade)) {
+            $astra->grade = 0;
+        }
         
         $astra->id = $DB->insert_record(self::TABLE, $astra);
         
@@ -925,9 +928,13 @@ class mod_astra_exercise_round extends mod_astra_database_object {
      * status, parentid, ordernum, remotekey, name, serviceurl,
      * maxsubmissions, pointstopass, maxpoints
      * @param mod_astra_category $category category of the exercise
+     * @param bool $updateRoundMaxPoints if true, the max points of the round are
+     * updated here. Use false if the round is handled elsewhere in order to
+     * reduce database operations.
      * @return mod_astra_exercise the new exercise, or null if failed
      */
-    public function createNewExercise(stdClass $exercise, mod_astra_category $category) {
+    public function createNewExercise(stdClass $exercise, mod_astra_category $category,
+            bool $updateRoundMaxPoints = true) {
         global $DB;
 
         $exercise->categoryid = $category->getId();
@@ -950,9 +957,11 @@ class mod_astra_exercise_round extends mod_astra_database_object {
             if (!$ex->isHidden() && !$this->isHidden() && !$category->isHidden()) {
                 // create gradebook item
                 $ex->updateGradebookItem();
-                
+
                 // update the max points of the round
-                $this->updateMaxPoints();
+                if ($updateRoundMaxPoints) {
+                    $this->updateMaxPoints();
+                }
             }
         }
         
