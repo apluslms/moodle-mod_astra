@@ -317,10 +317,12 @@ class auto_setup {
         // In order to show the ordinal number of the exercise round in the Moodle course page,
         // the number must be stored in the name.
         
-        if (isset($module->status))
+        if (isset($module->status)) {
             $roundRecord->status = $this->parseModuleStatus($module->status, $errors);
-        if (!isset($roundRecord->status))
+        } else {
+            // default
             $roundRecord->status = \mod_astra_exercise_round::STATUS_READY;
+        }
         
         if (isset($module->points_to_pass)) {
             $p = $this->parseInt($module->points_to_pass, $errors);
@@ -524,6 +526,8 @@ class auto_setup {
             $catRecord->name = $this->formatLocalization($cat->name);
             if (isset($cat->status)) {
                 $catRecord->status = $this->parseCategoryStatus($cat->status, $errors);
+            } else {
+                $catRecord->status = \mod_astra_category::STATUS_READY;
             }
             if (isset($cat->points_to_pass)) {
                 $catRecord->pointstopass = $this->parseInt($cat->points_to_pass, $errors);
@@ -678,6 +682,9 @@ class auto_setup {
             }
             if (isset($o->status)) {
                 $lobjectRecord->status = $this->parseLearningObjectStatus($o->status, $errors);
+            } else {
+                // default
+                $lobjectRecord->status = \mod_astra_learning_object::STATUS_READY;
             }
             if (isset($o->use_wide_column)) {
                 $lobjectRecord->usewidecolumn = $this->parseBool($o->use_wide_column, $errors);
