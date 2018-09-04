@@ -36,6 +36,8 @@ function astra_supports($feature) {
             return true;
         case FEATURE_GRADE_HAS_GRADE:
             return true;
+        case FEATURE_CONTROLS_GRADE_VISIBILITY:
+            return true;
         case FEATURE_BACKUP_MOODLE2:
             return true;
         default:
@@ -470,9 +472,16 @@ function astra_scale_used_anywhere($scaleid) {
  */
 function astra_grade_item_update(stdClass $astra, $grades=NULL) {
     $exround = new mod_astra_exercise_round($astra);
-    $exround->updateGradebookItem($grades === 'reset');
+    $reset = $grades === 'reset';
+    $exround->updateGradebookItem($reset);
     
-    if ($grades !== null && $grades !== 'reset') {
+    foreach ($exround->getExercises(true, false) as $exercise) {
+        // Moodle core only calls this function if it needs to update the grade item,
+        // so the exercise grade items of the round must be updated here too.
+        $exercise->updateGradebookItem($reset);
+    }
+    
+    if ($grades !== null && !$reset) {
         // in case someone tries to update grades to students with this function
         // (not recommended, since this function has to update the grade item every time)
         $exround->updateGrades($grades);
@@ -675,3 +684,59 @@ function astra_pluginfile($course, $cm, $context, $filearea, array $args, $force
 //function astra_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $astranode=null) {
 // Delete this function and its docblock, or implement it.
 //}
+
+/* Calendar API */
+
+/**
+ * Is the event visible?
+ *
+ * This is used to determine global visibility of an event in all places throughout Moodle.
+ * For example, the visibility could change based on the current user's role
+ * (student or teacher).
+ *
+ * @param calendar_event $event
+ * @return bool Returns true if the event is visible to the current user, false otherwise.
+ */
+function mod_astra_core_calendar_is_event_visible(calendar_event $event) {
+    // hidden rounds are not shown to students
+    $exround = mod_astra_exercise_round::createFromId($event->instance);
+    $cm = $exround->getCourseModule();
+    $context = context_module::instance($cm->id);
+
+    $visible = $cm->visible && !$exround->isHidden();
+    if ($visible) {
+        return true;
+    } else if (has_capability('mod/astra:addinstance', $context)) {
+        // teacher sees everything
+        return true;
+    }
+    return false;
+}
+
+/**
+ * This function receives a calendar event and returns the action associated with it, or null if there is none.
+ *
+ * This is used by block_myoverview in order to display the event appropriately. If null is returned then the event
+ * is not displayed on the block (but can still be displayed in the calendar).
+ *
+ * @param calendar_event $event
+ * @param \core_calendar\action_factory $factory
+ * @return \core_calendar\local\event\entities\action_interface|null
+ */
+function mod_astra_core_calendar_provide_event_action(calendar_event $event,
+        \core_calendar\action_factory $factory) {
+    $exround = mod_astra_exercise_round::createFromId($event->instance);
+
+    // do not display the event after the round has closed
+    // (if a student has a deadline extension in some exercise, it is not taken into account here)
+    if ($exround->hasExpired(null, true)) {
+        return null;
+    }
+
+    return $factory->create_instance(
+        get_string('deadline', mod_astra_exercise_round::MODNAME) .': '. $exround->getName(),
+        \mod_astra\urls\urls::exerciseRound($exround, true),
+        1,
+        $exround->isOpen() || $exround->isLateSubmissionOpen()
+    );
+}

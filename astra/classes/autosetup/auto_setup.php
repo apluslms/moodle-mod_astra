@@ -698,9 +698,7 @@ class auto_setup {
                 if (isset($o->max_submissions)) { // exercise
                     $learningObject = new \mod_astra_exercise($lobjectRecord);
                     if ($oldRoundId == $lobjectRecord->roundid) { // round not changed
-                        $learningObject->save($learningObject->isHidden() ||
-                                $learningObject->getExerciseRound()->isHidden() ||
-                                $learningObject->getCategory()->isHidden());
+                        $learningObject->save();
                         // updates gradebook for exercise 
                     } else {
                         // round changed
@@ -708,8 +706,7 @@ class auto_setup {
                         // gradeitemnumber must be unique in the new round
                         $newRound = $learningObject->getExerciseRound();
                         $lobjectRecord->gradeitemnumber = $newRound->getNewGradebookItemNumber();
-                        $learningObject->save($learningObject->isHidden() ||
-                                $newRound->isHidden() || $learningObject->getCategory()->isHidden());
+                        $learningObject->save();
                         // updates gradebook item (creates new item)
                     }
                 } else {

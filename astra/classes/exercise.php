@@ -324,7 +324,10 @@ class mod_astra_exercise extends mod_astra_learning_object {
         
         $item = array();
         $item['itemname'] = $this->getName(true, null, true);
-        
+        $item['hidden'] = (int) ($this->isHidden() || $this->getExerciseRound()->isHidden()
+                || $this->getCategory()->isHidden());
+        // The hidden value must be zero or one. Integers above one are interpreted as timestamps (hidden until).
+
         // update exercise grading information ($item)
         if ($this->getMaxPoints() > 0) {
             $item['gradetype'] = GRADE_TYPE_VALUE; // points

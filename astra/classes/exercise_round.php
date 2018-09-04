@@ -179,11 +179,16 @@ class mod_astra_exercise_round extends mod_astra_database_object {
      * Return true if this exercise round has closed (not open and the closing time
      * has passed).
      * @param int|null $when time to check, null for current time
+     * @param bool $checkLateDeadline if true and late submissions are allowed,
+     * check if the late deadline has passed instead of the normal closing time.
      * @return boolean
      */
-    public function hasExpired($when = null) {
+    public function hasExpired($when = null, bool $checkLateDeadline = false) {
         if (is_null($when)) {
             $when = time();
+        }
+        if ($checkLateDeadline && $this->isLateSubmissionAllowed()) {
+            return $when > $this->getLateSubmissionDeadline();
         }
         return $when > $this->getClosingTime();
     }
@@ -316,18 +321,7 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         // deadline event
         $dl          = $this->getClosingTime(); // zero if no dl
         $title       = get_string('deadline', self::MODNAME) .': '. $this->getName();
-        switch($this->getStatus()) {
-            case self::STATUS_READY:
-            case self::STATUS_MAINTENANCE:
-            case self::STATUS_UNLISTED:
-                $visible = 1;
-                break;
-            case self::STATUS_HIDDEN:
-                $visible = 0;
-                break;
-            default:
-                throw new coding_exception('Astra exercise round has unknown status.');
-        }
+        $visible     = $this->getStatus() === self::STATUS_HIDDEN ? 0 : 1;
 
         $this->update_event(self::EVENT_DL_TYPE, $dl, $title, $visible);
     }
@@ -337,14 +331,13 @@ class mod_astra_exercise_round extends mod_astra_database_object {
      * @param int $dl the time of the event (deadline), seconds since epoch.
      * If zero, no new event is created, and an existing event is removed.
      * @param string $title title for the event.
-     * @param int $visible 0 or 1 for not visible or visible. If not visible,
-     * no new event is created, but an existing event is updated.
+     * @param int $visible 0 or 1 for not visible or visible.
      */
     protected function update_event($type, $dl, $title, $visible) {
         // see moodle/mod/assign/locallib.php for hints
         global $CFG, $DB;
         require_once($CFG->dirroot .'/calendar/lib.php');
-    
+
         $event             = new stdClass();
         $event->id         = $DB->get_field('event', 'id', array(
                 'modulename' => self::TABLE,
@@ -355,6 +348,9 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         $event->name       = $title;
         $event->timestart  = $dl; // seconds since epoch
         $event->visible    = $visible;
+        $event->priority   = null;
+        $event->type       = CALENDAR_EVENT_TYPE_ACTION;
+        $event->timesort   = $dl; // sorting of the events in the dashboard (block_myoverview)
 
         if ($event->id) {
             // update existing
@@ -365,8 +361,8 @@ class mod_astra_exercise_round extends mod_astra_database_object {
                 // deadline removed, delete event
                 $calendarevent->delete();
             }
-        } else if ($dl && $visible) {
-            // create new, unless no deadline is set for the assignment or not visible
+        } else if ($dl) {
+            // create new, unless no deadline is set for the assignment
             unset($event->id);
             if (is_null($this->cm)) {
                 $event->description  = array(
@@ -385,9 +381,9 @@ class mod_astra_exercise_round extends mod_astra_database_object {
             $event->eventtype    = $type;
             // eventtype: For activity module's events, this can be used to set the alternative text of the event icon.
             // Set it to 'pluginname' unless you have a better string.
-    
+
             $event->timeduration = 0; // duration in seconds
-    
+
             calendar_event::create($event);
         }
     }
@@ -529,6 +525,8 @@ class mod_astra_exercise_round extends mod_astra_database_object {
 
         $item = array();
         $item['itemname'] = $this->getName(null, true);
+        $item['hidden'] = (int) $this->isHidden();
+        // The hidden value must be zero or one. Integers above one are interpreted as timestamps (hidden until).
 
         // update activity grading information ($item)
         if ($this->getMaxPoints() > 0) {
@@ -806,11 +804,9 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         
         if ($astra->id) {
             $exround = new self($astra);
-            if (!$exround->isHidden()) {
-                $exround->updateGradebookItem();
-                // NOTE: the course module does not usually yet exist in the DB at this stage
-                $exround->update_calendar();
-            }
+            $exround->updateGradebookItem();
+            // NOTE: the course module does not usually yet exist in the DB at this stage
+            $exround->update_calendar();
         }
         
         return $astra->id;
@@ -954,14 +950,12 @@ class mod_astra_exercise_round extends mod_astra_database_object {
                 return null;
             }
             
-            if (!$ex->isHidden() && !$this->isHidden() && !$category->isHidden()) {
-                // create gradebook item
-                $ex->updateGradebookItem();
+            // create gradebook item
+            $ex->updateGradebookItem();
 
-                // update the max points of the round
-                if ($updateRoundMaxPoints) {
-                    $this->updateMaxPoints();
-                }
+            // update the max points of the round
+            if ($updateRoundMaxPoints) {
+                $this->updateMaxPoints();
             }
         }
         

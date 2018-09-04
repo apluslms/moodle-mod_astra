@@ -85,8 +85,7 @@ if ($fromform = $form->get_data()) {
             if ($fromform->roundid == $lobjectRecord->roundid) { // round not changed 
                 $fromform->gradeitemnumber = $lobjectRecord->gradeitemnumber; // keep the old value
                 $updatedExercise = new mod_astra_exercise($fromform);
-                $updatedExercise->save($updatedExercise->isHidden() ||
-                        $updatedExercise->getExerciseRound()->isHidden() || $updatedExercise->getCategory()->isHidden());
+                $updatedExercise->save();
                 
                 // update round max points
                 $updatedExercise->getExerciseRound()->updateMaxPoints();
@@ -98,9 +97,8 @@ if ($fromform = $form->get_data()) {
                 $newRound = mod_astra_exercise_round::createFromId($fromform->roundid);
                 $fromform->gradeitemnumber = $newRound->getNewGradebookItemNumber();
                 $newExercise = new mod_astra_exercise($fromform);
-                $newExercise->save($newExercise->isHidden() ||
-                        $newExercise->getExerciseRound()->isHidden() || $newExercise->getCategory()->isHidden());
-                // save() updates gradebook item (creates new item), unless hidden
+                $newExercise->save();
+                // save() updates gradebook item (creates new item)
                 
                 $newRound->updateMaxPoints(); // max points of the new round change
                 // reduce max points of previous round
