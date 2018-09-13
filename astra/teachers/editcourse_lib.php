@@ -64,7 +64,12 @@ function astra_sort_activities_in_section($courseid, $course_section) {
     $non_astra_modules = array(); // cm ids
     $astra_modules = array();
     // cm ids in the section
-    $course_module_ids = explode(',', trim($section_row->sequence));
+    $sequence_str = trim($section_row->sequence);
+    if (empty($sequence_str)) {
+        $course_module_ids = array();
+    } else {
+        $course_module_ids = explode(',', $sequence_str);
+    }
     foreach ($course_module_ids as $cm_id) {
         $cm = $course_modinfo[$cm_id];
         if ($cm->modname == \mod_astra_exercise_round::TABLE) {

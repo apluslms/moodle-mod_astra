@@ -508,7 +508,81 @@ class mod_astra_exercise_round extends mod_astra_database_object {
             return $lobj->isSubmittable();
         });
     }
-    
+
+    /**
+     * Hide or delete learning objects in this round if they are not included
+     * in the given array. The object is deleted if it and its children have no
+     * submissions. Otherwise, it is hidden.
+     * 
+     * @param array $seen array of mod_astra_learning_objects that have been seen.
+     * @return bool true if something was hidden or deleted
+     */
+    public function hideOrDeleteUnseenLearningObjects(array $seen) : bool {
+        $children = array();
+        $unseen = array();
+        foreach ($this->getLearningObjects(true, false) as $lobj) {
+            if (! in_array($lobj->getId(), $seen)) {
+                $unseen[] = $lobj;
+            }
+
+            // array for easily finding the children of a learning object
+            // without additional DB queries
+            $parentid = $lobj->getParentId();
+            if ($parentid !== null) {
+                if (!isset($children[$parentid])) {
+                    $children[$parentid] = array();
+                }
+                $children[$parentid][] = $lobj;
+            }
+        }
+
+        $anyChildHasSubmissions = function($learningObject) use ($children, &$anyChildHasSubmissions) {
+            if (isset($children[$learningObject->getId()])) {
+                // $learningObject has children
+                foreach ($children[$learningObject->getId()] as $child) {
+                    if ($child->isSubmittable()
+                            && $child->getTotalSubmitterCount() > 0) {
+                        return true;
+                    }
+                    $res = $anyChildHasSubmissions($child);
+                    if ($res) return true;
+                }
+            }
+            return false;
+        };
+        $descendants = function($learningObject) use ($children, &$descendants) {
+            $res = array();
+            if (isset($children[$learningObject->getId()])) {
+                foreach ($children[$learningObject->getId()] as $child) {
+                    $res[] = $child->getId();
+                    $res = array_merge($res, $descendants($child));
+                }
+            }
+            return $res;
+        };
+
+        $deleted = array();
+        $changesMade = !empty($unseen);
+        foreach ($unseen as $lobj) {
+            if (in_array($lobj->getId(), $deleted)) {
+                continue;
+            }
+            $noDirectSubmissions = !$lobj->isSubmittable()
+                    || ($lobj->isSubmittable() && $lobj->getTotalSubmitterCount() == 0);
+            if ($noDirectSubmissions && !$anyChildHasSubmissions($lobj)) {
+                // no submissions, delete
+                $lobj->deleteInstance(false); // deletes children too
+                $deleted[] = $lobj->getId();
+
+                $deleted = array_merge($deleted, $descendants($lobj));
+            } else {
+                $lobj->setStatus(\mod_astra_learning_object::STATUS_HIDDEN);
+                $lobj->save();
+            }
+        }
+        return $changesMade;
+    }
+
     /**
      * Create or update the Moodle gradebook item for this exercise round.
      * (In order to add grades for students, use the method updateGrades.) 

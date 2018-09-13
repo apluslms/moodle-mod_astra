@@ -158,15 +158,15 @@ class auto_setup {
         
         // hide rounds and exercises/chapters that exist in Moodle but were not seen in the config
         foreach (\mod_astra_exercise_round::getExerciseRoundsInCourse($courseid, true) as $exround) {
-            $updateRoundMaxPoints = false;
+            $updateRoundMaxPoints = $exround->hideOrDeleteUnseenLearningObjects($seen_exercises);
             if (! \in_array($exround->getId(), $seen_modules)) {
-                $exround->setStatus(\mod_astra_exercise_round::STATUS_HIDDEN);
-                $exround->save();
-            }
-            foreach ($exround->getLearningObjects() as $lobj) {
-                if (! \in_array($lobj->getId(), $seen_exercises)) {
-                    $lobj->setStatus(\mod_astra_learning_object::STATUS_HIDDEN);
-                    $lobj->save();
+                if (count($exround->getLearningObjects(true, false)) == 0) {
+                    // no exercises in the round, delete the round
+                    course_delete_module($exround->getCourseModule()->id);
+                    $updateRoundMaxPoints = false;
+                } else {
+                    $exround->setStatus(\mod_astra_exercise_round::STATUS_HIDDEN);
+                    $exround->save();
                     $updateRoundMaxPoints = true;
                 }
             }
