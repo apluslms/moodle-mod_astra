@@ -7,6 +7,10 @@ Context variables:
 * cancelurl (string) URL destination for cancelling
 * message (string) confirmation message to the user about the removal
 * actionurl (string) form action URL
+* lobjects (array of objects) the learning objects that will be deleted, each object has fields
+    - name (string)
+    - is_submittable (bool) true if the type of the learning object accepts submissions
+    - total_submitter_count (int) the number of distinct submitters (if the object is submittable)
 }}
 
 <div class="card bg-light">
@@ -18,6 +22,20 @@ Context variables:
 
     <div class="alert alert-danger" role="alert">
         {{{ message }}}
+        <p>{{#str}} lobjectstoremove, mod_astra {{/str}}</p>
+        <table class="table table-sm" style="width: auto;">
+          {{# lobjects }}
+            <tr>
+              <td>{{ name }}</td>
+              <td>
+                {{^ is_submittable }} {{#str}} notsubmittable, mod_astra {{/str}} {{/ is_submittable }}
+                {{# is_submittable }}
+                  {{#str}} numsubmitters, mod_astra, {{ total_submitter_count }} {{/str}}
+                {{/ is_submittable }}
+              </td>
+            </tr>
+          {{/ lobjects }}
+        </table>
     </div>
 
     <div class="form-group">

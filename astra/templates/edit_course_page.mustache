@@ -6,7 +6,6 @@ Context variables:
 * categories (array of stdClass objects), each object has fields 
     - name (string)
     - editurl (string) URL to category edit page
-    - has_learning_objects (bool) true if there is at least one learning object in the category
     - removeurl (string) URL for deleting the category
     - status_ready (bool) true if ready
     - status_str (string) human-readable status
@@ -16,7 +15,6 @@ Context variables:
     - status_ready (bool) true if ready
     - status_str (string) status as human-readable string
     - editurl (string) URL for editing the round
-    - has_exercises (bool) true if there is at least one exercise/learning object in the round
     - removeurl (string) URL for deleting the round
     - url (string) URL for viewing the round
     - addnewexerciseurl (string) URL for adding a new exercise to the round
@@ -65,11 +63,9 @@ Context variables:
                         {{#pix}}t/editinline{{/pix}}
                         {{#str}} editcategory, mod_astra {{/str}}
                     </a>
-                    {{^ has_learning_objects }}
                     <a class="btn btn-secondary btn-sm" href="{{{ removeurl }}}">
                         {{#pix}}t/delete{{/pix}} {{#str}} remove, mod_astra {{/str}}
                     </a>
-                    {{/ has_learning_objects }}
                 </td>
             </tr>
             {{/ categories }}
@@ -102,11 +98,9 @@ Context variables:
                     <a class="btn btn-secondary btn-sm" href="{{{ editurl }}}">
                         {{#pix}}t/editinline{{/pix}} {{#str}} editmodule, mod_astra {{/str}}
                     </a>
-                    {{^ has_exercises }}
                     <a class="btn btn-secondary btn-sm" href="{{{ removeurl }}}">
                         {{#pix}}t/delete{{/pix}} {{#str}} remove, mod_astra {{/str}}
                     </a>
-                    {{/ has_exercises }}
                     <a class="btn btn-link btn-sm" href="{{{ url }}}">
                         {{#str}} openround, mod_astra {{/str}}
                     </a>

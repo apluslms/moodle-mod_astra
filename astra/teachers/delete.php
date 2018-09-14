@@ -20,7 +20,9 @@ if ($type == 'exercise') { // exercise or chapter
     $msg->type = $typeInTitle;
     $msg->name = $exercise->getName();
     $message = get_string('learningobjectremoval', mod_astra_exercise_round::MODNAME, $msg) .
-            ($exercise->isSubmittable() ? get_string('exerciseremovalnote', mod_astra_exercise_round::MODNAME) : '');
+            get_string('lobjectremovalnote', mod_astra_exercise_round::MODNAME);
+    $affectedLearningObjects = $exercise->getChildren(true);
+    array_unshift($affectedLearningObjects, $exercise);
 } else if ($type == 'category') {
     $category = mod_astra_category::createFromId($id);
     $courseid = $category->getCourse()->courseid;
@@ -32,6 +34,7 @@ if ($type == 'exercise') { // exercise or chapter
     $msg->name = $category->getName();
     $message = get_string('learningobjectremoval', mod_astra_exercise_round::MODNAME, $msg) .
             get_string('categoryremovalnote', mod_astra_exercise_round::MODNAME);
+    $affectedLearningObjects = $category->getLearningObjects(true);
 } else if ($type == 'round') {
     $exround = mod_astra_exercise_round::createFromId($id);
     $courseid = $exround->getCourse()->courseid;
@@ -43,6 +46,7 @@ if ($type == 'exercise') { // exercise or chapter
     $msg->name = $exround->getName();
     $message = get_string('learningobjectremoval', mod_astra_exercise_round::MODNAME, $msg) .
             get_string('roundremovalnote', mod_astra_exercise_round::MODNAME);
+    $affectedLearningObjects = $exround->getLearningObjects(true, true);
 } else {
     print_error('invalidobjecttype', mod_astra_exercise_round::MODNAME, '', $type);
 }
@@ -87,7 +91,7 @@ $output = $PAGE->get_renderer(mod_astra_exercise_round::MODNAME);
 echo $output->header();
 
 $delete_page = new \mod_astra\output\delete_page($course->id,
-        $typeInTitle, $message, $page_url->out());
+        $typeInTitle, $message, $page_url->out(), $affectedLearningObjects);
 echo $output->render($delete_page);
 
 echo $output->footer();
