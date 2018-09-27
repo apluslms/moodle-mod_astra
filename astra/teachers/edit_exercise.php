@@ -109,9 +109,26 @@ if ($fromform = $form->get_data()) {
             astra_sort_gradebook_items($courseid);
             
         } else {
-            // chapters do not have any grading, so the gradebook requires no special changes
+            // Chapters do not have any grading, but child exercises may be affected by the chapter.
+            // If the round of the chapter changed, the previous children move to the top level (no parent).
+            if ($fromform->roundid != $lobjectRecord->roundid) {
+                foreach ($learningObject->getChildren(true) as $child) {
+                    $child->setParent(null);
+                    $child->save();
+                }
+            }
+
             $updatedChapter = new mod_astra_chapter($fromform);
             $updatedChapter->save();
+
+            // If the chapter is hidden, hide the current children and update the max points of the round.
+            if ($updatedChapter->isHidden()) {
+                foreach ($updatedChapter->getChildren() as $child) {
+                    $child->setStatus(\mod_astra_learning_object::STATUS_HIDDEN);
+                    $child->save();
+                }
+                $updatedChapter->getExerciseRound()->updateMaxPoints();
+            }
         }
         // clear the exercise/learning object description cache
         \mod_astra\cache\exercise_cache::invalidate_exercise_all_lang($id);

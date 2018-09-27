@@ -312,7 +312,15 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
     public function setOrder($newOrder) {
         $this->record->ordernum = $newOrder;
     }
-   
+
+    /**
+     * Set a new parent learning object to this learning object.
+     * @param null|int $newParentId null or lobjectid of another learning object
+     */
+    public function setParent($newParentId) {
+        $this->record->parentid = $newParentId;
+    }
+
     public function isSubmittable() {
         return false;
     }
