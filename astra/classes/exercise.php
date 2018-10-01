@@ -349,7 +349,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
         $res = grade_update('mod/'. mod_astra_exercise_round::TABLE, $courseid, 'mod',
                 mod_astra_exercise_round::TABLE, $this->record->roundid,
                 $this->getGradebookItemNumber(), null, $item);
-        
+
         // parameters to find the grade item from DB
         $grade_item_params = array(
                 'itemtype'     => 'mod',
@@ -358,10 +358,10 @@ class mod_astra_exercise extends mod_astra_learning_object {
                 'itemnumber'   => $this->getGradebookItemNumber(),
                 'courseid'     => $courseid,
         );
-        // set min points to pass
-        $DB->set_field('grade_items', 'gradepass', $this->getPointsToPass(), $grade_item_params);
         $gi = grade_item::fetch($grade_item_params);
-        if ($gi) {
+        if ($gi && $gi->gradepass != $this->getPointsToPass()) {
+            // Set min points to pass.
+            $gi->gradepass = $this->getPointsToPass();
             $gi->update('mod/'. mod_astra_exercise_round::TABLE);
         }
         

@@ -624,31 +624,29 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         $res = grade_update('mod/'. self::TABLE, $this->record->course, 'mod',
                 self::TABLE, $this->record->id, 0, null, $item);
 
-        if ($this->getMaxPoints() > 0) {
+        if ($this->getMaxPoints() > 0 && $res === GRADE_UPDATE_OK) {
             // parameters to find the grade item from DB
-            $grade_item_params = array(
+
+            $gi = grade_item::fetch(array(
                     'itemtype'     => 'mod',
                     'itemmodule'   => self::TABLE,
                     'iteminstance' => $this->record->id,
                     'itemnumber'   => 0,
                     'courseid'     => $this->record->course,
-            );
-            
-            $grade_item = $DB->get_record('grade_items', $grade_item_params);
-            $update = new \stdClass();
-            $update->id = $grade_item->id;
-            // set min points to pass
-            $update->gradepass = $this->getPointsToPass();
-            // set zero coefficient so that the course total is not affected by rounds
-            // (round grades are only sums of the exercise grades in the round)
-            $update->aggregationcoef2 = 0.0;
-            $update->weightoverride = 1;
-            $DB->update_record('grade_items', $update);
-            
-            // must run the update method of the grade item to see changes
-            $gi = grade_item::fetch($grade_item_params);
-            $gi->update('mod/'. self::TABLE);
-            
+            ));
+            if ($gi &&
+                    ($gi->gradepass != $this->getPointsToPass()
+                    || $gi->aggregationcoef2 != 0.0
+                    || $gi->weightoverride != 1)) {
+                // Set min points to pass.
+                $gi->gradepass = $this->getPointsToPass();
+                // Set zero coefficient so that the course total is not affected by rounds
+                // (round grades are only sums of the exercise grades in the round)
+                $gi->aggregationcoef2 = 0.0;
+                $gi->weightoverride = 1;
+                $gi->update('mod/'. self::TABLE);
+            }
+
             // If some students already have grades for the round in the gradebook,
             // the changed coefficient may not be taken into account unless
             // the course final grades are computed again. The API function
@@ -688,40 +686,34 @@ class mod_astra_exercise_round extends mod_astra_database_object {
     }
     
     /** Set the course gradebook total grade aggregation method to "natural" (sum) because
-     * it is the only one that allows setting the subassignment coefficients to zero.
+     * it is the only one that allows setting the exercise round coefficients to zero.
      */
     public function setGradebookTotalAggregation() {
         global $CFG, $DB;
         require_once($CFG->libdir .'/grade/constants.php');
         require_once($CFG->libdir .'/grade/grade_category.php');
-    
-        // set course gradebook total grade aggregation method to "natural" (sum) because
-        // it is the only one that allows setting the subassignment coefficients to zero
-        $grade_cat_params = array(
-            'courseid' => $this->record->course,
-            'depth'    => 1,
-            // There may several grade categories in a course if the teacher has manually
-            // added new ones in addition to the default course total category.
-            // This is supposed to only affect the course total category.
-        );
-        $old_aggregation = $DB->get_field('grade_categories', 'aggregation', $grade_cat_params, IGNORE_MISSING);
-        if ($old_aggregation !== false && $old_aggregation != GRADE_AGGREGATE_SUM) {
-            // only change if the aggregation was set to something else than natural
-            $DB->set_field('grade_categories', 'aggregation', GRADE_AGGREGATE_SUM, $grade_cat_params);
-            // include ungraded assignments in the aggregation
-            // (course total does not show 100 % with only one asgn submitted with correct solution)
-            $DB->set_field('grade_categories', 'aggregateonlygraded', 0, $grade_cat_params);
-            $grade_category = grade_category::fetch($grade_cat_params);
-            $props = new stdClass();
-            $props->aggregation = GRADE_AGGREGATE_SUM;
-            $props->aggregateonlygraded = 0;
-            grade_category::set_properties($grade_category, $props);
+
+        $grade_category = grade_category::fetch(array(
+                'courseid' => $this->record->course,
+                'parent'   => null,
+        ));
+        // The default course total category is automatically created by Moodle.
+        // If the teacher creates additional gradebook categories,
+        // they become children to the root category.
+
+        if ($grade_category &&
+                ($grade_category->aggregation != GRADE_AGGREGATE_SUM
+                || $grade_category->aggregateonlygraded != 0)) {
+            // Set course gradebook total grade aggregation method to "natural" (sum).
+            $grade_category->aggregation = GRADE_AGGREGATE_SUM;
+            // Include ungraded assignments in the aggregation.
+            // (Course total does not show 100% when only one exercise has been
+            // submitted with correct solution.)
+            $grade_category->aggregateonlygraded = 0;
             $grade_category->update('mod/'. self::TABLE);
-            // update: Moodle must make some grade re-calculations before the new value in DB becomes effective
-    
-            // the category has its own grade item too
+
             $grade_item = $grade_category->load_grade_item();
-            $grade_item->update();
+            $grade_item->update('mod/'. self::TABLE);
         }
     }
     
