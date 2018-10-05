@@ -242,13 +242,17 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
         }
 
         $name = astra_parse_localization($this->record->name, $lang, $multilang);
-        if (is_array($name) && count($name) > 1) {
-            // multilang name with spans
-            $spans = array();
-            foreach ($name as $langcode => $val) {
-                $spans[] = "<span lang=\"$langcode\" class=\"multilang\">$val</span>";
+        if (is_array($name)) {
+            if (count($name) > 1) {
+                // multilang name with spans
+                $spans = array();
+                foreach ($name as $langcode => $val) {
+                    $spans[] = "<span lang=\"$langcode\" class=\"multilang\">$val</span>";
+                }
+                return $number . implode(' ', $spans);
+            } else {
+                $name = reset($name);
             }
-            return $number . implode(' ', $spans);
         }
         return $number . $name;
     }
