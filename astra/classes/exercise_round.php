@@ -510,6 +510,22 @@ class mod_astra_exercise_round extends mod_astra_database_object {
     }
 
     /**
+     * Return Moodle user ids of the users who have submitted to any exercise
+     * of this exercise round.
+     * @return array array of user ids
+     */
+    public function getSubmitters() : array {
+        global $DB;
+
+        return $DB->get_fieldset_sql(
+            "SELECT DISTINCT sbms.submitter
+               FROM {". mod_astra_submission::TABLE ."} sbms
+               JOIN {". mod_astra_learning_object::TABLE ."} lob ON lob.id = sbms.exerciseid
+              WHERE lob.roundid = ?",
+            array($this->getId()));
+    }
+
+    /**
      * Hide or delete learning objects in this round if they are not included
      * in the given array. The object is deleted if it and its children have no
      * submissions. Otherwise, it is hidden.
@@ -785,7 +801,80 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         $sum = (int) round($sum);
         return $this->updateGrades(array($userid => $sum));
     }
-    
+
+    /**
+     * Synchronize exercise round grades in the gradebook by reading
+     * the exercise grades from the gradebook and summing those together.
+     * 
+     * @param array|null $userids array of user ids whose grades should be
+     * synchronized. If null, synchronize all users who have submitted in the round.
+     * @return int grade_update return value
+     */
+    public function synchronizeGrades(array $userids = null) {
+        global $CFG;
+        require_once($CFG->libdir.'/gradelib.php');
+        require_once($CFG->libdir .'/grade/constants.php');
+
+        if ($userids === null) {
+            // Read the user ids of submitters from the gradebook. If an exercise
+            // has been deleted, the actual submission has been deleted too, but
+            // the exercise round still contains an old grade in the gradebook
+            // that must be synchronized.
+            $gi = $this->getGradeItem();
+            if (!$gi) {
+                // No grade item, hence no grades to sync.
+                return GRADE_UPDATE_OK;
+            }
+            $oldgrades = $gi->get_final();
+            $userids = array_keys($oldgrades);
+            unset($oldgrades);
+        }
+        $grades = grade_get_grades($this->getCourse()->courseid, 'mod',
+                self::TABLE,
+                $this->getId(),
+                $userids);
+        // Sum exercise grades together and save the new exercise round grades
+        // in the gradebook.
+        $newgrades = array();
+        foreach ($grades->items as $gradeItemNumber => $item) {
+            if ($gradeItemNumber == 0 || $item->hidden) {
+                // skip the old exercise round grade and hidden exercises
+                continue;
+            }
+            foreach ($item->grades as $userid => $grade) {
+                if (isset($newgrades[$userid])) {
+                    if ($grade->grade !== null) {
+                        $newgrades[$userid]->rawgrade += $grade->grade;
+                    }
+                } else {
+                    $gradeobj = new stdClass();
+                    $gradeobj->userid = $userid;
+                    $gradeobj->rawgrade = $grade->grade;
+                    $newgrades[$userid] = $gradeobj;
+                }
+            }
+        }
+
+        return $this->updateGrades($newgrades);
+    }
+
+    /**
+     * Return the gradebook grade item of this exercise round.
+     * @return grade_item or false if not found
+     */
+    protected function getGradeItem() {
+        global $CFG;
+        require_once($CFG->libdir.'/grade/grade_item.php');
+
+        return grade_item::fetch(array(
+                'courseid'     => $this->getCourse()->courseid,
+                'itemtype'     => 'mod',
+                'itemmodule'   => self::TABLE,
+                'iteminstance' => $this->getId(),
+                'itemnumber'   => 0,
+        ));
+    }
+
     /**
      * Convert an array of grades (userid => points) to a corresponding array
      * of grade objects (userid => object) (object has fields userid and rawgrade).

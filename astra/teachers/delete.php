@@ -60,8 +60,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['delete'])) {
         if ($type == 'exercise') {
             $exercise->deleteInstance(); // updates gradebook, if it is an exercise
+            // Update round grades in the gradebook since these exercise grades are removed.
+            $exround->synchronizeGrades();
         } else if ($type == 'category') {
+            // Gather affected rounds (exercises in the category are also deleted).
+            $rounds = array();
+            foreach ($category->getExercises(true) as $ex) {
+                $round = $ex->getExerciseRound();
+                $rounds[$round->getId()] = $round;
+                // No duplicate rounds since the index is overridden.
+            }
+
             $category->delete();
+
+            foreach ($rounds as $round) {
+                $round->synchronizeGrades();
+            }
         } else {
             // round: must also delete the Moodle course module
             // this will also call the module callback in lib.php

@@ -18,7 +18,8 @@ class auto_setup {
     protected $numerate_ignoring_modules = false;
     protected $languages;
     protected $json; // the whole parsed configuration
-    
+    protected $existing_rounds_with_changing_max_points = array();
+
     public function __construct() {
     }
     
@@ -172,6 +173,18 @@ class auto_setup {
             }
             if ($updateRoundMaxPoints) {
                 $exround->updateMaxPoints();
+                // When the max points change for the exercise round grade item
+                // in the gradebook, Moodle scales the grades with the existing
+                // point percentage and the new max points. That results in
+                // incorrect grades since the round grade is dependent on the
+                // exercise grades. Therefore, the round grades are inserted into
+                // the gradebook again here for each student that has submitted
+                // to any exercise in the round.
+                $exround->synchronizeGrades();
+            } else if (\in_array($exround->getId(), $this->existing_rounds_with_changing_max_points)) {
+                // Synchronize exercise round grades in the gradebook since
+                // the max points changed on an existing round.
+                $exround->synchronizeGrades();
             }
         }
         
@@ -396,7 +409,17 @@ class auto_setup {
 
         // the max points of the round depend on the exercises in the round
         if (isset($module->children)) {
+            $oldMaxPoints = null;
+            if (isset($roundRecord->grade) && isset($roundRecord->id)) {
+                // The round already exists in the database.
+                // Check if the max points are going to change.
+                $oldMaxPoints = $roundRecord->grade;
+            }
             $roundRecord->grade = $this->get_total_max_points($module->children, $categories);
+            if ($oldMaxPoints !== null && $oldMaxPoints != $roundRecord->grade) {
+                // Keep track of existing rounds whose max points change.
+                $this->existing_rounds_with_changing_max_points[] = $roundRecord->id;
+            }
         } else {
             $roundRecord->grade = 0;
         }

@@ -89,6 +89,7 @@ if ($fromform = $form->get_data()) {
                 
                 // update round max points
                 $updatedExercise->getExerciseRound()->updateMaxPoints();
+                $updatedExercise->getExerciseRound()->synchronizeGrades();
             } else {
                 // round changed, delete old gradebook item, modify max points of both rounds
                 $learningObject->deleteGradebookItem();
@@ -101,8 +102,11 @@ if ($fromform = $form->get_data()) {
                 // save() updates gradebook item (creates new item)
                 
                 $newRound->updateMaxPoints(); // max points of the new round change
+                // Nobody has grades for the new grade item of the exercise, so update all grades in the gradebook.
+                $newRound->writeAllGradesToGradebook();
                 // reduce max points of previous round
                 $learningObject->getExerciseRound()->updateMaxPoints();
+                $learningObject->getExerciseRound()->synchronizeGrades();
             }
             
             // sort the grade items in the gradebook
@@ -128,6 +132,7 @@ if ($fromform = $form->get_data()) {
                     $child->save();
                 }
                 $updatedChapter->getExerciseRound()->updateMaxPoints();
+                $updatedChapter->getExerciseRound()->synchronizeGrades();
             }
         }
         // clear the exercise/learning object description cache
@@ -143,6 +148,7 @@ if ($fromform = $form->get_data()) {
             if ($learningObject !== null) {
                 // sort the grade items in the gradebook
                 astra_sort_gradebook_items($courseid);
+                $exround->synchronizeGrades();
             }
         } else {
             $learningObject = $exround->createNewChapter($fromform, $category);
