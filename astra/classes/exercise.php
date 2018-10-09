@@ -113,6 +113,8 @@ class mod_astra_exercise extends mod_astra_learning_object {
     
     /**
      * Return the best submission of the student to this exercise.
+     * Note: heavy text fields such as feedback and submission data are not
+     * included in the returned submission object.
      * @param int $userid Moodle user ID of the student
      * @return mod_astra_submission the best submission, or null if there is
      * no submission
@@ -167,12 +169,32 @@ class mod_astra_exercise extends mod_astra_learning_object {
      * @param int $userid
      * @param bool $excludeErrors if true, the submissions with status error are not returned
      * @param string $orderBy SQL ORDER BY argument
+     * @param bool $includeFeedback if true, submission feedback is retrieved from the database
+     * @param bool $includeAssistFeedback if true, assistant feedback is retrieved from the database
+     * @param bool $includeSbmsData if true, submission data is retrieved from the database
+     * @param bool $includeGradingData if true, grading data is retrieved from the database
      * @return Moodle recordset (iterator) of database records (stdClass).
      * The caller of this method must call the close() method.
      */
-    public function getSubmissionsForStudent($userid, $excludeErrors = false, $orderBy = 'submissiontime ASC') {
+    public function getSubmissionsForStudent($userid, $excludeErrors = false, $orderBy = 'submissiontime ASC',
+            $includeFeedback = false, $includeAssistFeedback = false,
+            $includeSbmsData = false, $includeGradingData = false) {
         global $DB;
-        
+
+        $fields = 'id,status,submissiontime,hash,exerciseid,submitter,grader,grade,gradingtime,latepenaltyapplied,servicepoints,servicemaxpoints';
+        if ($includeFeedback) {
+            $fields .= ',feedback';
+        }
+        if ($includeAssistFeedback) {
+            $fields .= ',assistfeedback';
+        }
+        if ($includeSbmsData) {
+            $fields .= ',submissiondata';
+        }
+        if ($includeGradingData) {
+            $fields .= ',gradingdata';
+        }
+
         if ($excludeErrors) {
             // exclude submissions with status error
             $submissions = $DB->get_recordset_select(mod_astra_submission::TABLE,
@@ -180,12 +202,12 @@ class mod_astra_exercise extends mod_astra_learning_object {
                             $this->getId(),
                             $userid,
                             mod_astra_submission::STATUS_ERROR,
-                    ), $orderBy);
+                    ), $orderBy, $fields);
         } else {
             $submissions = $DB->get_recordset(mod_astra_submission::TABLE, array(
                 'exerciseid' => $this->getId(),
                 'submitter'  => $userid,
-            ), $orderBy);
+            ), $orderBy, $fields);
         }
         return $submissions;
     }
@@ -486,7 +508,10 @@ class mod_astra_exercise extends mod_astra_learning_object {
      */
     public function getSubmissionsTemplateContext($userid) {
         // latest submission first
-        $submissions = $this->getSubmissionsForStudent($userid, false, 'submissiontime DESC');
+        $submissions = $this->getSubmissionsForStudent($userid, false,
+                'submissiontime DESC', false, true);
+        // Assistant feedback is included in the submissions so that templates
+        // may mark which submissions in the list have assistant feedback.
         $objects = array();
         foreach ($submissions as $record) {
             $objects[] = new mod_astra_submission($record);
