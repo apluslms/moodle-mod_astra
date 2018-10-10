@@ -60,7 +60,8 @@ class mod_astra_async_grading_testcase extends advanced_testcase {
             return new mod_astra_submission($record);
         };
         
-        $submissions = $this->exercises[1]->getSubmissionsForStudent($this->student->id);
+        $submissions = $this->exercises[1]->getSubmissionsForStudent($this->student->id,
+                true, 'submissiontime ASC', true, true, true, true);
         $submissions_array = array_map($toSbms, iterator_to_array($submissions, false));
         $submissions->close();
         

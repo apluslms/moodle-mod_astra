@@ -46,13 +46,17 @@ class mod_astra_exercise_testcase extends advanced_testcase {
         $this->assertTrue($this->exercises[0]->studentHasAccess($this->student, $this->round1->getLateSubmissionDeadline() - 3600));
         
         // add deadline deviation
-        mod_astra_deadline_deviation::createNew($this->exercises[0]->getId(), $this->student->id, 60, true);
+        mod_astra_deadline_deviation::createNew($this->exercises[0]->getId(), $this->student->id, 60 * 24 * 8, true);
+        // 8-day extension exceeds the original late submission deadline too since it was 7 days from the closing time
         
         $this->assertFalse($this->exercises[0]->studentHasAccess($this->student, $this->round1->getOpeningTime() - 3600));
         $this->assertTrue($this->exercises[0]->studentHasAccess($this->student, $this->round1->getClosingTime() + 3600));
-        $this->assertTrue($this->exercises[0]->studentHasAccess($this->student, $this->round1->getLateSubmissionDeadline() + 3590));
+        $this->assertTrue($this->exercises[0]->studentHasAccess($this->student, $this->round1->getLateSubmissionDeadline() + 3600 * 23));
         $this->assertTrue($this->exercises[0]->studentHasAccess($this->student, $this->round1->getLateSubmissionDeadline() - 3600));
-        $this->assertFalse($this->exercises[0]->studentHasAccess($this->student, $this->round1->getLateSubmissionDeadline() + 3690));
+        $this->assertFalse($this->exercises[0]->studentHasAccess($this->student, $this->round1->getLateSubmissionDeadline() + 3600 * 25));
+        $this->assertTrue($this->exercises[0]->studentHasAccess($this->student, $this->round1->getLateSubmissionDeadline() + 3600 * 24));
+        // The previous line should hit the last second of allowed access.
+        $this->assertFalse($this->exercises[0]->studentHasAccess($this->student, $this->round1->getLateSubmissionDeadline() + 3600 * 24 + 1));
     }
     
     public function test_uploadSubmissionToService() {
