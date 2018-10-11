@@ -9,11 +9,33 @@ defined('MOODLE_INTERNAL') || die();
  */
 class mod_astra_exercise extends mod_astra_learning_object {
     const TABLE = 'astra_exercises'; // database table name
-    
-    public function getMaxSubmissions() {
-        return $this->record->maxsubmissions;
+
+    public function getMaxSubmissions() : int {
+        $val = (int) $this->record->maxsubmissions;
+        if ($val <= 0) {
+            // Zero means that there is no submission limit.
+            // Negative values mean no limit and only the N latest submissions
+            // are stored, but this method returns only zero.
+            return 0;
+        }
+        return $val;
     }
-    
+
+    /**
+     * Return how many submissions per student are stored in the exercise
+     * (assuming that students may submit an unlimited number of times).
+     * @return int Zero for no storage limit or a positive integer that is the limit.
+     * Zero is returned if the exercise has limited the number of submissions since
+     * the submission limit naturally limits the number of submissions stored as well.
+     */
+    public function getSubmissionStoreLimit() : int {
+        $val = (int) $this->record->maxsubmissions;
+        if ($val < 0) {
+            return -$val;
+        }
+        return 0;
+    }
+
     public function getPointsToPass() {
         return $this->record->pointstopass;
     }
@@ -211,7 +233,50 @@ class mod_astra_exercise extends mod_astra_learning_object {
         }
         return $submissions;
     }
-    
+
+    /**
+     * Check if the user has more submissions than what should be stored for
+     * the exercise. The excess submissions are then removed.
+     * 
+     * This method does nothing when the exercise has limited the number of
+     * allowed submissions. This is intended for exercises that allow unlimited
+     * submissions, but do not store all of them.
+     * 
+     * @param int $userid user id whose submissions are checked
+     */
+    public function removeSubmissionsExceedingStoreLimit($userid) {
+        $storelimit = $this->getSubmissionStoreLimit();
+        if ($storelimit <= 0) { // No store limit.
+            return;
+        }
+        // How many old submissions to remove?
+        $nremove = $this->getSubmissionCountForStudent($userid) - $storelimit;
+        if ($nremove > 0) {
+            $this->removeNOldestSubmissions($nremove, $userid);
+        }
+    }
+
+    /**
+     * Remove $numSubmissions oldest submissions of the user in this exercise.
+     * 
+     * @param int $numSubmissions how many submissions to remove.
+     * @param int $userid user whose submissions are removed.
+     */
+    public function removeNOldestSubmissions(int $numSubmissions, $userid) {
+        $submissions = $this->getSubmissionsForStudent($userid);
+        // The oldest submissions come first in the iterator.
+        foreach ($submissions as $record) {
+            if ($numSubmissions <= 0) {
+                break;
+            }
+            $sbms = new mod_astra_submission($record);
+            // Update gradebook in the last iteration when the submission is deleted.
+            $sbms->delete($numSubmissions <= 1);
+            --$numSubmissions;
+        }
+        $submissions->close();
+    }
+
     /**
      * Return all submissions to this exercise. Name and idnumber fields of
      * the submitter are included in the records.

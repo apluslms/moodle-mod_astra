@@ -76,10 +76,7 @@ class edit_exercise_form extends \mod_astra\form\edit_learning_object_form {
         if ($data['maxpoints'] !== '' && $data['maxpoints'] < 0) {
             $errors['maxpoints'] = \get_string('negativeerror', \mod_astra_exercise_round::MODNAME);
         }
-        if ($data['maxsubmissions'] !== '' && $data['maxsubmissions'] < 0) {
-            $errors['maxsubmissions'] = \get_string('negativeerror', \mod_astra_exercise_round::MODNAME);
-        }
-        
+
         return $errors;
     }
 }

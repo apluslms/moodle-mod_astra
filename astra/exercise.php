@@ -92,7 +92,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $learningObject->isSubmittable()) {
             foreach ($tmpFiles as $f) {
                 unlink($f->filepath);
             }
-            
+
+            // Delete old submissions if the exercise allows unlimited submissions
+            // and there is a submission store limit.
+            $learningObject->removeSubmissionsExceedingStoreLimit($USER->id);
+
             if (empty($errorMsg) && !astra_is_ajax()) {
                 // Redirect the client to the submission page: 
                 // there must be no output before this (echo HTML, whitespace outside php tags)

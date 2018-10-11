@@ -187,4 +187,126 @@ class mod_astra_exercise_testcase extends advanced_testcase {
         // round max points
         $this->assertEquals(20, $DB->get_field(mod_astra_exercise_round::TABLE, 'grade', array('id' => $this->round1->getId())));
     }
+
+    public function test_removeNOldestSubmissions() {
+        $this->resetAfterTest(true);
+
+        // Create a new exercise.
+        $exercise = $this->round1->createNewExercise((object) array(
+                'name' => '',
+                'status' => mod_astra_learning_object::STATUS_READY,
+                'parentid' => null,
+                'ordernum' => 7,
+                'remotekey' => "testexercise7",
+                'serviceurl' => 'http://localhost',
+                'maxsubmissions' => -2,
+                'pointstopass' => 5,
+                'maxpoints' => 10,
+        ), $this->category);
+
+        // Create submissions.
+        mod_astra_submission::createNewSubmission($exercise, $this->student->id,
+                null, mod_astra_submission::STATUS_INITIALIZED,
+                $this->round1->getOpeningTime() + 60);
+        mod_astra_submission::createNewSubmission($exercise, $this->student->id,
+                null, mod_astra_submission::STATUS_INITIALIZED,
+                $this->round1->getOpeningTime() + 61);
+        mod_astra_submission::createNewSubmission($exercise, $this->student->id,
+                null, mod_astra_submission::STATUS_INITIALIZED,
+                $this->round1->getOpeningTime() + 62);
+        mod_astra_submission::createNewSubmission($exercise, $this->student->id,
+                null, mod_astra_submission::STATUS_INITIALIZED,
+                $this->round1->getOpeningTime() + 63);
+        mod_astra_submission::createNewSubmission($exercise, $this->student->id,
+                null, mod_astra_submission::STATUS_INITIALIZED,
+                $this->round1->getOpeningTime() + 64);
+        $this->assertEquals(5, $exercise->getSubmissionCountForStudent($this->student->id));
+
+        // Remove the two oldest submissions and run tests.
+        $exercise->removeNOldestSubmissions(2, $this->student->id);
+        $this->assertEquals(3, $exercise->getSubmissionCountForStudent($this->student->id));
+        $submissions = $exercise->getSubmissionsForStudent($this->student->id);
+        // Check that the oldest submissions were removed.
+        foreach ($submissions as $sbms) {
+            $this->assertTrue($sbms->submissiontime >= $this->round1->getOpeningTime() + 62);
+        }
+        $submissions->close();
+        // Check that the submissions in an unrelated exercise were not affected.
+        $this->assertEquals(2, $this->exercises[0]->getSubmissionCountForStudent($this->student->id));
+    }
+
+    public function test_removeSubmissionsExceedingStoreLimit() {
+        $this->resetAfterTest(true);
+
+        // Create a new exercise.
+        $exercise = $this->round1->createNewExercise((object) array(
+                'name' => '',
+                'status' => mod_astra_learning_object::STATUS_READY,
+                'parentid' => null,
+                'ordernum' => 7,
+                'remotekey' => "testexercise7",
+                'serviceurl' => 'http://localhost',
+                'maxsubmissions' => -2,
+                'pointstopass' => 5,
+                'maxpoints' => 10,
+        ), $this->category);
+
+        // Create submissions.
+        $sid = mod_astra_submission::createNewSubmission($exercise, $this->student->id,
+                null, mod_astra_submission::STATUS_INITIALIZED,
+                $this->round1->getOpeningTime() + 60);
+        $submission = mod_astra_submission::createFromId($sid);
+        $submission->grade(5, 10, 'feedback');
+        $sid = mod_astra_submission::createNewSubmission($exercise, $this->student->id,
+                null, mod_astra_submission::STATUS_INITIALIZED,
+                $this->round1->getOpeningTime() + 61);
+        $submission = mod_astra_submission::createFromId($sid);
+        $submission->grade(6, 10, 'feedback');
+        $sid = mod_astra_submission::createNewSubmission($exercise, $this->student->id,
+                null, mod_astra_submission::STATUS_INITIALIZED,
+                $this->round1->getOpeningTime() + 62);
+        $submission = mod_astra_submission::createFromId($sid);
+        $submission->grade(7, 10, 'feedback');
+        $sid = mod_astra_submission::createNewSubmission($exercise, $this->student->id,
+                null, mod_astra_submission::STATUS_INITIALIZED,
+                $this->round1->getOpeningTime() + 63);
+        $submission = mod_astra_submission::createFromId($sid);
+        $submission->grade(6, 10, 'feedback');
+        $sid = mod_astra_submission::createNewSubmission($exercise, $this->student->id,
+                null, mod_astra_submission::STATUS_INITIALIZED,
+                $this->round1->getOpeningTime() + 64);
+        $submission = mod_astra_submission::createFromId($sid);
+        $submission->grade(4, 10, 'feedback');
+        $this->assertEquals(5, $exercise->getSubmissionCountForStudent($this->student->id));
+        $this->check_gradebook_grade(7, $exercise, $this->student);
+
+        // Remove the submissions that exceed the limit and run tests.
+        $exercise->removeSubmissionsExceedingStoreLimit($this->student->id);
+        $this->assertEquals(2, $exercise->getSubmissionCountForStudent($this->student->id));
+        $submissions = $exercise->getSubmissionsForStudent($this->student->id);
+        // Check that the oldest submissions were removed.
+        foreach ($submissions as $sbms) {
+            $this->assertTrue($sbms->submissiontime >= $this->round1->getOpeningTime() + 63);
+        }
+        $submissions->close();
+        $this->check_gradebook_grade(6, $exercise, $this->student);
+        // Check that the submissions in an unrelated exercise were not affected.
+        $this->assertEquals(2, $this->exercises[0]->getSubmissionCountForStudent($this->student->id));
+
+        // Remove excessive submissions again, but nothing should be removed this time.
+        $exercise->removeSubmissionsExceedingStoreLimit($this->student->id);
+        $this->assertEquals(2, $exercise->getSubmissionCountForStudent($this->student->id));
+        $submissions = $exercise->getSubmissionsForStudent($this->student->id);
+        // Check that the oldest submissions were removed.
+        foreach ($submissions as $sbms) {
+            $this->assertTrue($sbms->submissiontime >= $this->round1->getOpeningTime() + 63);
+        }
+        $submissions->close();
+        $this->check_gradebook_grade(6, $exercise, $this->student);
+    }
+
+    protected function check_gradebook_grade(int $expectedgrade, mod_astra_exercise $exercise, stdClass $user) {
+        $grade = $exercise->getGradeFromGradebook($user->id);
+        $this->assertEquals($expectedgrade, $grade);
+    }
 }
