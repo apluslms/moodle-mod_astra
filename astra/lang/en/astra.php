@@ -169,6 +169,7 @@ $string['anystatus'] = 'Any status';
 $string['anystatusnoterror'] = 'Any status except error';
 $string['numbersubmissionsmatched'] = '{$a} submissions matched the query';
 $string['courseoverview'] = 'Course overview';
+$string['intotal'] = 'In total';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';

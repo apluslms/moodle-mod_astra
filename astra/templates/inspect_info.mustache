@@ -6,7 +6,7 @@ Context variables:
 * submitter_name (string) in the format "fullname (student id)"
 * submitter_results_url (string) URL to the user results page of the submitter
 * submitter_profile_pic (string) HTML of the submitter's Moodle profile picture that links to the profile page
-* status (string) human-readable status of the submission
+* state (string) human-readable status of the submission
 * submission_time (int) Unix timestamp
 * points (int) points of the submission
 * late_penalty_applied (float) late penalty 0-1, null if none
@@ -14,8 +14,12 @@ Context variables:
 * files (array of objects) each object has fields that are required by _file_link.mustache
 * submission_data (string) pretty-printed JSON
 * grading_data (string) pretty-printed JSON
+* submissions (array of objects) all submissions in the exercise made by the user
+    - each object has fields required by _points_badge.mustache
+* submission_count (int) the number of submissions the user has made
 * exercise (object with fields)
     - max_points (int)
+    - max_submissions_for_user (int)
 * toDateStr callable Function that converts a Unix timestamp to a date string
 * fileSizeFormatter (callable) function to convert bytes (int) to a human-readable string (e.g. "10.2 KB")
 }}
@@ -27,7 +31,7 @@ Context variables:
             <dt>{{#str}} submitters, mod_astra {{/str}}</dt>
             <dd><a href="{{{ submitter_results_url }}}">{{ submitter_name }}</a> {{{ submitter_profile_pic }}}</dd>
             <dt>{{#str}} status, mod_astra {{/str}}</dt>
-            <dd>{{ status }}</dd>
+            <dd>{{ state }}</dd>
             <dt>{{#str}} submissiontime, mod_astra {{/str}}</dt>
             <dd>{{# toDateStr }}{{ submission_time }}{{/ toDateStr }}</dd>
             <dt>{{#str}} grade, mod_astra {{/str}}</dt>
@@ -36,6 +40,26 @@ Context variables:
             <dt>{{#str}} includeslatepenalty, mod_astra {{/str}}</dt>
             <dd>-{{ late_penalty_applied_percent }}%</dd>
             {{/ late_penalty_applied }}
+            <dt>{{#str}} submissions, mod_astra {{/str}}</dt>
+            <dd>
+                <ul style="list-style: none;">
+                {{# submissions }}
+                  <li>
+                    {{^ currentsubmission }}<a href="{{{ inspecturl }}}">{{/ currentsubmission }}
+                      {{ nth }}.
+                      {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
+                      {{> mod_astra/_points_badge }}
+                    {{^ currentsubmission }}</a>{{/ currentsubmission }}
+                  </li>
+                {{/ submissions }}
+                </ul>
+
+                {{#str}} intotal, mod_astra {{/str}}
+                {{ submission_count }}
+                {{# exercise.max_submissions_for_user }}
+                  / {{ exercise.max_submissions_for_user }}
+                {{/ exercise.max_submissions_for_user }}
+            </dd>
         </dl>
 
         <h4 class="card-title">{{#str}} submittedfiles, mod_astra {{/str}}</h4>

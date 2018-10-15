@@ -569,9 +569,12 @@ class mod_astra_exercise extends mod_astra_learning_object {
     /**
      * Return the template context of all submissions from a user.
      * @param int $userid
+     * @param mod_astra_submission $currentsubmission if set, one submission
+     * is marked as the current submission with an additional variable currentsubmission.
      * @return stdClass[]
      */
-    public function getSubmissionsTemplateContext($userid) {
+    public function getSubmissionsTemplateContext($userid,
+            mod_astra_submission $currentsubmission = null) {
         // latest submission first
         $submissions = $this->getSubmissionsForStudent($userid, false,
                 'submissiontime DESC', false, true);
@@ -582,8 +585,8 @@ class mod_astra_exercise extends mod_astra_learning_object {
             $objects[] = new mod_astra_submission($record);
         }
         $submissions->close();
-        
-        return self::submissionsTemplateContext($objects);
+
+        return self::submissionsTemplateContext($objects, $currentsubmission);
     }
     
     /**
@@ -592,15 +595,21 @@ class mod_astra_exercise extends mod_astra_learning_object {
      * and the array should be sorted by the submission time (latest submission first).
      * 
      * @param array $submissions \mod_astra_submission objects
+     * @param mod_astra_submission $currentsubmission if set, one submission
+     * is marked as the current submission with an additional variable currentsubmission.
      * @return stdClass[] array of context objects
      */
-    public static function submissionsTemplateContext(array $submissions) {
+    public static function submissionsTemplateContext(array $submissions,
+            mod_astra_submission $currentsubmission = null) {
         $ctx = array();
         $nth = count($submissions);
         foreach ($submissions as $sbms) {
             $obj = $sbms->getTemplateContext();
             $obj->nth = $nth;
             $nth--;
+            if (isset($currentsubmission) && $sbms->getId() == $currentsubmission->getId()) {
+                $obj->currentsubmission = true;
+            }
             $ctx[] = $obj;
         }
         

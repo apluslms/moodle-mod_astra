@@ -169,6 +169,7 @@ $string['anystatus'] = 'Kaikki tilat';
 $string['anystatusnoterror'] = 'Kaikki tilat paitsi virhetila';
 $string['numbersubmissionsmatched'] = '{$a} palautusta osui suodatukseen';
 $string['courseoverview'] = 'Kurssin yleiskatsaus';
+$string['intotal'] = 'Kaikkiaan';
 
 // teachers edit pages
 $string['editcourse'] = 'Muokkaa kurssia';

@@ -13,10 +13,15 @@ class inspect_page implements \renderable, \templatable {
     
     public function export_for_template(\renderer_base $output) {
         $ctx = $this->submission->getTemplateContext(true, true);
-        $ctx->status = $ctx->state;
-        
-        $ctx->exercise = $this->submission->getExercise()->getExerciseTemplateContext(null, false, false);
-        
+        $ctx->state = $ctx->state;
+
+        $ctx->exercise = $this->submission->getExercise()->getExerciseTemplateContext(
+                $this->submission->getSubmitter(), false, false);
+        $ctx->submissions = $this->submission->getExercise()->getSubmissionsTemplateContext(
+                $this->submission->getSubmitter()->id, $this->submission);
+        $ctx->submission_count = $this->submission->getExercise()->getSubmissionCountForStudent(
+                $this->submission->getSubmitter()->id);
+
         $context = \context_module::instance($this->submission->getExercise()->getExerciseRound()->getCourseModule()->id);
         $ctx->manual_grading_url = \mod_astra\urls\urls::assessSubmissionManually($this->submission);
         $ctx->resubmit_grading_url = \mod_astra\urls\urls::resubmitToService($this->submission);
