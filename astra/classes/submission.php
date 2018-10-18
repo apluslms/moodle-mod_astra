@@ -100,7 +100,15 @@ class mod_astra_submission extends mod_astra_database_object {
         }
         return $this->grader;
     }
-    
+
+    public function getGraderName() {
+        $grader = $this->getGrader();
+        if ($grader !== null) {
+            return fullname($grader);
+        }
+        return null;
+    }
+
     public function getFeedback() {
         return $this->record->feedback;
     }
@@ -113,8 +121,10 @@ class mod_astra_submission extends mod_astra_database_object {
         return (int) $this->record->grade; // points given to the submission
     }
     
-    public function getGradingTime() {
-        return $this->record->gradingtime; // int, Unix timestamp
+    public function getGradingTime() : int {
+        return (int) $this->record->gradingtime; // int, Unix timestamp
+        // The value may be null for ungraded submissions.
+        // Null becomes zero with the int type cast.
     }
     
     public function getLatePenaltyApplied() {
@@ -225,6 +235,7 @@ class mod_astra_submission extends mod_astra_database_object {
     
     public function setGrader(\stdClass $user) {
         $this->record->grader = $user->id;
+        $this->grader = $user;
     }
     
     /**
@@ -650,7 +661,8 @@ class mod_astra_submission extends mod_astra_database_object {
         return $ret;
     }
     
-    public function getTemplateContext($includeFeedbackAndFiles = false, $includeSbmsAndGradingData = false) {
+    public function getTemplateContext($includeFeedbackAndFiles = false, $includeSbmsAndGradingData = false,
+            $includeManualGrader = false) {
         global $OUTPUT;
         
         $ctx = new stdClass();
@@ -658,6 +670,7 @@ class mod_astra_submission extends mod_astra_database_object {
         $ctx->poll_url = \mod_astra\urls\urls::pollSubmissionStatus($this);
         $ctx->inspecturl = \mod_astra\urls\urls::inspectSubmission($this);
         $ctx->submission_time = $this->getSubmissionTime();
+        $ctx->grading_time = $this->getGradingTime();
         //$ctx->nth = 1; // counting the ordinal number here would be too expensive,
         // since it has to query all submissions from the database
         $ctx->state = $this->getStatus(true);
@@ -686,7 +699,19 @@ class mod_astra_submission extends mod_astra_database_object {
         ));
         $assistantFeedback = $this->getAssistantFeedback();
         $ctx->has_assistant_feedback = !empty($assistantFeedback); // empty supports only variables
-        
+
+        if ($includeManualGrader) {
+            $manualgrader = $this->getGrader();
+            if ($manualgrader !== null) {
+                $ctx->manual_grader_name = $this->getGraderName();
+                $ctx->manual_grader_results_url = \mod_astra\urls\urls::userResults(
+                        $courseid, $manualgrader->id);
+                $ctx->manual_grader_profile_pic = $OUTPUT->user_picture($manualgrader, array(
+                        'courseid' => $courseid,
+                ));
+            }
+        }
+
         if ($this->isGraded()) {
             $ctx->is_graded = true;
         } else {

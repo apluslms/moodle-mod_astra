@@ -9,14 +9,29 @@ Context variables:
 * state (string) human-readable status of the submission
 * submission_time (int) Unix timestamp
 * points (int) points of the submission
+* service_points (int) points from the grader before scaling
+* service_max_points (int) max points used by the grader
 * late_penalty_applied (float) late penalty 0-1, null if none
 * late_penalty_applied_percent (int) late penalty percentage 0-100
+* grading_time (int) Unix timestamp, when was the submission graded?
+* manual_grader_name (string) name of the user who has given manual feedback
+  (if manual feedback has been given)
+* manual_grader_results_url (string) URL to the user results page of the manual grader
+* manual_grader_profile_pic (string) HTML of the manual grader's Moodle profile
+  picture that links to the profile page
 * files (array of objects) each object has fields that are required by _file_link.mustache
 * submission_data (string) pretty-printed JSON
 * grading_data (string) pretty-printed JSON
 * submissions (array of objects) all submissions in the exercise made by the user
     - each object has fields required by _points_badge.mustache
 * submission_count (int) the number of submissions the user has made
+* deviations (false|object) false if there are no deviations or otherwise an object with keys
+    - has_submission_deviation (bool) true if the submitter has a submission limit
+      deviation to the exercise
+    - has_deadline_deviation (bool) true if the submitter has a deadline deviation
+      to the exercise
+    - submission_deviation_desc (string) description of the submission limit deviation
+    - deadline_deviation_desc (string) description of the deadline deviation
 * exercise (object with fields)
     - max_points (int)
     - max_submissions_for_user (int)
@@ -35,11 +50,24 @@ Context variables:
             <dt>{{#str}} submissiontime, mod_astra {{/str}}</dt>
             <dd>{{# toDateStr }}{{ submission_time }}{{/ toDateStr }}</dd>
             <dt>{{#str}} grade, mod_astra {{/str}}</dt>
-            <dd>{{ points }} / {{ exercise.max_points }}</dd>
+            <dd>{{ points }} / {{ exercise.max_points }}
+              ({{#str}} graderoutput, mod_astra {{/str}} {{ service_points }} / {{ service_max_points }})
+            </dd>
             {{# late_penalty_applied }}
             <dt>{{#str}} includeslatepenalty, mod_astra {{/str}}</dt>
             <dd>-{{ late_penalty_applied_percent }}%</dd>
             {{/ late_penalty_applied }}
+            {{# grading_time }}
+            <dt>
+              {{#str}} gradingtime, mod_astra {{/str}}
+              <small>{{#str}} gradingtimecompleted, mod_astra {{/str}}</small>
+            </dt>
+            <dd>{{# toDateStr }}{{ grading_time }}{{/ toDateStr }}</dd>
+            {{/ grading_time }}
+            {{# manual_grader_name }}
+            <dt>{{#str}} manualgrader, mod_astra {{/str}}</dt>
+            <dd><a href="{{{ manual_grader_results_url }}}">{{ manual_grader_name }}</a> {{{ manual_grader_profile_pic }}}</dd>
+            {{/ manual_grader_name }}
             <dt>{{#str}} submissions, mod_astra {{/str}}</dt>
             <dd>
                 <ul style="list-style: none;">
@@ -77,6 +105,22 @@ Context variables:
             </li>
             {{/ files }}
         </ul>
+
+        {{# deviations }}
+        <h4 class="card-title">{{#str}} sbmsanddldeviations, mod_astra {{/str}}</h4>
+        <ul class="list-unstyled">
+        {{# has_submission_deviation }}
+          <li>
+            {{ submission_deviation_desc }}
+          </li>
+        {{/ has_submission_deviation }}
+        {{# has_deadline_deviation }}
+          <li>
+            {{ deadline_deviation_desc }}
+          </li>
+        {{/ has_deadline_deviation }}
+        </ul>
+        {{/ deviations }}
 
         <h4 class="card-title">{{#str}} submittedvalues, mod_astra {{/str}}</h4>
 

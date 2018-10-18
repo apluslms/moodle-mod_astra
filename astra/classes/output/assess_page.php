@@ -3,6 +3,8 @@ namespace mod_astra\output;
 
 defined('MOODLE_INTERNAL') || die;
 
+use mod_astra\output\inspect_page;
+
 class assess_page implements \renderable, \templatable {
     
     protected $submission;
@@ -14,7 +16,7 @@ class assess_page implements \renderable, \templatable {
     }
     
     public function export_for_template(\renderer_base $output) {
-        $ctx = $this->submission->getTemplateContext(true, true);
+        $ctx = $this->submission->getTemplateContext(true, true, true);
         $ctx->state = $ctx->state;
 
         $ctx->exercise = $this->submission->getExercise()->getExerciseTemplateContext(
@@ -28,7 +30,9 @@ class assess_page implements \renderable, \templatable {
         $ctx->fileSizeFormatter = new \mod_astra\output\file_size_formatter();
         
         $ctx->form = $this->form;
-        
+
+        $ctx->deviations = inspect_page::make_deviations_template_context($this->submission);
+
         return $ctx;
     }
 }
