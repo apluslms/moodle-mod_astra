@@ -105,7 +105,10 @@ class mod_astra_exercise extends mod_astra_learning_object {
         
         // delete exercise gradebook item
         $this->deleteGradebookItem();
-        
+
+        // Delete all deviations for this exercise.
+        $this->deleteDeviations();
+
         // this exercise (both lobject and exercise tables) and children
         $res = parent::deleteInstance();
         
@@ -116,7 +119,22 @@ class mod_astra_exercise extends mod_astra_learning_object {
         
         return $res;
     }
-    
+
+    /**
+     * Delete all deviations related to this exercise
+     * (i.e., deadline and submission limit extensions).
+     */
+    public function deleteDeviations() {
+        global $DB;
+
+        $DB->delete_records(mod_astra_deadline_deviation::TABLE, array(
+                'exerciseid' => $this->getId(),
+        ));
+        $DB->delete_records(mod_astra_submission_limit_deviation::TABLE, array(
+                'exerciseid' => $this->getId(),
+        ));
+    }
+
     /**
      * Delete Moodle gradebook item for this exercise.
      * @return int GRADE_UPDATE_OK or GRADE_UPDATE_FAILED (or GRADE_UPDATE_MULTIPLE)
