@@ -18,6 +18,9 @@ class assess_page implements \renderable, \templatable {
     public function export_for_template(\renderer_base $output) {
         $ctx = $this->submission->getTemplateContext(true, true, true);
         $ctx->state = $ctx->state;
+        unset($ctx->status);
+        // Unset the status variable in the top-level context so that
+        // it can not affect the points badge in the submission list.
 
         $ctx->exercise = $this->submission->getExercise()->getExerciseTemplateContext(
                 $this->submission->getSubmitter(), false, false);
