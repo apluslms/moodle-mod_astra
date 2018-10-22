@@ -39,6 +39,10 @@ class inspect_page implements \renderable, \templatable {
         $ctx->allow_manual_grading = (\has_capability('mod/astra:grademanually', $context) &&
                 $this->submission->getExercise()->isAssistantGradingAllowed()) ||
                 \has_capability('mod/astra:addinstance', $context);
+        $ctx->can_add_deviations = has_capability('mod/astra:addinstance', $context);
+        $ctx->add_extra_submissions_url = \mod_astra\urls\urls::upsertSubmissionLimitDeviation(
+                $this->submission->getExercise(), $this->submission->getSubmitter()->id,
+                $this->submission);
 
         $ctx->toDateStr = new date_to_string();
         $ctx->fileSizeFormatter = new file_size_formatter();

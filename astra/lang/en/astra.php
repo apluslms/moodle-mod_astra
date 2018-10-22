@@ -176,7 +176,10 @@ $string['anystatusnoterror'] = 'Any status except error';
 $string['numbersubmissionsmatched'] = '{$a} submissions matched the query';
 $string['courseoverview'] = 'Course overview';
 $string['intotal'] = 'In total';
+$string['addextrasbms'] = 'Add extra submissions';
 $string['graderoutput'] = 'grader output';
+$string['extrasbmsaddedsuccess'] = 'The extra submissions were added successfully.';
+$string['addextrasbmsnote'] = 'Grant the student {$a->userfullname} extra submissions in the exercise {$a->exercise} in addition to the normal submission limit ({$a->normallimit} submissions). If the student has already been granted extra submissions, the new extra submissions are added on top of them.';
 
 // teachers edit pages
 $string['editcourse'] = 'Edit course';

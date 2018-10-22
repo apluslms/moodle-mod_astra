@@ -176,7 +176,10 @@ $string['anystatusnoterror'] = 'Kaikki tilat paitsi virhetila';
 $string['numbersubmissionsmatched'] = '{$a} palautusta osui suodatukseen';
 $string['courseoverview'] = 'Kurssin yleiskatsaus';
 $string['intotal'] = 'Kaikkiaan';
+$string['addextrasbms'] = 'Lisää lisäpalautuksia';
 $string['graderoutput'] = 'tehtäväpalvelusta';
+$string['extrasbmsaddedsuccess'] = 'Lisäpalautusten lisääminen onnistui.';
+$string['addextrasbmsnote'] = 'Myönnä opiskelijalle {$a->userfullname} lisäpalautuksia tehtävään {$a->exercise} normaalin palautusrajan lisäksi ({$a->normallimit} palautusta). Jos opiskelijalle on jo aiemmin myönnetty lisäpalautuksia, uudet lisäpalautukset lisätään aiempien päälle.';
 
 // teachers edit pages
 $string['editcourse'] = 'Muokkaa kurssia';

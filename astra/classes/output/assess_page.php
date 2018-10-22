@@ -29,6 +29,12 @@ class assess_page implements \renderable, \templatable {
         $ctx->submission_count = $this->submission->getExercise()->getSubmissionCountForStudent(
                 $this->submission->getSubmitter()->id);
 
+        $context = \context_module::instance($this->submission->getExercise()->getExerciseRound()->getCourseModule()->id);
+        $ctx->can_add_deviations = has_capability('mod/astra:addinstance', $context);
+        $ctx->add_extra_submissions_url = \mod_astra\urls\urls::upsertSubmissionLimitDeviation(
+                $this->submission->getExercise(), $this->submission->getSubmitter()->id,
+                $this->submission);
+
         $ctx->toDateStr = new \mod_astra\output\date_to_string();
         $ctx->fileSizeFormatter = new \mod_astra\output\file_size_formatter();
         

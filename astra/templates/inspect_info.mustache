@@ -35,6 +35,8 @@ Context variables:
 * exercise (object with fields)
     - max_points (int)
     - max_submissions_for_user (int)
+* can_add_deviations (bool) true if the user can add deviations to the submitter (extra submissions)
+* add_extra_submissions_url (string) URL to the page in which extra submissions may be added
 * toDateStr callable Function that converts a Unix timestamp to a date string
 * fileSizeFormatter (callable) function to convert bytes (int) to a human-readable string (e.g. "10.2 KB")
 }}
@@ -86,6 +88,9 @@ Context variables:
                 {{ submission_count }}
                 {{# exercise.max_submissions_for_user }}
                   / {{ exercise.max_submissions_for_user }}
+                  {{# can_add_deviations }}
+                    <a href="{{{ add_extra_submissions_url }}}" class="btn btn-primary">{{#str}} addextrasbms, mod_astra {{/str}}</a>
+                  {{/ can_add_deviations }}
                 {{/ exercise.max_submissions_for_user }}
             </dd>
         </dl>

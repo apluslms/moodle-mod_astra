@@ -135,7 +135,18 @@ class urls {
         $query = array('id' => $sbms->getId());
         return self::buildUrl('/teachers/resubmit_submission.php', $query, $asMdlUrl);
     }
-    
+
+    public static function upsertSubmissionLimitDeviation(\mod_astra_exercise $exercise,
+            $userid, \mod_astra_submission $submission, $asMoodleUrl = false) {
+        $query = array(
+                'exerciseid' => $exercise->getId(),
+                'userid' => $userid,
+                'submissionid' => $submission->getId(),
+                'type' => 'submitlimit',
+        );
+        return self::buildUrl('/teachers/add_deviation_to_student.php', $query, $asMoodleUrl);
+    }
+
     public static function asyncGradeSubmission(\mod_astra_submission $sbms, $asMdlUrl = false) {
         // exercise service HTTP POSTs grading results asynchronously to this URL
         $query = array(
