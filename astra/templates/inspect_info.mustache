@@ -20,8 +20,8 @@ Context variables:
 * manual_grader_profile_pic (string) HTML of the manual grader's Moodle profile
   picture that links to the profile page
 * files (array of objects) each object has fields that are required by _file_link.mustache
-* submission_data (string) pretty-printed JSON
-* grading_data (string) pretty-printed JSON
+* submission_data (array of objects) each object has keys "key" and "value"
+* grading_data (array of objects) the same structure as submission_data
 * submissions (array of objects) all submissions in the exercise made by the user
     - each object has fields required by _points_badge.mustache
 * submission_count (int) the number of submissions the user has made
@@ -128,16 +128,26 @@ Context variables:
         {{/ deviations }}
 
         <h4 class="card-title">{{#str}} submittedvalues, mod_astra {{/str}}</h4>
-
-<pre>
-{{ submission_data }}
-</pre>
+        <dl>
+          {{# submission_data }}
+            <dt>{{ key }}</dt>
+            <dd>{{ value }}</dd>
+          {{/ submission_data }}
+          {{^ submission_data }}
+            <dt>{{#str}} novalues, mod_astra {{/str}}</dt>
+          {{/ submission_data }}
+        </dl>
 
         <h4 class="card-title">{{#str}} gradingdata, mod_astra {{/str}}</h4>
+        <dl>
+          {{# grading_data }}
+            <dt>{{ key }}</dt>
+            <dd>{{ value }}</dd>
+          {{/ grading_data }}
+          {{^ grading_data }}
+            <dt>{{#str}} novalues, mod_astra {{/str}}</dt>
+          {{/ grading_data }}
+        </dl>
 
-<pre>
-{{ grading_data }}
-</pre>
-        
     </div>
 </div>

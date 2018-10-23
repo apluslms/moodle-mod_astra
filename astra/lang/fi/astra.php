@@ -180,6 +180,7 @@ $string['addextrasbms'] = 'Lisää lisäpalautuksia';
 $string['graderoutput'] = 'tehtäväpalvelusta';
 $string['extrasbmsaddedsuccess'] = 'Lisäpalautusten lisääminen onnistui.';
 $string['addextrasbmsnote'] = 'Myönnä opiskelijalle {$a->userfullname} lisäpalautuksia tehtävään {$a->exercise} normaalin palautusrajan lisäksi ({$a->normallimit} palautusta). Jos opiskelijalle on jo aiemmin myönnetty lisäpalautuksia, uudet lisäpalautukset lisätään aiempien päälle.';
+$string['novalues'] = 'Ei ole';
 
 // teachers edit pages
 $string['editcourse'] = 'Muokkaa kurssia';

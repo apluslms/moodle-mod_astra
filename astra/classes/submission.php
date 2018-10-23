@@ -728,22 +728,54 @@ class mod_astra_submission extends mod_astra_database_object {
         }
         
         if ($includeSbmsAndGradingData) {
-            // decode JSON and encode again to obtain pretty-printed string
-            $sbmsData = $this->getSubmissionData();
-            if ($sbmsData !== null) {
-                $sbmsData = json_encode($sbmsData, JSON_PRETTY_PRINT);
-            }
-            $gradingData = $this->getGradingData();
-            if ($gradingData !== null) {
-                $gradingData = json_encode($gradingData, JSON_PRETTY_PRINT);
-            }
-            $ctx->submission_data = $sbmsData;
-            $ctx->grading_data = $gradingData;
+            $ctx->submission_data = self::convertJsonDataToTemplateContext(
+                    $this->getSubmissionData());
+            $ctx->grading_data = self::convertJsonDataToTemplateContext(
+                    $this->getGradingData());
         }
         
         return $ctx;
     }
-    
+
+    /**
+     * Return the template context for the given JSON data. It separates top-level
+     * keys and values so that the keys may be emphasized in the template.
+     * 
+     * @param array|scalar|null $jsondata decoded JSON data
+     * @return null if the input is null. Otherwise, a numerically indexed array that
+     * contains nested arrays. The nested arrays are pairs that have keys
+     * "key" and "value".
+     */
+    public static function convertJsonDataToTemplateContext($jsondata) {
+        if ($jsondata === null) {
+            return null;
+        } else if (is_scalar($jsondata)) {
+            // Not an array nor an object, so no key-value pairs.
+            if (is_bool($jsondata)) {
+                // Convert booleans to strings that look like booleans, not integers.
+                $jsondata = $jsondata ? 'true' : 'false';
+            }
+            return array(
+                array(
+                    'key' => '-',
+                    'value' => $jsondata,
+                )
+            );
+        } else {
+            $res = array();
+            foreach ($jsondata as $key => $val) {
+                if (!is_string($val) && !is_numeric($val)) {
+                    $val = json_encode($val, JSON_PRETTY_PRINT);
+                }
+                $res[] = array(
+                    'key' => $key,
+                    'value' => $val,
+                );
+            }
+            return $res;
+        }
+    }
+
     /**
      * Return true if a file of the given MIME type should be passed to the user
      * (i.e., it is a binary file, e.g., image, pdf).  
