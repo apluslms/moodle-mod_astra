@@ -103,7 +103,7 @@ class mod_astra_exercise_round extends mod_astra_database_object {
     public function getIntro($format = false) {
         if ($format) {
             // use Moodle filters for safe HTML output or other intro format types
-            return format_module_intro(self::TABLE, $this->record, $this->cm->id);
+            return format_module_intro(self::TABLE, $this->record, $this->getCourseModule()->id);
         }
         return $this->record->intro;
     }
@@ -1226,7 +1226,7 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         // show_lobject_points: true if the exercise round point progress panel should display the exercise points for each exercise
         $ctx->show_lobject_points = ($this->getStatus() === self::STATUS_READY || $this->getStatus() === self::STATUS_UNLISTED);
         $ctx->status_maintenance = ($this->getStatus() === self::STATUS_MAINTENANCE);
-        $ctx->introduction = \format_module_intro(self::TABLE, $this->record, $this->cm->id);
+        $ctx->introduction = \format_module_intro(self::TABLE, $this->record, $this->getCourseModule()->id);
         $ctx->show_required_points = ($ctx->status_ready && $this->getPointsToPass() > 0);
         $ctx->points_to_pass = $this->getPointsToPass();
         $ctx->expired = $this->hasExpired();

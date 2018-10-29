@@ -466,7 +466,7 @@ abstract class mod_astra_learning_object extends mod_astra_database_object {
      */
     public function load($userid) {
         $page = new \mod_astra\protocol\exercise_page($this);
-        $language = $this->exerciseRound->checkCourseLang(current_language()); // e.g., 'en'
+        $language = $this->getExerciseRound()->checkCourseLang(current_language()); // e.g., 'en'
         $cache = new \mod_astra\cache\exercise_cache($this, $language, $userid);
         
         $page->content = $cache->get_content();
