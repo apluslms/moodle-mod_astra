@@ -22,8 +22,10 @@ Context variables:
 * files (array of objects) each object has fields that are required by _file_link.mustache
 * submission_data (array of objects) each object has keys "key" and "value"
 * grading_data (array of objects) the same structure as submission_data
-* submissions (array of objects) all submissions in the exercise made by the user
-    - each object has fields required by _points_badge.mustache
+* submissions (array of objects) all submissions in the exercise made by the user.
+    Each object has the following fields:
+    - fields required by _points_badge.mustache
+    - has_assistant_feedback (bool)
 * submission_count (int) the number of submissions the user has made
 * deviations (false|object) false if there are no deviations or otherwise an object with keys
     - has_submission_deviation (bool) true if the submitter has a submission limit
@@ -79,6 +81,9 @@ Context variables:
                       {{ nth }}.
                       {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
                       {{> mod_astra/_points_badge }}
+                      {{# has_assistant_feedback }}
+                        {{#pix}}t/message, core, {{#str}} assistantfeedback, mod_astra {{/str}}{{/pix}}
+                      {{/ has_assistant_feedback }}
                     {{^ currentsubmission }}</a>{{/ currentsubmission }}
                   </li>
                 {{/ submissions }}

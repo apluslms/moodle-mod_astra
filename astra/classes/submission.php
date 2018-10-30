@@ -116,7 +116,11 @@ class mod_astra_submission extends mod_astra_database_object {
     public function getAssistantFeedback() {
         return $this->record->assistfeedback;
     }
-    
+
+    public function hasAssistantFeedback() {
+        return !empty($this->record->assistfeedback);
+    }
+
     public function getGrade() {
         return (int) $this->record->grade; // points given to the submission
     }

@@ -13,8 +13,10 @@ Context variables:
     - fields required by _points_badge.mustache
     - best_submission_url (string) URL to view the best submission
     - submission_count (int) number of submissions from the user
+    - has_any_sbms_assist_feedback (bool) true if any submission has received assistant feedback
 * submissions (array of objects, the latest submission first), each object has keys 
     url (string), submission_time (int, timestamp), nth (int, ordinal number),
+    has_assistant_feedback (bool),
     the variables required by _points_badge.mustache (set status if the submission is not graded)
 * module (object) exercise round, with fields 
     - closingtime (int) Unix timestamp of the round closing time
@@ -50,6 +52,9 @@ Context variables:
                     id="sbmsdropdown-{{uniqid}}" aria-haspopup="true" aria-expanded="false">
                     {{#str}} submissions, mod_astra {{/str}}
                     <span class="badge badge-secondary">
+                        {{# summary.has_any_sbms_assist_feedback }}
+                          {{#pix}}t/message, core, {{#str}} assistantfeedback, mod_astra {{/str}}{{/pix}}
+                        {{/ summary.has_any_sbms_assist_feedback }}
                         {{ summary.submission_count }}
                         {{# exercise.max_submissions_for_user }}
                         / {{ exercise.max_submissions_for_user }}
@@ -62,6 +67,9 @@ Context variables:
                             {{ nth }}.
                             {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
                             {{> mod_astra/_points_badge }}
+                            {{# has_assistant_feedback }}
+                              {{#pix}}t/message, core, {{#str}} assistantfeedback, mod_astra {{/str}}{{/pix}}
+                            {{/ has_assistant_feedback }}
                         </a>
                     {{/ submissions }}
                     {{^ submissions }}

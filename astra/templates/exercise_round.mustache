@@ -28,6 +28,7 @@ Context variables:
             * nth (int)
             * submission_time (int) Unix timestamp
             * url (string)
+            * has_assistant_feedback (bool)
             * fields required by _points_badge.mustache
         - sbmsrequireastview (bool) true if the submissions array is hidden (empty)
             only because the exercise configuration has not enabled assistant viewing
@@ -36,6 +37,7 @@ Context variables:
         - exercise_summary (object) if the exercise is submittable
             * keys that are required by _points_badge.mustache
             * submission_count (int) how many submissions the user has made
+            * has_any_sbms_assist_feedback (bool) true if any submission has received assistant feedback
 }}
 <div class="card border-primary module-panel{{# course_module.expired }} module-expired{{/ course_module.expired }}">
   <div class="card-header bg-primary text-white">
@@ -128,6 +130,9 @@ Context variables:
           <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button"
               aria-haspopup="true" aria-expanded="false">
               <span class="badge badge-secondary badge-pill">
+                {{# exercise_summary.has_any_sbms_assist_feedback }}
+                  {{#pix}}t/message, core, {{#str}} assistantfeedback, mod_astra {{/str}}{{/pix}}
+                {{/ exercise_summary.has_any_sbms_assist_feedback }}
                 {{ exercise_summary.submission_count }}
                 {{# exercise.max_submissions_for_user }}
                   / {{ exercise.max_submissions_for_user }}
@@ -140,6 +145,9 @@ Context variables:
                       {{ nth }}.
                       {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
                       {{> mod_astra/_points_badge }}
+                      {{# has_assistant_feedback }}
+                        {{#pix}}t/message, core, {{#str}} assistantfeedback, mod_astra {{/str}}{{/pix}}
+                      {{/ has_assistant_feedback }}
                   </a>
               {{/ submissions }}
               {{^ submissions }}

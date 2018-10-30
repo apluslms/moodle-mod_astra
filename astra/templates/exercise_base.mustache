@@ -13,9 +13,12 @@ Context variables:
     - next and previous objects as required by _siblings.mustache
 * submissions (array of objects, the latest submission first), each object has keys 
     url (string), submission_time (int, timestamp), nth (int, ordinal number),
+    has_assistant_feedback (bool),
     the variables required by _points_badge.mustache (set status if the submission is not graded)
 * summary (object) required by _exercise_info.mustache if the exerciseinfo block is used and
   the exercise is submittable. The field summary.submission_count is used in this template.
+  In addition, the following fields:
+    - has_any_sbms_assist_feedback (bool) true if any submission has received assistant feedback
 * is_course_staff (bool)
 * is_editing_teacher (bool) can user edit exercises?
 * can_inspect (bool) can user inspect submission?
@@ -52,6 +55,9 @@ Blocks that child templates should override:
               aria-haspopup="true" aria-expanded="false">
               {{#str}} mysubmissions, mod_astra {{/str}}
               <span class="badge badge-secondary">
+                {{# summary.has_any_sbms_assist_feedback }}
+                  {{#pix}}t/message, core, {{#str}} assistantfeedback, mod_astra {{/str}}{{/pix}}
+                {{/ summary.has_any_sbms_assist_feedback }}
                 {{ summary.submission_count }}
                 {{# exercise.max_submissions_for_user }}
                   / {{ exercise.max_submissions_for_user }}
@@ -64,6 +70,9 @@ Blocks that child templates should override:
                       {{ nth }}.
                       {{# toDateStr }}{{ submission_time }}{{/ toDateStr }}
                       {{> mod_astra/_points_badge }}
+                      {{# has_assistant_feedback }}
+                        {{#pix}}t/message, core, {{#str}} assistantfeedback, mod_astra {{/str}}{{/pix}}
+                      {{/ has_assistant_feedback }}
                   </a>
               {{/ submissions }}
               {{^ submissions }}

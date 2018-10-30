@@ -143,7 +143,16 @@ class user_exercise_summary {
     public function getExerciseCategory() {
         return $this->category;
     }
-    
+
+    public function hasAnySubmissionAssistantFeedback() {
+        foreach ($this->submissions as $submission) {
+            if ($submission->hasAssistantFeedback()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function getTemplateContext() {
         $grade = $this->getPoints();
         
@@ -166,7 +175,8 @@ class user_exercise_summary {
         $ctx->penaltyapplied = $this->getPenalty();
         $ctx->penaltyappliedpercent = $this->getPenaltyPercentage();
         $ctx->submission_count = $this->getSubmissionCount();
-        
+        $ctx->has_any_sbms_assist_feedback = $this->hasAnySubmissionAssistantFeedback();
+
         return $ctx;
     }
 }
