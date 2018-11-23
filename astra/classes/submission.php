@@ -781,6 +781,28 @@ class mod_astra_submission extends mod_astra_database_object {
     }
 
     /**
+     * Return errors from this submission's grading data.
+     * Empty string is returned when there are no errors.
+     * @return string
+     */
+    public function getGradingDataErrors() {
+        $gradingdata = $this->getGradingData();
+        if (!is_object($gradingdata) || empty($gradingdata->grading_data)) {
+            return '';
+        }
+        if (is_string($gradingdata->grading_data)) {
+            $gradingdata = json_decode($gradingdata->grading_data);
+        } else {
+            $gradingdata = $gradingdata->grading_data;
+        }
+
+        if (empty($gradingdata->errors)) {
+            return '';
+        }
+        return $gradingdata->errors;
+    }
+
+    /**
      * Return true if a file of the given MIME type should be passed to the user
      * (i.e., it is a binary file, e.g., image, pdf).  
      * @param string $mimetype

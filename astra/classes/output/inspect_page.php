@@ -25,6 +25,7 @@ class inspect_page implements \renderable, \templatable {
         unset($ctx->status);
         // Unset the status variable in the top-level context so that
         // it can not affect the points badge in the submission list.
+        $ctx->grading_data_errors = $this->submission->getGradingDataErrors();
 
         $ctx->exercise = $this->submission->getExercise()->getExerciseTemplateContext(
                 $this->submission->getSubmitter(), false, false);

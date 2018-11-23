@@ -9,6 +9,8 @@ Context variables:
 * allow_manual_grading (bool) true if manual grading allowed
 * manual_grading_url (string) URL to the manual grading page
 * resubmit_grading_url (string) form action URL for regrading the submission in the exercise service
+* grading_data_errors (string) when applicable, plain text string describing errors
+  that occurred during the grading
 }}
 
 <div class="row">
@@ -62,6 +64,11 @@ Context variables:
         {{/ allow_manual_grading }}
       </div>
     </div>
+
+    {{# grading_data_errors }}
+      <h3>{{#str}} gradererrors, mod_astra {{/str}}</h3>
+      <pre>{{ grading_data_errors }}</pre>
+    {{/ grading_data_errors }}
 </div>
 </div>
 
