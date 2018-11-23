@@ -38,7 +38,7 @@ module.exports = function(grunt) {
     });
 
     // Register NPM tasks.
-    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-uglify-es');
     grunt.loadNpmTasks('grunt-contrib-jshint');
 
     // Register JS tasks.

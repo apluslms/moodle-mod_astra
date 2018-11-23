@@ -22,7 +22,7 @@ define(['jquery'], function(jQuery) {
  *
  */
 ;(function($, window, document, undefined) {
-	//"use strict";
+	"use strict";
 
 	var pluginName = "aplusExercisePoll";
 	var defaults = {
@@ -84,12 +84,12 @@ define(['jquery'], function(jQuery) {
 
 		ready: function() {
 			//this.element.hide();
-			
+
 			// For active elements the element to which the poll plugin is attached remains the same, so to
 			// be able to submit the same form several times the plugin data needs to be removed when the
 			// evaluation and polling is finished.
 			if ($.data(this.element.get(0), "plugin_" + pluginName)) $.removeData(this.element.get(0), "plugin_" + pluginName);
-			
+
 			//var suburl = this.url.substr(0, this.url.length - "poll/".length); // changed from A+
 			// added a data attribute for reading the final target URL since in Moodle it can not be a substring of the poll URL
 			var ready_url = this.element.attr(this.settings.ready_url_attr);
@@ -103,7 +103,7 @@ define(['jquery'], function(jQuery) {
 		message: function(messageType) {
 			this.element.find(this.settings.message_selector).removeClass("progress-bar-animated")
 				.text(this.element.attr(this.settings.message_attr[messageType]));
-			if (this.element.data("aplus-active-element")) {
+			if (this.element.attr('data-aplus-active-element')) {
 				var message = "There was an error while evaluating the element.";
 				if (messageType == "timeout") {
 					message = "Evaluation was timed out.";
@@ -113,18 +113,15 @@ define(['jquery'], function(jQuery) {
 				if ($.data(this.element.get(0), "plugin_" + pluginName)) {
 					$.removeData(this.element.get(0), "plugin_" + pluginName);
 				}
-			} else {
-				if (messageType == "error") {
-					this.element.find(this.settings.message_selector).addClass("bg-danger");
-				}
+			} else if (messageType == "error") {
+				this.element.find(this.settings.message_selector).addClass("bg-danger");
 			}
 		},
-
 	});
 
 	$.fn[pluginName] = function(callback, options) {
 		return this.each(function() {
-			if (!$.data(this, "plugin_" + pluginName)) {
+			if (!$.data(this, "plugin_" + pluginName)) { // This apparently blocks re-polling for a same exercise multiple times
 				$.data(this, "plugin_" + pluginName, new AplusExercisePoll(this, callback, options));
 			}
 		});

@@ -18,7 +18,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
  *
  */
 ;(function($, moodleEvent, window, document, undefined) {
-	//"use strict";
+	"use strict";
 
 	var pluginName = "aplusChapter";
 	var defaults = {
@@ -27,7 +27,6 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 		active_element_attr: "data-aplus-active-element",
 		loading_selector: "#loading-indicator",
 		quiz_success_selector: "#quiz-success",
-		message_selector: ".progress-bar",
 		message_attr: {
 			load: "data-msg-load",
 			submit: "data-msg-submit",
@@ -37,6 +36,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 	};
 
 	function AplusChapter(element, options) {
+		this.dom_element = element;
 		this.element = $(element);
 		this.settings = $.extend({}, defaults, options);
 		this.ajaxForms = false;
@@ -65,16 +65,24 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			// do not include active element inputs to exercise groups
 			this.element.find("[" + this.settings.active_element_attr + "='in']").aplusExercise(this, {input: true});
 			
-			this.exercises = this.element
-				.find("[" + this.settings.exercise_url_attr + "]")
-				.aplusExercise(this);
-			this.exercisesIndex = 0;
-			this.exercisesSize = this.exercises.length;
-			if (this.exercisesSize > 0) {
+			const exercises = this.element.find("[" + this.settings.exercise_url_attr + "]");
+			if (exercises.length > 0) {
+				this.dom_element.dispatchEvent(
+					new CustomEvent("aplus:chapter-loaded", {bubbles: true}));
+
+				exercises.aplusExercise(this);
+				this.exercises = exercises;
+				this.exercisesIndex = 0;
+				this.exercisesSize = exercises.length;
 				this.nextExercise();
 			} else {
-				//$.augmentExerciseGroup($(".exercise-column"));
+				const type = 'text/x.aplus-exercise';
+				this.dom_element.dispatchEvent(
+					new CustomEvent("aplus:exercise-loaded", {bubbles: true, detail: {type: type}}));
+				//$.augmentSubmitButton($(".exercise-column"));
 				// changed from A+: no group submissions and no group selection UI
+				this.dom_element.dispatchEvent(
+					new CustomEvent("aplus:exercise-ready", {bubbles: true, detail: {type: type}}));
 			}
 		},
 
@@ -83,6 +91,8 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 				this.exercises.eq(this.exercisesIndex).aplusExerciseLoad();
 				this.exercisesIndex++;
 			}
+			this.dom_element.dispatchEvent(
+				new CustomEvent("aplus:chapter-ready", {bubbles: true}));
 		},
 
 		readMessages: function() {
@@ -108,8 +118,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 
 		modalContent: function(content) {
 			this.modalElement.aplusModal("content", { content: content });
-			// changed from A+: render MathJax in the new content
-			this.moodleNotifyFilterContentUpdatedInModal();
+			this.renderMath();
 		},
 
 		modalSuccess: function(exercise, badge) {
@@ -131,9 +140,9 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			}
 			this.modalContent(content);
 		},
-		
-		moodleNotifyFilterContentUpdatedInModal: function() {
-			// changed from A+: new method
+
+		renderMath: function() {
+			// changed from A+: Moodle has its own API for accessing MathJax.
 			// Trigger Moodle JS event so that MathJax renders new formulas
 			// that are inserted into the modal dialog (openModal appends the modal content
 			// at runtime).
@@ -157,7 +166,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
  *
  */
 ;(function($, moodleEvent, window, document, undefined) {
-	//"use strict";
+	"use strict";
 
 	var pluginName = "aplusExercise";
 	var loadName = "aplusExerciseLoad";
@@ -181,6 +190,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 	};
 
 	function AplusExercise(element, chapter, options) {
+		this.dom_element = element;
 		this.element = $(element);
 		this.chapter = chapter;
 		this.settings = $.extend({}, defaults, options);
@@ -211,6 +221,13 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			// Check if the exercise is an active element.
 			this.active_element = (this.element.attr(this.settings.active_element_attr) !== undefined);
 
+			// set exercise mime type
+			this.exercise_type =
+				this.quiz ? 'text/x.aplus-exercise.quiz.v1' :
+				this.ajax ? 'text/x.aplus-exercise.iframe.v1' :
+				this.active_element ? 'text/x.aplus-exercise.active-element.v1' :
+				'text/x.aplus-exercise';
+
 			// Add the active element outputs to a list so that the element can be found later
 			if (this.active_element && !this.settings.input) this.chapter.aeOutputs[this.chapterID] = this;
 
@@ -222,23 +239,21 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			// Inputs are different from actual exercises and need only be loaded.
 			if (this.settings.input) this.load();
 
-			if (!this.active_element) {
-
+			if (!this.active_element && this.ajax) {
 				// Add an Ajax exercise event listener to refresh the summary.
-				if (this.ajax) {
-					var exercise = this;
-					window.addEventListener("message", function (event) {
-						if (event.data.type === "a-plus-refresh-stats") {
-							$.ajax(exercise.url, {dataType: "html"})
-								.done(function(data) {
-									exercise.updateSummary($(data));
-								});
-						}
-					});
-				}
+				var exercise = this;
+				window.addEventListener("message", function (event) {
+					if (event.data.type === "a-plus-refresh-stats") {
+						$.ajax(exercise.url, {dataType: "html"})
+							.done(function(data) {
+								exercise.updateSummary($(data));
+							});
+					}
+				});
 			}
 		},
 
+		// Construct an active element input form
 		makeInputForm: function(id, title, type, def_val) {
 			var wrap = $("<div>");
 			wrap.attr("id", "exercise-all");
@@ -256,7 +271,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			label.html(title);
 
 			var form_field;
-			if (!type) {
+			if (!type || type === "clickable") {
 				form_field = $("<textarea>");
 				form_field.val(def_val);
 			} else if (type === "file") {
@@ -325,11 +340,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 						if (exercise.quiz || exercise.active_element) {
 							exercise.loadLastSubmission($(data));
 						} else {
-							// changed from A+:
-							// add a call to the Moodle function that renders MathJax formulas
-							// else branch is used because loadLastSubmission also asynchronously modifies the DOM
-							exercise.moodleNotifyFilterContentUpdated();
-
+							exercise.renderMath();
 							exercise.chapter.nextExercise();
 						}
 					});
@@ -341,6 +352,9 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			input = input.filter(exercise.settings.exercise_selector).contents();
 			var content = exercise.element.find(exercise.settings.content_selector)
 				.empty().append(input).hide();
+
+			this.dom_element.dispatchEvent(
+				new CustomEvent("aplus:exercise-loaded", {bubbles: true, detail: {type: this.exercise_type}}));
 
 			if (exercise.active_element) {
 				var title = "";
@@ -371,6 +385,8 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			this.element.height("auto");
 			this.bindNavEvents();
 			this.bindFormEvents(content);
+			this.dom_element.dispatchEvent(
+				new CustomEvent("aplus:exercise-ready", {bubbles: true, detail: {type: this.exercise_type}}));
 		},
 
 		bindNavEvents: function() {
@@ -382,6 +398,9 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 		bindFormEvents: function(content) {
 			if (!this.ajax) {
 				var forms = content.find("form").attr("action", this.url);
+				// changed from A+: no overlay messages on top of the exercise in Astra.
+				// In addition, no need to check that the form does not belong
+				// to an external LTI exercise since Astra does not support LTI exercises.
 				var exercise = this;
 				if (this.chapter.ajaxForms) {
 					forms.on("submit", function(event) {
@@ -390,7 +409,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 					});
 				}
 			}
-			//$.augmentExerciseGroup(content);
+			//$.augmentSubmitButton(content);
 			// changed from A+: no group submissions and no group selection UI
 			window.postMessage({
 				type: "a-plus-bind-exercise",
@@ -420,41 +439,28 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 				//exercise.showLoader("error");
 
 				if (!exercise.active_element) {
+					exercise.dom_element.dispatchEvent(
+						new CustomEvent("aplus:exercise-submission-failure",
+							{bubbles: true, detail: {type: exercise.exercise_type}}));
 					exercise.chapter.modalError(exercise.chapter.messages.error);
 				} else {
 					// active elements don't use loadbar so the error message must be shown
 					// in the element container
 					var feedback = $("<div>");
-					feedback.attr('id', 'feedback');			
+					feedback.attr('id', 'feedback');
 					feedback.append(exercise.chapter.messages.error);
 					exercise.updateOutput(feedback);
 				}
 			}).done(function (data) {
-				/* Bad fix for database locked problem when saving submitted files:
-					 test if the data contains message that the submission was not saved and resubmit
-				*/
-				retry = retry || 0;
-				if ($(data).find("div:contains('The submission could not be saved for some reason')").length > 0 && retry < 5) {
-					console.log("Submission not saved: trying submitAjax again in 100ms");
-					setTimeout(
-						function() {
-							console.log("Resubmit no.", retry + 1);
-							exercise.submitAjax(url, formData, callback, retry + 1);
-						}, 100);
-				} else {
-					// This should be the only necessary thing to do here.
-					callback(data);
-				}
+				callback(data);
 			});
 		},
 
 		// Construct form data from input element values
-		generateFormData: function(output, form_element) {
+		collectFormData: function(output, form_element) {
 			output = $(output);
-			var tmp = this.matchInputs(output);
-			var exercise = tmp[0];
-			var inputs = tmp[1];
-			var expected_inputs = tmp[2];
+
+			var [exercise, inputs, expected_inputs] = this.matchInputs(output);
 			// Form data to be sent for evaluation
 			var formData = new FormData();
 			var input_id = this.chapterID;
@@ -463,6 +469,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			$.each(inputs, function(i, id) {
 				var input_val;
 				var input_elem = $.find("#" + id);
+				var input_field = $("#" + id + "_input_id");
 
 				// Input can be also an output element, in which case the content must be
 				// retrieved differently
@@ -479,17 +486,18 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 					input_val = $(input_elem).find(".ae_result").text().trim();
 
 				} else if ($(input_elem).data("type") === "file") {
-					input_val = $("#" + id + "_input_id").get(0).files[0];
+					input_val = input_field.get(0).files[0];
 
 				} else if (id !== input_id) {
+					input_val = input_field.val();
 					// Because changing an input value without submitting said input is possible,
-					// use the latest input value that has been submitted before for other inputs
-					// than the one being submitted now.
-					input_val = $(input_elem).data("value");
+					// use the latest input value that has been submitted before, if there is one,
+					// for other inputs than the one being submitted now.
+					if ($(input_elem).data("value")) input_val = $(input_elem).data("value");
 					// Update the input box back to the value used in evaluation
-					$("#" + id + "_input_id").val(input_val);
+					input_field.val(input_val);
 				} else {
-					input_val = $("#" + id + "_input_id").val();
+					input_val = input_field.val();
 					// Update the saved value data
 					$(input_elem).data("value", input_val);
 				}
@@ -509,10 +517,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 				var outputs = $.find('[data-inputs~="' + input_id + '"]');
 
 				$.each(outputs,	function(i, element) {
-					var tmp = input.generateFormData(element, form_element);
-					var exercise = tmp[0];
-					var valid = tmp[1];
-					var formData = tmp[2];
+					var [exercise, valid, formData] = input.collectFormData(element, form_element);
 					var output_id = exercise.chapterID;
 					var output = $("#" + output_id);
 					var out_content = output.find(exercise.settings.ae_result_selector);
@@ -537,8 +542,8 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 					var url = exercise.url;
 					exercise.submitAjax(url, formData, function(data) {
 						var content = $(data);
-
 						if (! content.find('.alert-danger').length) {
+							// changed from A+: must provide the poll URL and the final download URL separately.
 							var pollerElem = content.find(".exercise-wait");
 							var poll_url = pollerElem.attr("data-poll-url");
 							var ready_url = pollerElem.attr("data-ready-url");
@@ -571,9 +576,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 						var badge = input.find('.badge').eq(2).clone();
 						exercise.update(input);
 						chapter.modalSuccess(exercise.element, badge);
-						// changed from A+:
-						// render MathJax in the new retrieved content
-						exercise.moodleNotifyFilterContentUpdated();
+						exercise.renderMath();
 					} else {
 						exercise.updateSubmission(input);
 					}
@@ -624,8 +627,8 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			if (typeof($.aplusExerciseDetectWaits) == "function") {
 				var exercise = this;
 				var id;
-				if (this.active_element) id = "#" +	this.chapterID;
-				
+				if (this.active_element) id = "#" + this.chapterID;
+
 				$.aplusExerciseDetectWaits(function(suburl) {
 					$.ajax(suburl).done(function(data) {
 						if (exercise.active_element) {
@@ -645,6 +648,9 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 							}
 						}
 					}).fail(function() {
+						exercise.dom_element.dispatchEvent(
+							new CustomEvent("aplus:exercise-submission-failure",
+								{bubbles: true, detail: {type: exercise.exercise_type}}));
 						exercise.chapter.modalError(exercise.chapter.messages.error);
 					});
 				}, id);
@@ -682,10 +688,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 		updateInputs: function(data) {
 			data = data.submission_data;
 			var exercise = this;
-			var tmp = exercise.matchInputs(exercise.element);
-			var exer = tmp[0];
-			var input_list = tmp[1];
-			var grader_inputs = tmp[2];
+			var [exer, input_list, grader_inputs] = exercise.matchInputs(exercise.element);
 			// Submission data can contain many inputs
 			// Changed from A+: submission_data returned from the server has a different format
 			// A+ uses arrays like [["name", "value"], []...] while Astra uses an object: {name: value}
@@ -700,7 +703,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 					// Store the value of the input to be used later for submitting active
 					// element evaluation requests
 					$($.find("#" + input_id)).data("value", input_data);
-					$("#" +input_id + "_input_id").val(input_data);
+					$("#" +input_id + "_input_id").val(input_data).trigger('change');
 				}
 			}
 		},
@@ -710,6 +713,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			var exercise = this;
 			if (link.length > 0) {
 				var url = link.attr("href");
+
 				if (url && url !== "#") {
 					var data_type = "html";
 					if (exercise.active_element) {
@@ -725,23 +729,28 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 							console.error('Can not read the submission data URL');
 						}
 					}
-					
+
 					this.showLoader("load");
 					$.ajax(url, {dataType: data_type})
 						.fail(function() {
 							exercise.showLoader("error");
-							//exercise.chapter.nextExercise(); // removed in the active elements update
 						})
 						.done(function(data) {
 							exercise.hideLoader();
-							
+
 							if (!exercise.active_element) {
 								var f = exercise.element.find(exercise.settings.response_selector)
 									.empty().append(
 										$(data).filter(exercise.settings.exercise_selector).contents()
 									);
-								//f.find("table.submission-info").remove();
-								exercise.bindFormEvents(f);
+								exercise.dom_element.dispatchEvent(
+									new CustomEvent("aplus:exercise-loaded",
+										{bubbles: true, detail: {type: exercise.exercise_type}}));
+								//f.removeClass('group-augmented'); // changed from A+: no group submissions in Astra
+								exercise.bindFormEvents(exercise.element);
+								exercise.dom_element.dispatchEvent(
+									new CustomEvent("aplus:exercise-ready",
+										{bubbles: true, detail: {type: exercise.exercise_type}}));
 							} else {
 								// Update the output box values
 								exercise.updateOutput(data.feedback);
@@ -749,26 +758,15 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 								// Update the input values
 								exercise.updateInputs(data);
 							}
-							
-							// changed from A+: render MathJax after async modification to the DOM
-							exercise.moodleNotifyFilterContentUpdated();
-							
-							exercise.chapter.nextExercise();
+
+							exercise.renderMath();
 						});
 				} else {
-					// the exercise (quiz) has no submissions yet
-					// changed from A+:
-					// add a call to the Moodle function that renders MathJax formulas
-					// else branch is used here so that the filter event is triggered only once
-					// (the caller of this method assumes that the event is triggered even if
-					// there is no submission to load)
-					this.moodleNotifyFilterContentUpdated();
-					
-					this.chapter.nextExercise();
+					// the math must be rendered here even if there is no submission to load
+					exercise.renderMath();
 				}
-			} else {
-				this.chapter.nextExercise();
 			}
+			exercise.chapter.nextExercise();
 		},
 
 		showLoader: function(messageType) {
@@ -785,8 +783,8 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			this.loader.hide();
 		},
 		
-		moodleNotifyFilterContentUpdated: function() {
-			// changed from A+: new method
+		renderMath: function() {
+			// changed from A+: Moodle has its own API for accessing MathJax.
 			// Trigger Moodle JS event so that MathJax renders new formulas
 			// that were modified/inserted (usually) by AJAX after the initial page load.
 			// This uses the Moodle filter MathJax loader.
@@ -814,6 +812,29 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 	};
 
 })(jQuery, moodleEvent, window, document);
+
+/**
+ * Prevent double submit of exercise forms
+ */
+(function ($) {
+	$(document).on('aplus:exercise-loaded', function(e) {
+		$(e.target).find('form').each(function () {
+			const $form = $(this);
+			if ($form.prop('method') == 'post') {
+				$form.on('submit', function (e) {
+					$(this).find('[type="submit"]')
+						.prop('disabled', true)
+						.attr('data-aplus-submit-disabled', 'yes');
+				});
+			}
+		});
+	});
+	$(document).on('aplus:exercise-submission-failure', function(e) {
+		$(e.target).find('[data-aplus-submit-disabled]')
+			.prop('disabled', false)
+			.attr('data-aplus-submit-disabled', '');
+	});
+})(jQuery);
 
 return {}; // for AMD, no names are exported to the outside
 }); // end define
