@@ -795,8 +795,10 @@ class remote_page {
         global $DB;
         
         // regular expressions for detecting certain kinds of URLs
-        // recognize absolute URLs (https:// or //) or anchor URLs (#someid)
-        $pattern = '%^(#|.+://|//)%';
+        // recognize absolute URLs (https: or // or data: etc.) or anchor URLs (#someid)
+        // URL scheme starts with an alphabetic character and may contain
+        // alphabets, digits, dots as well as plus and minus characters.
+        $pattern = '%^(#|//|[[:alpha:]][[:alnum:].+-]*:)%';
         // link between chapters when the chapters are in different rounds
         $chapter_pattern = '%(\.\./)?(?P<roundkey>[\w-]+)/(?P<chapterkey>[\w-]+)(\.html)(?P<anchor>#.+)?$%';
         // link between chapters in the same round
