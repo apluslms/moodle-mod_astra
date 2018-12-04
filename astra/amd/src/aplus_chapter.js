@@ -311,7 +311,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			return $(wrap);
 		},
 
-		load: function() {
+		load: function(onlyThis) {
 			this.showLoader("load");
 			var exercise = this;
 
@@ -327,12 +327,12 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 				var input_form = exercise.makeInputForm(exercise.chapterID, title, type, def_val);
 				exercise.update(input_form);
 				exercise.loadLastSubmission(input_form);
-				exercise.chapter.nextExercise();
+				if (!onlyThis) exercise.chapter.nextExercise();
 			} else {
 				$.ajax(this.url, {dataType: "html"})
 					.fail(function() {
 						exercise.showLoader("error");
-						exercise.chapter.nextExercise();
+						if (!onlyThis) exercise.chapter.nextExercise();
 					})
 					.done(function(data) {
 						exercise.hideLoader();
@@ -341,7 +341,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 							exercise.loadLastSubmission($(data));
 						} else {
 							exercise.renderMath();
-							exercise.chapter.nextExercise();
+							if (!onlyThis) exercise.chapter.nextExercise();
 						}
 					});
 			}
@@ -529,6 +529,10 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 					if (!valid) {
 						$("#" + output_id).find(exercise.settings.ae_result_selector)
 							.html('<p style="color:red;">Fill out all the inputs</p>');
+						// Abort submission because some required active element input has no value.
+						input.dom_element.dispatchEvent(
+							new CustomEvent("aplus:submission-aborted",
+								{bubbles: true, detail: {type: input.exercise_type}}));
 						return;
 					}
 
@@ -577,6 +581,9 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 						exercise.update(input);
 						chapter.modalSuccess(exercise.element, badge);
 						exercise.renderMath();
+						exercise.dom_element.dispatchEvent(
+							new CustomEvent("aplus:submission-finished",
+								{bubbles: true, detail: {type: exercise.exercise_type}}));
 					} else {
 						exercise.updateSubmission(input);
 					}
@@ -629,10 +636,26 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 				var id;
 				if (this.active_element) id = "#" + this.chapterID;
 
-				$.aplusExerciseDetectWaits(function(suburl) {
+				$.aplusExerciseDetectWaits(function(suburl, error) {
+					if (error) {
+						// Polling for the final feedback failed, possibly because
+						// the grading takes a lot of time.
+						if (exercise.active_element) {
+							exercise.dispatchEventToActiveElem("aplus:exercise-submission-failure");
+						} else {
+							exercise.dom_element.dispatchEvent(
+								new CustomEvent("aplus:exercise-submission-failure",
+									{bubbles: true, detail: {type: exercise.exercise_type}}));
+							// Reload the exercise (description) in case it changes after submitting.
+							// This also resets the disabled submit button.
+							exercise.load(true);
+						}
+						return;
+					}
 					$.ajax(suburl).done(function(data) {
 						if (exercise.active_element) {
 							exercise.updateOutput(data);
+							exercise.dispatchEventToActiveElem("aplus:submission-finished");
 							exercise.submit(); // Active element outputs can be chained
 						} else {
 							var input2 = $(data);
@@ -646,12 +669,19 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 							} else {
 								exercise.chapter.modalContent(content);
 							}
+							exercise.dom_element.dispatchEvent(
+								new CustomEvent("aplus:submission-finished",
+									{bubbles: true, detail: {type: exercise.exercise_type}}));
+							// Reload the exercise (description) in case it changes after submitting.
+							// This also resets the disabled submit button.
+							exercise.load(true);
 						}
 					}).fail(function() {
 						exercise.dom_element.dispatchEvent(
 							new CustomEvent("aplus:exercise-submission-failure",
 								{bubbles: true, detail: {type: exercise.exercise_type}}));
 						exercise.chapter.modalError(exercise.chapter.messages.error);
+						exercise.load(true);
 					});
 				}, id);
 			}
@@ -704,6 +734,22 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 					// element evaluation requests
 					$($.find("#" + input_id)).data("value", input_data);
 					$("#" +input_id + "_input_id").val(input_data).trigger('change');
+				}
+			}
+		},
+
+		dispatchEventToActiveElem: function(event) {
+			// Send the event to this active element (output) and all related inputs.
+			this.dom_element.dispatchEvent(
+				new CustomEvent(event, {bubbles: true, detail: {type: this.exercise_type}}));
+			// Send the event to the inputs related to this output.
+			const [, inputIds, ] = this.matchInputs(this.element);
+			for (const inputId of inputIds) {
+				const inputElem = $('#' + inputId).data('plugin_' + pluginName);
+				if (inputElem) {
+					inputElem.dom_element.dispatchEvent(
+						new CustomEvent(event,
+							{bubbles: true, detail: {type: inputElem.exercise_type}}));
 				}
 			}
 		},
@@ -829,10 +875,20 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			}
 		});
 	});
-	$(document).on('aplus:exercise-submission-failure', function(e) {
+	$(document).on('aplus:exercise-submission-failure'
+			+ ' aplus:submission-finished aplus:submission-aborted', function(e) {
 		$(e.target).find('[data-aplus-submit-disabled]')
 			.prop('disabled', false)
-			.attr('data-aplus-submit-disabled', '');
+			.removeAttr('data-aplus-submit-disabled');
+	});
+	$(document).on('hidden.bs.modal', function(e) {
+		// If the user closes the feedback modal while it is polling for
+		// the grading of the submission, the submit button remains disabled.
+		// The modal hidden event does not specify which exercise is open in
+		// the modal, so we can only enable all disabled buttons in the page.
+		$('[data-aplus-submit-disabled]')
+			.prop('disabled', false)
+			.removeAttr('data-aplus-submit-disabled');
 	});
 })(jQuery);
 

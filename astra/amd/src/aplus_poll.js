@@ -61,6 +61,7 @@ define(['jquery'], function(jQuery) {
 			$.ajax(this.url, {dataType: "html"})
 				.fail(function() {
 					poller.message("error");
+					poller.ready(true);
 				})
 				.done(function(data) {
 					poller.count++;
@@ -71,6 +72,7 @@ define(['jquery'], function(jQuery) {
 							poller.schedule();
 						} else {
 							poller.message("timeout");
+							poller.ready(true);
 						}
 					}
 				});
@@ -82,7 +84,8 @@ define(['jquery'], function(jQuery) {
 				this.settings.poll_delays[this.count] * 1000);
 		},
 
-		ready: function() {
+		ready: function(error) {
+			// If there were no errors, the error parameter is undefined.
 			//this.element.hide();
 
 			// For active elements the element to which the poll plugin is attached remains the same, so to
@@ -94,7 +97,7 @@ define(['jquery'], function(jQuery) {
 			// added a data attribute for reading the final target URL since in Moodle it can not be a substring of the poll URL
 			var ready_url = this.element.attr(this.settings.ready_url_attr);
 			if (this.callback) {
-				this.callback(ready_url);
+				this.callback(ready_url, error);
 			} else {
 				window.location = ready_url;
 			}
