@@ -376,6 +376,10 @@ removed in a future Moodle version when the Moodle Boost theme uses a newer Boot
 .path-mod-astra #region-main .bg-transparent {
   background-color: transparent !important;
 }
+/* Change the warning colour from yellow to orange. */
+.path-mod-astra #region-main .bg-warning {
+  background-color: #f80 !important;
+}
 
 .path-mod-astra #region-main .mx-auto {
   margin-right: auto !important;
