@@ -122,11 +122,11 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 		},
 
 		modalSuccess: function(exercise, badge) {
-			this.modalElement.one("hidden.bs.modal", function(event) {
+			/*this.modalElement.one("hidden.bs.modal", function(event) {
 				$(document.body).animate({
 					'scrollTop': exercise.offset().top
 				}, 300);
-			});
+			});*/
 			var content = this.quizSuccess.clone()
 				.attr("class", exercise.attr("class"))
 				.removeClass("exercise")
