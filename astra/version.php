@@ -14,8 +14,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_astra';
-$plugin->version = 2018120400;
-$plugin->release = 'v1.6.0';
+$plugin->version = 2018121700;
+$plugin->release = 'v1.6.1';
 $plugin->requires = 2017111300; // Moodle 3.4
 $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = array(
