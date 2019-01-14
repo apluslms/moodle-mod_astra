@@ -13,6 +13,23 @@
  */
 define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 'mod_astra/aplus_modal'], function(jQuery, moodleEvent) {
 
+/** Add CustomEvent for IE 11
+ *  Source: A+ (a-plus/assets/js/aplus.js)
+ */
+(function () {
+	if (typeof window.CustomEvent === "function") return false;
+	function CustomEvent(event, params) {
+		var bubbles = params.bubbles !== undefined ? params.bubbles : false;
+		var cancelable = params.cancelable !== undefined ? params.cancelable : false;
+		var detail = params.detail !== undefined ? params.detail : undefined;
+		var evt = document.createEvent( 'CustomEvent' );
+		evt.initCustomEvent(event, bubbles, cancelable, detail);
+		return evt;
+	}
+	CustomEvent.prototype = window.Event.prototype;
+	window.CustomEvent = CustomEvent;
+})();
+
 /**
  * Chapter element containing number of exercise elements.
  *
@@ -65,7 +82,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			// do not include active element inputs to exercise groups
 			this.element.find("[" + this.settings.active_element_attr + "='in']").aplusExercise(this, {input: true});
 			
-			const exercises = this.element.find("[" + this.settings.exercise_url_attr + "]");
+			var exercises = this.element.find("[" + this.settings.exercise_url_attr + "]");
 			if (exercises.length > 0) {
 				this.dom_element.dispatchEvent(
 					new CustomEvent("aplus:chapter-loaded", {bubbles: true}));
@@ -76,7 +93,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 				this.exercisesSize = exercises.length;
 				this.nextExercise();
 			} else {
-				const type = 'text/x.aplus-exercise';
+				var type = 'text/x.aplus-exercise';
 				this.dom_element.dispatchEvent(
 					new CustomEvent("aplus:exercise-loaded", {bubbles: true, detail: {type: type}}));
 				//$.augmentSubmitButton($(".exercise-column"));
@@ -460,7 +477,12 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 		collectFormData: function(output, form_element) {
 			output = $(output);
 
-			var [exercise, inputs, expected_inputs] = this.matchInputs(output);
+			//var [exercise, inputs, expected_inputs] = this.matchInputs(output); // ECMAScript 6
+			var tmpInputs = this.matchInputs(output);
+			var exercise        = tmpInputs[0],
+			    inputs          = tmpInputs[1],
+			    expected_inputs = tmpInputs[2];
+
 			// Form data to be sent for evaluation
 			var formData = new FormData();
 			var input_id = this.chapterID;
@@ -517,7 +539,12 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 				var outputs = $.find('[data-inputs~="' + input_id + '"]');
 
 				$.each(outputs,	function(i, element) {
-					var [exercise, valid, formData] = input.collectFormData(element, form_element);
+					//var [exercise, valid, formData] = input.collectFormData(element, form_element); // ECMAScript 6
+					var tmpCollect = input.collectFormData(element, form_element);
+					var exercise = tmpCollect[0],
+					    valid    = tmpCollect[1],
+					    formData = tmpCollect[2];
+
 					var output_id = exercise.chapterID;
 					var output = $("#" + output_id);
 					var out_content = output.find(exercise.settings.ae_result_selector);
@@ -718,7 +745,12 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 		updateInputs: function(data) {
 			data = data.submission_data;
 			var exercise = this;
-			var [exer, input_list, grader_inputs] = exercise.matchInputs(exercise.element);
+			//var [exer, input_list, grader_inputs] = exercise.matchInputs(exercise.element); // ECMAScript 6
+			var tmpInputs = exercise.matchInputs(exercise.element);
+			var exer          = tmpInputs[0],
+			    input_list    = tmpInputs[1],
+			    grader_inputs = tmpInputs[2];
+
 			// Submission data can contain many inputs
 			// Changed from A+: submission_data returned from the server has a different format
 			// A+ uses arrays like [["name", "value"], []...] while Astra uses an object: {name: value}
@@ -743,9 +775,14 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 			this.dom_element.dispatchEvent(
 				new CustomEvent(event, {bubbles: true, detail: {type: this.exercise_type}}));
 			// Send the event to the inputs related to this output.
-			const [, inputIds, ] = this.matchInputs(this.element);
-			for (const inputId of inputIds) {
-				const inputElem = $('#' + inputId).data('plugin_' + pluginName);
+			//const [, inputIds, ] = this.matchInputs(this.element); // ECMAScript 6
+			var tmpInputs = this.matchInputs(this.element);
+			var inputIds = tmpInputs[1];
+
+			//for (const inputId of inputIds) { // ECMAScript 6, loop over the values of an array
+			for (var i = 0; i < inputIds.length; ++i) {
+				var inputId = inputIds[i];
+				var inputElem = $('#' + inputId).data('plugin_' + pluginName);
 				if (inputElem) {
 					inputElem.dom_element.dispatchEvent(
 						new CustomEvent(event,
@@ -865,7 +902,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 (function ($) {
 	$(document).on('aplus:exercise-loaded', function(e) {
 		$(e.target).find('form').each(function () {
-			const $form = $(this);
+			var $form = $(this);
 			if ($form.prop('method') == 'post') {
 				$form.on('submit', function (e) {
 					$(this).find('[type="submit"]')
