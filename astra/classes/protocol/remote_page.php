@@ -12,19 +12,19 @@ require_once(dirname(dirname(__DIR__)) . '/local_settings.php');
  * Derived from A+ (a-plus/lib/remote_page.py and a-plus/exercise/protocol/aplus.py).
  */
 class remote_page {
-    
+
     protected $url;
     protected $response; // string, the whole response from the server
     protected $DOMdoc; // \DOMDocument instance
-    
+
     protected $metaNodes = null; // cache \DOMNodeList
     protected $aplusHeadElements; // \DOMNode[], nodes in document head with aplus attribute
     protected $astrajQueryScriptElements; // \DOMNode[], script elements in the document with data-astra-jquery attribute
     protected $response_headers = array();
-    
+
     protected $learningObject; // the learning object in Astra that corresponds to the URL
     // used for fixing relative URLs in some cases
-    
+
     /**
      * Create a remote page: a HTML page whose content and metadata are
      * downloaded from a server.
@@ -74,7 +74,7 @@ class remote_page {
         }
         libxml_clear_errors();
     }
-    
+
     /**
      * Send a HTTP request.
      * @param string $url URL target of the HTTP request
@@ -104,10 +104,10 @@ class remote_page {
                 $response_headers[strtolower(trim($parts[0]))] = trim($parts[1]);
             }
             // else no colon (:) in the header, possibly the status line (HTTP 200)
-            
+
             return strlen($header);
         };
-        
+
         $ch = curl_init();
         curl_setopt_array($ch, array(
                 CURLOPT_URL => $url,
@@ -116,26 +116,26 @@ class remote_page {
                 CURLOPT_FOLLOWLOCATION => true, // follow redirects (Location header)
                 CURLOPT_MAXREDIRS => 10,
                 CURLOPT_HEADERFUNCTION => $header_function, // save the HTTP response headers
-                
+
                 CURLOPT_SSL_VERIFYPEER => true, // HTTPS certificate and security
                 CURLOPT_SSL_VERIFYHOST => 2,
         ));
         // CA certificates for HTTPS
         curl_setopt_array($ch, self::server_CA_certificate_curl_options());
-        
+
         $request_headers = array();
-        
+
         if (!is_null($api_key)) {
             $request_headers[] = 'Authorization: key='. $api_key; // HTTP request header for API key
         }
         if (!empty($stamp) && !$post) {
             $request_headers[] = 'If-Modified-Since: '. $stamp;
         }
-        
+
         if (!empty($request_headers)) {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
         }
-        
+
         if ($post) {
             // make the request HTTP POST instead of GET and add post data key-value pairs
             curl_setopt($ch, CURLOPT_POST, true);
@@ -163,7 +163,7 @@ class remote_page {
                 // request Content-Type: multipart/form-data
             }
         }
-        
+
         $response = curl_exec($ch);
         if ($response === false) {
             // curl failed
@@ -187,7 +187,7 @@ class remote_page {
         }
         return array($response, $response_headers); // response as string, array of headers
     }
-    
+
     /**
      * Return a cURL options array for setting the CA certificate location(s).
      * The CA certificates are used to verify the peer certificate in HTTPS connections.
@@ -198,7 +198,7 @@ class remote_page {
         // typical defaults for Ubuntu
         //return array(CURLOPT_CAINFO => '/etc/ssl/certs/ca-certificates.crt');
         //return array(CURLOPT_CAPATH => '/etc/ssl/certs');
-        
+
         $cainfo = get_config(\mod_astra_exercise_round::MODNAME, 'curl_cainfo');
         // use CAINFO if it is set, otherwise CAPATH
         if (empty($cainfo)) {
@@ -218,7 +218,7 @@ class remote_page {
             return array(CURLOPT_CAINFO => $cainfo);
         }
     }
-    
+
     /**
      * Build URL-encoded query string from $data. This is a replacement for
      * http_build_query. This method does not use array syntax in the result like
@@ -237,7 +237,7 @@ class remote_page {
         }
         return $q;
     }
-    
+
     private static function build_query_helper($data, $outerKey = null) {
         $q = '';
         foreach ($data as $key => $val) {
@@ -252,7 +252,7 @@ class remote_page {
         }
         return $q;
     }
-    
+
     /**
      * Set the learning object that corresponds to the remote page (URL).
      * Set it before calling any load method so that the information of
@@ -262,7 +262,7 @@ class remote_page {
     public function setLearningObject(\mod_astra_learning_object $lobject) {
         $this->learningObject = $lobject;
     }
-    
+
     /**
      * Load the exercise page (usually containing instructions and submission form,
      * or chapter content) from the exercise service.
@@ -274,7 +274,7 @@ class remote_page {
         $this->parsePageContent($learningObject, $page);
         return $page;
     }
-    
+
     /**
      * Load the feedback page for a new submission and store the grading results
      * if the submission was graded synchronously.
@@ -297,7 +297,7 @@ class remote_page {
                     } else {
                         $serviceMaxPoints = $exercise->getMaxPoints();
                     }
-                    
+
                     $submission->grade($servicePoints, $serviceMaxPoints, $feedback, null, $noPenalties);
                 } else {
                     $submission->setWaiting();
@@ -316,7 +316,7 @@ class remote_page {
         }
         return $page;
     }
-    
+
     protected function parsePageContent(\mod_astra_learning_object $lobj, \mod_astra\protocol\exercise_page $page) {
         if ($lobj->isSubmittable()) {
             $this->fixFormAction($lobj);
@@ -335,10 +335,10 @@ class remote_page {
         }
         // fix relative URLs (make them absolute with the address of the origin server)
         $this->fixRelativeUrls();
-        
+
         // find tags in <head> that have attribute data-aplus
         $this->aplusHeadElements = $this->findHeadElementsWithAttribute('data-aplus');
-        
+
         // find script tags in the document with attribute data-astra-jquery="$" (attribute value is optional)
         $this->astrajQueryScriptElements = $this->findScriptElementsWithAttribute('data-astra-jquery');
         // remove the script tags from the document, their contents shall be inserted again later
@@ -346,19 +346,19 @@ class remote_page {
         foreach ($this->astrajQueryScriptElements as $scriptElem) {
             $scriptElem->parentNode->removeChild($scriptElem);
         }
-        
+
         $page->is_loaded = true;
-        
+
         // save CSS and JS code or elements that should be injected to the final page
         // (these values are strings)
         $page->injected_css_urls = $this->getInjectedCSS_URLs();
         $page->injected_js_urls_and_inline = $this->getInjectedJsUrlsAndInline();
         $page->inline_jquery_scripts = $this->getInlinejQueryScripts();
-        
+
         // find learning object content
         $page->content = $this->getElementOrBody(array('exercise', 'aplus', 'chapter'),
                 array('class' => 'entry-content'));
-        
+
         // parse metadata
         $maxPoints = $this->getMeta('max-points');
         if ($maxPoints !== null)
@@ -366,7 +366,7 @@ class remote_page {
         $maxPoints = $this->getMeta('max_points'); // underscore preferred
         if ($maxPoints !== null)
             $page->meta['max_points'] = $maxPoints;
-        
+
         $page->meta['status'] = $this->getMeta('status');
         if ($page->meta['status'] === 'accepted') {
             $page->is_accepted = true; // accepted for async grading
@@ -379,7 +379,7 @@ class remote_page {
         } else if ($page->meta['status'] === 'rejected') {
             $page->is_rejected = true;
         }
-        
+
         $page->meta['points'] = $this->getMeta('points');
         if ($page->meta['points'] !== null) {
             $page->points = (int) $page->meta['points'];
@@ -387,23 +387,23 @@ class remote_page {
             $page->is_accepted = true;
             $page->is_wait = false;
         }
-        
+
         $metaTitle = $this->getMeta('DC.Title');
         if ($metaTitle)
             $page->meta['title'] = $metaTitle;
         else
             $page->meta['title'] = $this->getTitle();
-        
+
         $page->meta['description'] = $this->getMeta('DC.Description');
-        
+
         $page->last_modified = $this->getHeader('Last-Modified');
         $page->expires = $this->getExpires();
     }
-    
+
     /**
      * Return the value of the given HTTP response header, i.e.,
      * header returned by the server when this page was retrieved.
-     * 
+     *
      * @param string $name name of the HTTP header, e.g., 'Last-Modified'
      * @return mixed|boolean the value of the header, or false if not found
      */
@@ -415,7 +415,7 @@ class remote_page {
             return false;
         }
     }
-    
+
     /**
      * Parse the value of the Expires HTTP header.
      * @param string $expires_header date string
@@ -428,7 +428,7 @@ class remote_page {
         }
         return 0;
     }
-    
+
     /**
      * Return the Unix timestamp corresponding to the Expires HTTP response header.
      * @return int
@@ -436,7 +436,7 @@ class remote_page {
     public function getExpires() {
         return self::parseExpires($this->getHeader('Expires'));
     }
-    
+
     /**
      * Return href values of link elements in the document head that have
      * the attribute data-aplus.
@@ -455,7 +455,7 @@ class remote_page {
         }
         return $css_urls;
     }
-    
+
     /**
      * Return src values and inline Javascript code strings of script elements
      * in the document head that have the attribute data-aplus.
@@ -480,7 +480,7 @@ class remote_page {
         }
         return array($js_urls, $js_inline_elements);
     }
-    
+
     /**
      * Return inline JavaScript code strings of script elements in the document
      * that have the attribute data-astra-jquery. The JS code is expected to
@@ -496,17 +496,17 @@ class remote_page {
             $attrVal = $elem->getAttribute('data-astra-jquery');
             if (!$attrVal)
                 $attrVal = '$'; // default
-            
+
             $js_codes[] = array($elem->textContent, $attrVal); // inline code and the name for jQuery
         }
         return $js_codes;
     }
-    
+
     /**
      * Return HTML string of the contents of the element with the given id or attribute value, or
      * body if no element is found with the given id or attribute in the HTML document.
      * The contents of an element refer to its inner HTML, excluding the outer element itself.
-     * 
+     *
      * @param array $ids array of ID values to search for; the first hit is returned.
      * Use empty array to avoid searching for IDs.
      * @param array $searchAttrs array of (div) element attributes to search for; the first hit
@@ -523,7 +523,7 @@ class remote_page {
                 return self::DOMinnerHTML($element);
             }
         }
-        
+
         // search for attributes
         foreach ($this->DOMdoc->getElementsByTagName('div') as $node) {
             if ($node->nodeType == \XML_ELEMENT_NODE) {
@@ -534,7 +534,7 @@ class remote_page {
                 }
             }
         }
-        
+
         // resort to body since no id/attr was found
         // Note: using id is more reliable than parsing content from body
         $nodesList = $this->DOMdoc->getElementsByTagName('body');
@@ -544,27 +544,27 @@ class remote_page {
         $element = $nodesList->item(0); // there should always be exactly one body
         return self::DOMinnerHTML($element);
     }
-    
+
     /**
      * Return HTML of the inner contents of a DOMNode (or DOMElement).
      * The element itself is not included, only its children (and their children, etc.).
      * DOMDocument->saveHTML($element) gives the HTML including the element itself.
      * Source: http://stackoverflow.com/a/2087136
-     * 
+     *
      * @param \DOMNode $element
      * @return string
      */
     public static function DOMinnerHTML(\DOMNode $element) {
         $innerHTML = "";
         $children  = $element->childNodes;
-        
+
         foreach ($children as $child) {
             $innerHTML .= $element->ownerDocument->saveHTML($child);
         }
-        
+
         return $innerHTML;
-    } 
-    
+    }
+
     protected function fixFormAction(\mod_astra_exercise $ex) {
         $nodesList = $this->DOMdoc->getElementsByTagName('form');
         // set action to the new submission handler in Moodle
@@ -575,7 +575,7 @@ class remote_page {
             }
         }
     }
-    
+
     /**
      * Add array notation to form checkbox groups.
      * (If there are checkbox inputs that use the same name but the name
@@ -588,7 +588,7 @@ class remote_page {
         // find checkbox groups (multiple checkboxes with the same name) such that
         // their names do not use the array notation [] yet
         foreach ($nodesList as $inputNode) {
-            if ($inputNode->nodeType == \XML_ELEMENT_NODE && 
+            if ($inputNode->nodeType == \XML_ELEMENT_NODE &&
                     $inputNode->getAttribute('type') == 'checkbox') {
                 $name = $inputNode->getAttribute('name');
                 if ($name != '' && \strpos(\strrev($name), '][') !== 0) {
@@ -600,7 +600,7 @@ class remote_page {
                 }
             }
         }
-        
+
         // add [] to the checkbox names, if they form a group
         foreach ($checkboxesByName as $name => $inputNodes) {
             if (\count($inputNodes) > 1) {
@@ -610,7 +610,7 @@ class remote_page {
             }
         }
     }
-    
+
     /**
      * Return the value of a meta element.
      * @param string $name name attribute value of the meta element
@@ -631,15 +631,15 @@ class remote_page {
         }
         return null;
     }
-    
+
     protected function getTitle() {
         $titleNodes = $this->DOMdoc->getElementsByTagName('title');
         foreach ($titleNodes as $node) { // these is usually exactly one title element
-            return $node->textContent; 
+            return $node->textContent;
         }
         return null;
     }
-    
+
     /**
      * Find elements of type $tagName that have attribute $attrName, and the value of
      * the attribute is a key in $replaceValues. Then, replace the attributes of the
@@ -664,12 +664,12 @@ class remote_page {
             }
         }
     }
-    
+
     /**
      * Find elements of type $tagName that have attribute $attrName. Then,
      * replace the attributes of the element with the attribute values in $replaceValues.
      * Only the attributes given in $replaceValues are affected.
-     * 
+     *
      * @param string $tagName name of the elements/tags that are searched
      * @param string $attrName attribute name that is used in the search of elements
      * @param array $replaceValues array of new attribute values, separately for each
@@ -699,7 +699,7 @@ class remote_page {
                         $node->setAttribute($replaceAttrName, $replaceAttrValue);
                     }
                 }
-                
+
                 $i += 1;
                 if ($i >= $length) {
                     return;
@@ -707,7 +707,7 @@ class remote_page {
             }
         }
     }
-    
+
     /**
      * Return an array of DOMNodes that are located inside the document head
      * element and have attribute $attrName.
@@ -726,7 +726,7 @@ class remote_page {
         }
         return $elements;
     }
-    
+
     /**
      * Return an array of DOMNodes that are script elements with the given attribute.
      * @param string $attrName attribute name to search for
@@ -811,7 +811,7 @@ class remote_page {
             $this->_fixRelativeUrls($domain, $path, $tag, $attr);
         }
     }
-    
+
     /**
      * Find relative URLs in the document and make them point to the origin server.
      * @param string $domain domain of the origin server, e.g., 'https://example.com'
@@ -821,7 +821,7 @@ class remote_page {
      */
     protected function _fixRelativeUrls($domain, $path, $tagName, $attrName) {
         global $DB;
-        
+
         // regular expressions for detecting certain kinds of URLs
         // recognize absolute URLs (https: or // or data: etc.) or anchor URLs (#someid)
         // URL scheme starts with an alphabetic character and may contain
@@ -831,14 +831,14 @@ class remote_page {
         $chapter_pattern = '%(\.\./)?(?P<roundkey>[\w-]+)/(?P<chapterkey>[\w-]+)(\.html)(?P<anchor>#.+)?$%';
         // link between chapters in the same round
         $chapter_same_round = '%^(?P<chapterkey>[\w-]+)(\.html)(?P<anchor>#.+)?$%';
-        
+
         foreach ($this->DOMdoc->getElementsByTagName($tagName) as $elem) {
             if ($elem->nodeType == \XML_ELEMENT_NODE && $elem->hasAttribute($attrName)) {
                 $value = $elem->getAttribute($attrName);
                 if (empty($value)) {
                     continue;
                 }
-                
+
                 if (self::isInternalLink($elem, $value)) {
                     // Custom transform for RST chapter to chapter links
                     // (the link must refer to Moodle, not the exercise service)
@@ -851,7 +851,7 @@ class remote_page {
                                 ' JOIN {'. \mod_astra_exercise_round::TABLE .'} round ON round.id = lob.roundid ' .
                                 ' WHERE lob.remotekey = ? AND round.remotekey = ?',
                                 array($matches['chapterkey'], $matches['roundkey']));
-                        
+
                     } else if ($this->learningObject !== null && preg_match($chapter_same_round, $value, $matches)) {
                         // find the chapter with the remote key in the same round as the current exercise
                         $chapter_record = $DB->get_record_sql(
@@ -860,7 +860,7 @@ class remote_page {
                                 ' WHERE lob.remotekey = ? AND round.id = ?',
                                 array($matches['chapterkey'], $this->learningObject->getExerciseRound()->getId()));
                     }
-                    
+
                     if ($chapter_record) {
                         $chapter = new \mod_astra_chapter($chapter_record);
                         $url = \mod_astra\urls\urls::exercise($chapter);
@@ -871,10 +871,10 @@ class remote_page {
                         // replace the URL with the Moodle URL of the chapter
                         $elem->setAttribute($attrName, $url);
                     }
-                    
+
                 } else if (\preg_match($pattern, $value) === 0) {
                     // not absolute URL
-                    
+
                     if ($elem->hasAttribute('data-aplus-path')) {
                         // Custom transform for RST generated exercises.
                         // add the mooc-grader course key to the URL template
@@ -884,9 +884,9 @@ class remote_page {
                         if (mb_substr($value, 0, strlen('../')) === '../') { // $value starts with ../
                             $fix_value = mb_substr($value, 2); // remote .. from the start
                         }
-                        
+
                         $newVal = $domain . $fix_path . $fix_value;
-                        
+
                     } else if ($value[0] == '/') { // absolute path
                         $newVal = $domain . $value;
                     } else {
@@ -897,7 +897,7 @@ class remote_page {
             }
         }
     }
-    
+
     /**
      * Return true if the element is an internal chapter link.
      * @param DOMElement $elem
@@ -917,7 +917,7 @@ class remote_page {
         // correctly, we need to check other attributes to find internal chapter links
         $classAttr = $elem->getAttribute('class');
         $classes = explode(' ', $classAttr);
-        
+
         $internalSeen = false;
         $referenceSeen = false;
         foreach ($classes as $cl) {

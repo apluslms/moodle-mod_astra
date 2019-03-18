@@ -41,31 +41,31 @@ class mod_astra_exercise extends mod_astra_learning_object {
     public function getPointsToPass() {
         return $this->record->pointstopass;
     }
-    
+
     public function getMaxPoints() {
         return $this->record->maxpoints;
     }
-    
+
     public function getGradebookItemNumber() {
         return $this->record->gradeitemnumber;
     }
-    
+
     public function getSubmissionFileMaxSize() {
         return (int) $this->record->maxsbmssize;
     }
-    
+
     public function isSubmittable() {
         return true;
     }
-    
+
     public function isAssistantViewingAllowed() {
         return (bool) $this->record->allowastviewing;
     }
-    
+
     public function isAssistantGradingAllowed() {
         return (bool) $this->record->allowastgrading;
     }
-    
+
     /**
      * Check whether the uploaded files obey the submission file size constraint.
      * @param array $uploadedFiles supply the $_FILES superglobal or an array that
@@ -84,16 +84,16 @@ class mod_astra_exercise extends mod_astra_learning_object {
         }
         return true;
     }
-    
+
     /**
      * Delete this exercise instance from the database, and possible child
      * learning objects. All submissions to this exercise are also deleted.
-     * @param bool $updateRoundMaxPoints if true, the max points of the 
+     * @param bool $updateRoundMaxPoints if true, the max points of the
      * exercise round are updated here
      */
     public function deleteInstance($updateRoundMaxPoints = true) {
         global $DB;
-        
+
         // all submitted files to this exercise (in Moodle file API) (file itemid is a submission id)
         $fs = \get_file_storage();
         $fs->delete_area_files_select(context_module::instance($this->getExerciseRound()->getCourseModule()->id)->id,
@@ -104,7 +104,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
         $DB->delete_records(mod_astra_submission::TABLE, array(
             'exerciseid' => $this->getId(),
         ));
-        
+
         // delete exercise gradebook item
         $this->deleteGradebookItem();
 
@@ -113,12 +113,12 @@ class mod_astra_exercise extends mod_astra_learning_object {
 
         // this exercise (both lobject and exercise tables) and children
         $res = parent::deleteInstance();
-        
+
         // update round max points (this exercise must have been deleted from the DB before this)
         if ($updateRoundMaxPoints) {
             $this->getExerciseRound()->updateMaxPoints();
         }
-        
+
         return $res;
     }
 
@@ -152,7 +152,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
                 $this->getGradebookItemNumber(),
                 null, array('deleted' => 1));
     }
-    
+
     /**
      * Return the best submission of the student to this exercise.
      * Note: heavy text fields such as feedback and submission data are not
@@ -176,7 +176,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
             }
         }
         $submissions->close();
-        
+
         return $bestSubmission;
     }
 
@@ -188,7 +188,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
      */
     public function getSubmissionCountForStudent($userid, $excludeErrors = false) {
         global $DB;
-        
+
         if ($excludeErrors) {
             // exclude submissions with status error
             $count = $DB->count_records_select(mod_astra_submission::TABLE,
@@ -205,7 +205,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
         }
         return $count;
     }
-    
+
     /**
      * Return the submissions of a student in this exercise.
      * @param int $userid
@@ -257,11 +257,11 @@ class mod_astra_exercise extends mod_astra_learning_object {
     /**
      * Check if the user has more submissions than what should be stored for
      * the exercise. The excess submissions are then removed.
-     * 
+     *
      * This method does nothing when the exercise has limited the number of
      * allowed submissions. This is intended for exercises that allow unlimited
      * submissions, but do not store all of them.
-     * 
+     *
      * @param int $userid user id whose submissions are checked
      */
     public function removeSubmissionsExceedingStoreLimit($userid) {
@@ -278,7 +278,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
 
     /**
      * Remove $numSubmissions oldest submissions of the user in this exercise.
-     * 
+     *
      * @param int $numSubmissions how many submissions to remove.
      * @param int $userid user whose submissions are removed.
      */
@@ -321,7 +321,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
     public function getAllSubmissions($excludeErrors = false, array $filter = null,
             array $sort = null, $limitfrom = 0, $limitnum = 0) {
         global $DB;
-        
+
         // SELECT fields
         // exclude fields feedback, submissiondata, and gradingdata from submissions
         $sbmsFieldsArray = array('id','status','submissiontime','hash','exerciseid','submitter',
@@ -333,18 +333,18 @@ class mod_astra_exercise extends mod_astra_learning_object {
         // name and idnumber from the Moodle user table
         $userFields = get_all_user_name_fields(true, 'u') . ',u.idnumber';
         $fields = implode(',', $sbmsFieldsArray) . ',' . $userFields;
-        
+
         // WHERE conditions from the filter parameter
         $params = array();
         $wheres = array();
         $wheres[] = "s.exerciseid = :exerciseid";
         $params['exerciseid'] = $this->getId();
-        
+
         if ($excludeErrors) {
             $wheres[] = 's.status <> :error';
             $params['error'] = mod_astra_submission::STATUS_ERROR;
         }
-        
+
         // some fields use SQL LIKE comparison in the where clause
         $likeCompareFields = array('idnumber', 'firstname', 'lastname');
         foreach ($likeCompareFields as $field) {
@@ -353,7 +353,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
                 $params[$field] = '%' . $DB->sql_like_escape($filter[$field]) . '%';
             }
         }
-        
+
         if (isset($filter['status']) && $filter['status'] >= 0) {
             $wheres[] = 's.status = :status';
             $params['status'] = $filter['status'];
@@ -385,14 +385,14 @@ class mod_astra_exercise extends mod_astra_learning_object {
                     . ')';
             }
         }
-        
+
         $sqlEnd =
             "FROM {". mod_astra_submission::TABLE ."} s
              JOIN {user} u ON u.id = s.submitter";
-        
+
         $sql = "SELECT $fields " . $sqlEnd;
         $sqlCount = "SELECT COUNT(*) " . $sqlEnd;
-        
+
         if (!empty($wheres)) {
             $where = ' WHERE '. implode(' AND ', $wheres);
             $sql .= $where;
@@ -407,16 +407,16 @@ class mod_astra_exercise extends mod_astra_learning_object {
                 }
                 $sortfields[] = $f;
             }
-            
+
             $sql .= ' ORDER BY ' . implode(',', $sortfields);
         }
-        
+
         $submissions = $DB->get_recordset_sql($sql, $params, $limitfrom, $limitnum);
         $count = $DB->count_records_sql($sqlCount, $params);
-        
+
         return array($submissions, $count);
     }
-    
+
     /**
      * Create or update the Moodle gradebook item for this exercise.
      * (In order to add grades for students, use the method updateGrades.)
@@ -428,7 +428,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
         global $CFG, $DB;
         require_once($CFG->libdir.'/gradelib.php');
         require_once($CFG->libdir .'/grade/grade_item.php');
-        
+
         $item = array();
         $item['itemname'] = $this->getName(true, null, true);
         $item['hidden'] = (int) ($this->isHidden() || $this->getExerciseRound()->isHidden()
@@ -445,13 +445,13 @@ class mod_astra_exercise extends mod_astra_learning_object {
             // Moodle core does not accept zero max points
             $item['gradetype'] = GRADE_TYPE_NONE;
         }
-        
+
         if ($reset) {
             $item['reset'] = true;
         }
-        
+
         $courseid = $this->getExerciseRound()->getCourse()->courseid;
-        
+
         // create gradebook item
         $res = grade_update('mod/'. mod_astra_exercise_round::TABLE, $courseid, 'mod',
                 mod_astra_exercise_round::TABLE, $this->record->roundid,
@@ -471,12 +471,12 @@ class mod_astra_exercise extends mod_astra_learning_object {
             $gi->gradepass = $this->getPointsToPass();
             $gi->update('mod/'. mod_astra_exercise_round::TABLE);
         }
-        
+
         return $res;
     }
-    
+
     /**
-     * Return the grade of this exercise for the given user from the Moodle gradebook. 
+     * Return the grade of this exercise for the given user from the Moodle gradebook.
      * @param int $userid
      * @param numeric the grade
      */
@@ -495,7 +495,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
         }
         return 0;
     }
-    
+
     /**
      * Update the grades of students in the gradebook for this exercise.
      * The gradebook item must have been created earlier.
@@ -515,38 +515,38 @@ class mod_astra_exercise extends mod_astra_learning_object {
     public function updateGrades(array $grades) {
         global $CFG;
         require_once($CFG->libdir.'/gradelib.php');
-        
+
         if ($this->getMaxPoints() == 0) {
             // skip if the max points are zero (no grading)
             return GRADE_UPDATE_OK;
         }
-        
+
         // transform integer grades to objects (if the first array value is integer)
         if (is_int(reset($grades))) {
             $grades = mod_astra_exercise_round::gradeArrayToGradeObjects($grades);
         }
-        
+
         return grade_update('mod/'. mod_astra_exercise_round::TABLE,
                 $this->getExerciseRound()->getCourse()->courseid, 'mod',
                 mod_astra_exercise_round::TABLE,
                 $this->getExerciseRound()->getId(),
                 $this->getGradebookItemNumber(), $grades, null);
     }
-    
+
     /**
      * Write grades for each student in this exercise to Moodle gradebook.
      * The grades are read from the database tables of the plugin.
-     * 
+     *
      * @return array grade objects written to gradebook, indexed by user IDs
      */
     public function writeAllGradesToGradebook() {
         global $DB;
-        
+
         if ($this->getMaxPoints() == 0) {
             // skip if the max points are zero (no grading)
             return array();
         }
-        
+
         // get all user IDs of the students that have submitted to this exercise
         $table = mod_astra_submission::TABLE;
         $submitters = $DB->get_recordset_sql('SELECT DISTINCT submitter FROM {'. $table .'} WHERE exerciseid = ?',
@@ -560,20 +560,20 @@ class mod_astra_exercise extends mod_astra_learning_object {
             }
         }
         $submitters->close();
-        
+
         $this->updateGrades($grades);
-        
+
         return $grades;
     }
-    
+
     public function save($skipGradebook = false) {
         if (!$skipGradebook) {
             $this->updateGradebookItem();
         }
-        
+
         return parent::save();
     }
-    
+
     /**
      * Return the number of users that have submitted to this exercise.
      * @return int
@@ -585,7 +585,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
                 array($this->getId()),
                 'COUNT(DISTINCT submitter)');
     }
-    
+
     /**
      * Return the template context of all submissions from a user.
      * @param int $userid
@@ -608,12 +608,12 @@ class mod_astra_exercise extends mod_astra_learning_object {
 
         return self::submissionsTemplateContext($objects, $currentsubmission);
     }
-    
+
     /**
      * Return the template context objects for the given submissions.
      * The submissions should be submitted by the same user to the same exercise
      * and the array should be sorted by the submission time (latest submission first).
-     * 
+     *
      * @param array $submissions \mod_astra_submission objects
      * @param mod_astra_submission $currentsubmission if set, one submission
      * is marked as the current submission with an additional variable currentsubmission.
@@ -632,17 +632,17 @@ class mod_astra_exercise extends mod_astra_learning_object {
             }
             $ctx[] = $obj;
         }
-        
+
         return $ctx;
     }
-    
+
     public function getExerciseTemplateContext(stdClass $user = null,
             $includeTotalSubmitterCount = true, $includeCourseModule = true,
             $includeSiblings = false) {
         $ctx = parent::getTemplateContext($includeCourseModule, $includeSiblings);
         $ctx->submissionlisturl = \mod_astra\urls\urls::submissionList($this);
         $ctx->infourl = \mod_astra\urls\urls::exerciseInfo($this);
-        
+
         $ctx->max_points = $this->getMaxPoints();
         $ctx->max_submissions = $this->getMaxSubmissions();
         if ($user !== null) {
@@ -653,7 +653,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
             } else {
                 $ctx->submit_limit_deviation = 0;
             }
-            
+
             $dl_deviation = mod_astra_deadline_deviation::findDeviation($this->getId(), $user->id);
             if ($dl_deviation !== null) {
                 $ctx->deadline = $dl_deviation->getNewDeadline();
@@ -663,7 +663,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
                 $ctx->dl_extended_minutes = 0;
             }
         }
-        
+
         $ctx->points_to_pass = $this->getPointsToPass();
         if ($includeTotalSubmitterCount) {
             $ctx->total_submitter_count = $this->getTotalSubmitterCount(); // heavy DB query
@@ -671,13 +671,13 @@ class mod_astra_exercise extends mod_astra_learning_object {
         $ctx->allow_assistant_grading = $this->isAssistantGradingAllowed();
         $ctx->allow_assistant_viewing = $this->isAssistantViewingAllowed();
         $context = context_module::instance($this->getExerciseRound()->getCourseModule()->id);
-        $ctx->can_view_submissions = ($ctx->allow_assistant_viewing && 
-                has_capability('mod/astra:viewallsubmissions', $context)) || 
+        $ctx->can_view_submissions = ($ctx->allow_assistant_viewing &&
+                has_capability('mod/astra:viewallsubmissions', $context)) ||
             has_capability('mod/astra:addinstance', $context); // editing teacher can always view
-        
+
         return $ctx;
     }
-    
+
     /**
      * Return the URL used for loading the exercise page from the exercise service or
      * for uploading a submission for grading
@@ -711,12 +711,12 @@ class mod_astra_exercise extends mod_astra_learning_object {
         );
         return $this->getServiceUrl() .'?'. http_build_query($query_data, 'i_', '&');
     }
-    
+
     public function getLoadUrl($userid, $submissionOrdinalNumber, $language) {
         return $this->buildServiceUrl(\mod_astra\urls\urls::asyncNewSubmission($this, $userid),
                 $userid, $submissionOrdinalNumber, $language);
     }
-    
+
     /**
      * Upload the submission to the exercise service for grading and store the results
      * if the submission is graded synchronously.
@@ -739,21 +739,21 @@ class mod_astra_exercise extends mod_astra_learning_object {
         $sbmsData = $submission->getSubmissionData();
         if ($sbmsData !== null)
             $sbmsData = (array) $sbmsData;
-        
+
         if (is_null($files)) {
             $deleteFiles = true;
             $files = $submission->prepareSubmissionFilesForUpload();
         }
-        
+
         $courseConfig = mod_astra_course_config::getForCourseId(
                 $submission->getExercise()->getExerciseRound()->getCourse()->courseid);
         $api_key = ($courseConfig ? $courseConfig->getApiKey() : null);
         if (empty($api_key)) {
             $api_key = null; // $courseConfig gives an empty string if not set
         }
-        
+
         $language = $this->getExerciseRound()->checkCourseLang(current_language());
-        
+
         $serviceUrl = $this->buildServiceUrl(\mod_astra\urls\urls::asyncGradeSubmission($submission),
                 $submission->getRecord()->submitter, $submission->getCounter(), $language);
         try {
@@ -791,10 +791,10 @@ class mod_astra_exercise extends mod_astra_learning_object {
             }
             throw $e;
         } // PHP 5.4 has no finally block
-        
+
         $remotePage->setLearningObject($this);
         $page = $remotePage->loadFeedbackPage($this, $submission, $noPenalties);
-        
+
         if ($deleteFiles) {
             foreach ($files as $f) {
                 @unlink($f->filepath);
@@ -802,7 +802,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
         }
         return $page;
     }
-    
+
     public function getMaxSubmissionsForStudent(stdClass $user) {
         $max = $this->getMaxSubmissions(); // zero means no limit
         $deviation = mod_astra_submission_limit_deviation::findDeviation($this->getId(), $user->id);
@@ -811,13 +811,13 @@ class mod_astra_exercise extends mod_astra_learning_object {
         }
         return $max;
     }
-    
+
     public function studentHasSubmissionsLeft(stdClass $user) {
         if ($this->getMaxSubmissions() == 0)
             return true;
         return $this->getSubmissionCountForStudent($user->id) < $this->getMaxSubmissionsForStudent($user);
     }
-    
+
     public function studentHasAccess(stdClass $user, $when = null) {
         // check deadlines
         if ($when === null)
@@ -834,7 +834,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
         }
         return false;
     }
-    
+
     public function isSubmissionAllowed(stdClass $user) {
         $context = context_module::instance($this->getExerciseRound()->getCourseModule()->id);
         if (has_capability('mod/astra:addinstance', $context, $user) ||
@@ -850,7 +850,7 @@ class mod_astra_exercise extends mod_astra_learning_object {
         }
         return true;
     }
-    
+
     /**
      * Generate a hash of this exercise for the user. The hash is based on
      * a secret key.
