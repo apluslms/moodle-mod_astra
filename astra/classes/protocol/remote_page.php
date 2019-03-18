@@ -3,6 +3,8 @@ namespace mod_astra\protocol;
 
 defined('MOODLE_INTERNAL') || die;
 
+require_once(dirname(dirname(__DIR__)) . '/local_settings.php');
+
 /**
  * Class remote_page represents an HTML document that is downloaded from
  * a server. Either HTTP GET or POST is supported for requesting the page.
@@ -739,27 +741,42 @@ class remote_page {
         }
         return $elements;
     }
-    
+
     /**
-     * Fix relative URLs so that the address points to the origin server.
-     * Otherwise, the relative URL would be interpreted as relative inside the
-     * Moodle server.
+     * Return the base address/URL of this remote page.
+     * @return array(domain, path)
      */
-    protected function fixRelativeUrls() {
-        // parse remote server domain and base path
+    public function baseAddress() {
         $remoteUrlComponents = \parse_url($this->url);
         $domain = '';
         $path = '';
+        $hostport = '';
         if (isset($remoteUrlComponents['scheme'])) {
             $domain .= $remoteUrlComponents['scheme'] .'://';
         }
+        if (isset($remoteUrlComponents['user'])) {
+            $domain .= $remoteUrlComponents['user'];
+        }
+        if (isset($remoteUrlComponents['pass'])) {
+            $domain .= ':' . $remoteUrlComponents['pass'] . '@';
+        }
+
         if (isset($remoteUrlComponents['host'])) {
-            $domain .= $remoteUrlComponents['host'];
+            $hostport .= $remoteUrlComponents['host'];
         }
         if (isset($remoteUrlComponents['port'])) {
-            $domain .= ':'. $remoteUrlComponents['port'];
+            $hostport .= ':' . $remoteUrlComponents['port'];
         }
-        
+        if (defined('ASTRA_REMOTE_PAGE_HOSTS_MAP')
+                && isset(ASTRA_REMOTE_PAGE_HOSTS_MAP[$hostport])) {
+            // Transform the host into another if it is set in the configuration.
+            // This is particularly used in testing to deal with fake/internal
+            // domains and the localhost domain.
+            $domain .= ASTRA_REMOTE_PAGE_HOSTS_MAP[$hostport];
+        } else {
+            $domain .= $hostport;
+        }
+
         if (isset($remoteUrlComponents['path'])) {
             $path = $remoteUrlComponents['path'];
         }
@@ -769,7 +786,18 @@ class remote_page {
             // remove the last part in path, e.g., "chapter.html" in "/course/module/chapter.html"
             $path = dirname($path) . '/';
         }
-        
+        return array($domain, $path);
+    }
+
+    /**
+     * Fix relative URLs so that the address points to the origin server.
+     * Otherwise, the relative URL would be interpreted as relative inside the
+     * Moodle server.
+     */
+    protected function fixRelativeUrls() {
+        // parse remote server domain and base path
+        list($domain, $path) = $this->baseAddress();
+
         $tags_attrs = array(
                 'img' => 'src',
                 'script' => 'src',

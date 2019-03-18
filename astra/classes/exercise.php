@@ -2,6 +2,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__DIR__) . '/local_settings.php');
+
 /**
  * One exercise in an exercise round. Each exercise belongs to one exercise round
  * and one category. An exercise has a service URL that is used to connect to
@@ -690,6 +692,15 @@ class mod_astra_exercise extends mod_astra_learning_object {
      * @return string
      */
     protected function buildServiceUrl($submissionUrl, $uid, $submissionOrdinalNumber, $language) {
+        if (defined('ASTRA_OVERRIDE_SUBMISSION_HOST')
+                && ASTRA_OVERRIDE_SUBMISSION_HOST !== null) {
+            // Modify the host of submission URL.
+            $urlComp = parse_url($submissionUrl);
+            $submissionUrl = ASTRA_OVERRIDE_SUBMISSION_HOST
+                . ($urlComp['path'] ?? '/')
+                . (isset($urlComp['query']) ? ('?' . $urlComp['query']) : '')
+                . (isset($urlComp['fragment']) ? ('#' . $urlComp['fragment']) : '');
+        }
         $query_data = array(
                 'submission_url' => $submissionUrl,
                 'post_url' => \mod_astra\urls\urls::newSubmissionHandler($this),
