@@ -220,7 +220,7 @@ class auto_setup {
      * If null, no role is assigned but the user is still enrolled.
      * @param array $errors error messages are appended to this array
      */
-    protected static function enrolUsersToCourse(array $users, $courseid, $roleid, array &$errors) {
+    public static function enrolUsersToCourse(array $users, $courseid, $roleid, array &$errors) {
         global $DB, $PAGE;
         
         if (empty($users)) {
