@@ -695,9 +695,10 @@ function astra_pluginfile($course, $cm, $context, $filearea, array $args, $force
  * (student or teacher).
  *
  * @param calendar_event $event
+ * @param int $userid User id to use for all capability checks. Set to 0 for current user (default).
  * @return bool Returns true if the event is visible to the current user, false otherwise.
  */
-function mod_astra_core_calendar_is_event_visible(calendar_event $event) {
+function mod_astra_core_calendar_is_event_visible(calendar_event $event, $userid = 0) {
     // hidden rounds are not shown to students
     $exround = mod_astra_exercise_round::createFromId($event->instance);
     $cm = $exround->getCourseModule();
@@ -721,10 +722,12 @@ function mod_astra_core_calendar_is_event_visible(calendar_event $event) {
  *
  * @param calendar_event $event
  * @param \core_calendar\action_factory $factory
+ * @param int $userid User id to use for all capability checks. Set to 0 for current user (default).
  * @return \core_calendar\local\event\entities\action_interface|null
  */
 function mod_astra_core_calendar_provide_event_action(calendar_event $event,
-        \core_calendar\action_factory $factory) {
+        \core_calendar\action_factory $factory,
+        $userid = 0) {
     $exround = mod_astra_exercise_round::createFromId($event->instance);
 
     // do not display the event after the round has closed
