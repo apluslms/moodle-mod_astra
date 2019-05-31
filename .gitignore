@@ -9,3 +9,8 @@ copy.sh
 
 # downloaded Node.js / NPM packages
 node_modules
+
+# Eclipse project
+.buildpath
+.project
+.settings/
