@@ -11,34 +11,15 @@ Context variables:
 * indexurl (string) URL to the index page of the module (overview of the course exercises and results)
 }}
 
-<nav class="row siblings">
-    {{# next }}
-    {{# next.accessible }}
-    <a href="{{{ next.link }}}" class="float-right btn btn-link">
-        {{ next.name }} &raquo;
-    </a>
-    {{/ next.accessible }}
-    {{^ next.accessible }}
-    <span class="float-right btn btn-link disabled">
-        {{ next.name }} &raquo;
-        {{# is_course_staff }}
-        <a href="{{{ next.link }}}" class="btn btn-secondary btn-sm">
-            {{#pix}}i/lock{{/pix}}
-            {{#str}} earlyaccess, mod_astra {{/str}}
-        </a>
-        {{/ is_course_staff }}
-    </span>
-    {{/ next.accessible }}
-    {{/ next }}
-
+<nav class="row siblings justify-content-between">
     {{# previous }}
     {{# previous.accessible }}
-    <a href="{{{ previous.link }}}" class="float-left btn btn-link">
+    <a href="{{{ previous.link }}}" class="btn btn-link">
         &laquo; {{ previous.name }}
     </a>
     {{/ previous.accessible }}
     {{^ previous.accessible }}
-    <span class="float-left btn btn-link disabled">
+    <span class="btn btn-link disabled">
         &laquo; {{ previous.name }}
         {{# is_course_staff }}
         <a href="{{{ previous.link }}}" class="btn btn-secondary btn-sm">
@@ -50,9 +31,28 @@ Context variables:
     {{/ previous.accessible }}
     {{/ previous }}
 
-    <span class="d-none d-lg-block" style="text-align: center;">
+    <span class="d-lg-block" style="text-align: center;">
         <a class="btn btn-link" href="{{{ indexurl }}}">
             {{#str}} courseoverview, mod_astra {{/str}}
         </a>
     </span>
+
+    {{# next }}
+    {{# next.accessible }}
+    <a href="{{{ next.link }}}" class="btn btn-link">
+        {{ next.name }} &raquo;
+    </a>
+    {{/ next.accessible }}
+    {{^ next.accessible }}
+    <span class="btn btn-link disabled">
+        {{ next.name }} &raquo;
+        {{# is_course_staff }}
+        <a href="{{{ next.link }}}" class="btn btn-secondary btn-sm">
+            {{#pix}}i/lock{{/pix}}
+            {{#str}} earlyaccess, mod_astra {{/str}}
+        </a>
+        {{/ is_course_staff }}
+    </span>
+    {{/ next.accessible }}
+    {{/ next }}
 </nav>
