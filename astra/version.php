@@ -14,10 +14,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_astra';
-$plugin->version = 2019061000;
-$plugin->release = 'v1.7.0';
-$plugin->requires = 2018051700; // Moodle 3.5
+$plugin->version = 2019061200;
+$plugin->release = 'v1.8.0';
+$plugin->requires = 2018120300; // Moodle 3.6
 $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = array(
-        'theme_boost' => 2016120500, // so that the Bootstrap 4 framework is available
+        'theme_boost' => 2018120300, // so that the Bootstrap 4 framework is available
 );
