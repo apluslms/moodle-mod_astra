@@ -254,6 +254,9 @@ class auto_setup {
         if ($plugin->allow_enrol($instance) && \has_capability('enrol/'.$plugin->get_name().':enrol', $course_ctx)) {
             foreach ($users as $user) {
                 $plugin->enrol_user($instance, $user->id, $roleid);
+                // mark_user_dirty must be called after changing data that gets
+                // cached in user sessions, e.g., new roles and enrolments.
+                mark_user_dirty($user->id);
             }
         } else {
             $errors[] = \get_string('enrolnotpermitted', 'enrol');
@@ -489,6 +492,9 @@ class auto_setup {
                 \role_assign($teacher_role_id, $ast_user->id, \context_module::instance($exround->getCourseModule()->id));
                 // this role assigned in the course module level does not provide any access to the course
                 // itself (course home web page)
+                // mark_user_dirty must be called after changing data that gets
+                // cached in user sessions, e.g., new roles and enrolments.
+                mark_user_dirty($ast_user->id);
             }
         }
         
