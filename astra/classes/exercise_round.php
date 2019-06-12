@@ -1058,9 +1058,9 @@ class mod_astra_exercise_round extends mod_astra_database_object {
             // check course_module visibility too since the status may be ready,
             // but the course_module is not visible
             $records = array();
-            $courseModules = get_fast_modinfo($courseid)->instances[self::TABLE];
+            $courseModules = get_fast_modinfo($courseid)->instances[self::TABLE] ?? array();
             foreach ($astraRecords as $id => $rec) {
-                if ($courseModules[$id]->visible) {
+                if (isset($courseModules[$id]) && $courseModules[$id]->visible) {
                     $records[$id] = $rec;
                 }
             }
