@@ -121,9 +121,26 @@
     min-height: 150px;
 }
 .path-mod-astra #region-main .exercise-summary {
-    background-color: #d9edf7;/*primary #337ab7;*/
+    background-color: #d9edf7 !important;/*primary #337ab7;*/
+    /* Aalto theme overrides .navbar-light background color with
+    !important rule, so use !important here as well. */
     border-color: #bce8f1;/*primary #2e6da4;*/
     border-radius: 0;
+}
+.path-mod-astra #region-main .exercise-summary .btn-secondary {
+    /* Aalto theme sets custom styles to all navbar buttons, so disable them. */
+    background-image: none;
+    background-color: rgb(242, 242, 242);
+    width: auto;
+    height: auto;
+}
+.path-mod-astra #region-main .exercise-summary .btn-secondary:hover {
+    /* Aalto theme sets animations on mouse hover to all navbar buttons, so disable them. */
+    -webkit-transform: none;
+    -moz-transform: none;
+    -ms-transform: none;
+    -o-transform: none;
+    transform: none;
 }
 .path-mod-astra #region-main [data-aplus-exercise] .exercise-summary {
     border-top: none;
@@ -143,6 +160,7 @@
 }
 .path-mod-astra #region-main .exercise-summary .navbar-nav + .navbar-text {
     margin-left: 1rem;
+    margin-right: 1rem;
 }
 .path-mod-astra #region-main .exercise-summary .navbar-nav > li.nav-item > a.nav-link,
 .path-mod-astra #region-main .exercise-summary .navbar-nav + .navbar-text {
