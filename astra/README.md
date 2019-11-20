@@ -24,6 +24,20 @@ Features in A+ that have NOT been implemented in this Moodle plugin
   exercise results and submitted input, and zip archive of the submitted files),
   but there is no REST API for programmatic access.
 - LTI exercise: exercise that connects to the exercise service using the LTI protocol.
+  (However, Moodle has its own native activity for LTI exercises.)
+- The following exercise settings: confirm the level, difficulty,
+  unofficial submissions (after the deadline or after reaching the submission attempt limit)
+- Enrollment questionnaires: Moodle has its own course enrollment features and
+  Astra does not interfere with those in any way.
+- Showing the exercise model solution or template files from the navigation bar
+  in the exercise page.
+- A+ course settings such as lifesupport time, archive time, head URLs, and
+  custom content in the course front page.
+- A+ teacher's management features: visualizations of the course data
+  (Astra stores points in the Moodle Gradebook, though).
+- Student tags (in A+, teachers can add tags to students and filter course
+  participants based on the tags).
+- A+ batch assessment with a JSON dump (which creates new graded submissions to students)
 
 
 Moodle block plugin: block_astra_setup
@@ -38,12 +52,13 @@ functionality (everything is implemented in mod_astra).
 Installation
 ============
 
-Assume moodledir is the path to the Moodle installation in the server.
-The mod plugin directory astra is copied to moodledir/mod/ directory and
-the block plugin block_astra_setup is copied to moodledir/blocks/ directory.
+Assume `moodledir` is the path to the Moodle installation in the server.
+The mod plugin directory `astra` is copied to `moodledir/mod/` directory and
+the block plugin `block_astra_setup` is copied to `moodledir/blocks/` directory.
 Thus, the plugin files (version.php etc.) should be under the following directories:
-moodledir/mod/astra/
-moodledir/blocks/astra_setup/
+
+* `moodledir/mod/astra/`
+* `moodledir/blocks/astra_setup/`
 
 After copying the files, an admin needs to visit the Moodle admin pages
 in the web browser and upgrade the database, as usual when installing plugins.
@@ -77,7 +92,7 @@ Code organization
 
 - amd: frontend Javascript code as AMD modules, the format that Moodle expects
   from JS code
-- assets: CSS, including Twitter Bootstrap 3 and own CSS code
+- assets: CSS styles
 - async: PHP scripts that are used for asynchronous grading from the exercise service
 - backup: implementation of the Moodle backup API
 - classes: PHP class definitions in a format that supports Moodle class auto-loading
@@ -109,7 +124,8 @@ Code organization
   * upgrade.php: code that runs when upgrading the plugin. This is needed
     if the database schema changes after the plugin has been deployed and
     installed in production servers.
-- lang: defines language strings used in the UI. Only English is currently provided.
+- lang: defines translatable strings used in the UI. English and Finnish are
+  currently provided.
 - pix: icons that Moodle shows, for example, in activities in the course page
 - teachers: PHP scripts for numerous tasks for teachers
 - templates: Mustache templates, part of the Moodle output API
