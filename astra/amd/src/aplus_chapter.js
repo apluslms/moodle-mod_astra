@@ -663,7 +663,7 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 				var id;
 				if (this.active_element) id = "#" + this.chapterID;
 
-				$.aplusExerciseDetectWaits(function(suburl, error) {
+				var did_wait = $.aplusExerciseDetectWaits(function(suburl, error) {
 					if (error) {
 						// Polling for the final feedback failed, possibly because
 						// the grading takes a lot of time.
@@ -711,6 +711,13 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 
 						exercise.load(true);
 					});
 				}, id);
+				if (!did_wait) {
+					// No asynchronous waiting and polling were needed to retrieve
+					// the feedback for the submission.
+					// Reload the exercise (description) in case it changes after submitting.
+					// This also resets the disabled submit button.
+					exercise.load(true);
+				}
 			}
 		},
 
