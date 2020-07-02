@@ -13,7 +13,14 @@ defined('MOODLE_INTERNAL') || die();
 $string['modulename'] = 'Astra exercise';
 $string['modulenameplural'] = 'Astra exercises';
 $string['noastras'] = 'No Astra exercises in this course';
-$string['modulename_help'] = 'External Astra exercises (Aalto SCI Dept. of Computer Science)'; // when type is selected for a new activity
+$string['modulename_help'] = 'Astra module integrates <a href="https://apluslms.github.io/" target="_blank">A+ LMS courses</a> into Moodle.
+
+Astra activities should not be created manually from this activity selector. Instead, add the "Astra exercises setup" block to your course space and import the Astra exercise configurations from your exercise service.
+
+There are instructions about Astra in the aplus-manual course:
+
+* <a href="https://plus.cs.aalto.fi/aplus-manual/master/moodle_astra/introduction/" target="_blank">https://plus.cs.aalto.fi/aplus-manual/master/moodle_astra/introduction/</a>
+* <a href="https://github.com/apluslms/course-templates/blob/master/moodle_astra/introduction.rst" target="_blank">https://github.com/apluslms/course-templates/blob/master/moodle_astra/introduction.rst</a>';
 
 $string['astra'] = 'Astra';
 $string['pluginadministration'] = 'Astra exercises administration';

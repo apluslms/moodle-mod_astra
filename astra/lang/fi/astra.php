@@ -13,7 +13,14 @@ defined('MOODLE_INTERNAL') || die();
 $string['modulename'] = 'Astra-tehtävä';
 $string['modulenameplural'] = 'Astra-tehtävät';
 $string['noastras'] = 'Ei Astra-tehtäviä tällä kurssilla';
-$string['modulename_help'] = 'Moodlen ulkopuoliset Astra-tehtävät';
+$string['modulename_help'] = 'Astra-moduuli integroi <a href="https://apluslms.github.io/" target="_blank">A+-oppimisalustan</a> kurssin Moodleen.
+
+Astra-aktiviteetteja ei pidä luoda käsin tämän aktiviteettivalikon kautta. Sen sijaan lisää kurssitilaan Astra-tehtävien asennuslohko ja tuo A+-kurssin asetukset tehtäväpalvelusta.
+
+Aplus-manual-kurssissa on ohjeita Astran käytöstä:
+
+* <a href="https://plus.cs.aalto.fi/aplus-manual/master/moodle_astra/introduction/" target="_blank">https://plus.cs.aalto.fi/aplus-manual/master/moodle_astra/introduction/</a>
+* <a href="https://github.com/apluslms/course-templates/blob/master/moodle_astra/introduction.rst" target="_blank">https://github.com/apluslms/course-templates/blob/master/moodle_astra/introduction.rst</a>';
 
 $string['astra'] = 'Astra';
 $string['pluginadministration'] = 'Astra-tehtävien hallinta';

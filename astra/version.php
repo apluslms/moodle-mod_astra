@@ -14,9 +14,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_astra';
-$plugin->version = 2019120800;
-$plugin->release = 'v1.8.2';
-$plugin->requires = 2018120300; // Moodle 3.6
+$plugin->version = 2020070100;
+$plugin->release = 'v1.9.0';
+$plugin->requires = 2019111800; // Moodle 3.8
 $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = array(
         'theme_boost' => 2018120300, // so that the Bootstrap 4 framework is available
