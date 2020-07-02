@@ -849,8 +849,12 @@ class remote_page {
                         $chapter_record = $DB->get_record_sql(
                                 \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_chapter::TABLE) .
                                 ' JOIN {'. \mod_astra_exercise_round::TABLE .'} round ON round.id = lob.roundid ' .
-                                ' WHERE lob.remotekey = ? AND round.remotekey = ?',
-                                array($matches['chapterkey'], $matches['roundkey']));
+                                ' WHERE lob.remotekey = ? AND round.remotekey = ? AND round.course = ?',
+                                array(
+                                    $matches['chapterkey'],
+                                    $matches['roundkey'],
+                                    $this->learningObject->getExerciseRound()->getCourse()->courseid,
+                                ));
 
                     } else if ($this->learningObject !== null && preg_match($chapter_same_round, $value, $matches)) {
                         // find the chapter with the remote key in the same round as the current exercise
