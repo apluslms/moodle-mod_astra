@@ -236,3 +236,7 @@ because the default badge selector somehow has a higher precedence. */
 .path-mod-astra #region-main .badge {
     border-radius: 0.5rem;
 }
+/* Aalto MyCourses theme makes secondary badges black. */
+.path-mod-astra #region-main .badge-secondary {
+    background-color: #ced4da;
+}
