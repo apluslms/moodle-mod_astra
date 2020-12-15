@@ -365,13 +365,14 @@ class mod_astra_exercise_round extends mod_astra_database_object {
             // create new, unless no deadline is set for the assignment
             unset($event->id);
             if (is_null($this->cm)) {
-                $event->description  = array(
-                        'text'   => '', // no description in calendar
-                        'format' => $this->record->introformat,
-                );
+                $event->description  = ''; // No description in the calendar.
+                $event->format       = FORMAT_HTML;
             } else {
                 // format_module_intro uses the Moodle description from mod_form
-                $event->description  = format_module_intro(self::TABLE, $this->record, $this->cm->id);
+                // Changed in Moodle 3.9: the filters must not be applied on the passed description text.
+                // -> Add the false parameter and set format to HTML.
+                $event->description  = format_module_intro(self::TABLE, $this->record, $this->cm->id, false);
+                $event->format       = FORMAT_HTML;
             }
             $event->courseid     = $this->record->course;
             $event->groupid      = 0;
