@@ -31,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         if (isset($_POST['save'])) {
             astra_rename_rounds_with_numbers($cid, $module_numbering);
-            astra_update_exercise_gradebook_item_names($cid);
         } else if (isset($_POST['renumbermodule'])) {
             astra_renumber_rounds_and_exercises($cid, $module_numbering, false);
         } else if (isset($_POST['renumbercourse'])) {

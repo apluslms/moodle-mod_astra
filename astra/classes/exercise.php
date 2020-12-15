@@ -46,10 +46,6 @@ class mod_astra_exercise extends mod_astra_learning_object {
         return $this->record->maxpoints;
     }
 
-    public function getGradebookItemNumber() {
-        return $this->record->gradeitemnumber;
-    }
-
     public function getSubmissionFileMaxSize() {
         return (int) $this->record->maxsbmssize;
     }
@@ -105,9 +101,6 @@ class mod_astra_exercise extends mod_astra_learning_object {
             'exerciseid' => $this->getId(),
         ));
 
-        // delete exercise gradebook item
-        $this->deleteGradebookItem();
-
         // Delete all deviations for this exercise.
         $this->deleteDeviations();
 
@@ -135,22 +128,6 @@ class mod_astra_exercise extends mod_astra_learning_object {
         $DB->delete_records(mod_astra_submission_limit_deviation::TABLE, array(
                 'exerciseid' => $this->getId(),
         ));
-    }
-
-    /**
-     * Delete Moodle gradebook item for this exercise.
-     * @return int GRADE_UPDATE_OK or GRADE_UPDATE_FAILED (or GRADE_UPDATE_MULTIPLE)
-     */
-    public function deleteGradebookItem() {
-        global $CFG;
-        require_once($CFG->libdir.'/gradelib.php');
-        return grade_update('mod/'. mod_astra_exercise_round::TABLE,
-                $this->getExerciseRound()->getCourse()->courseid,
-                'mod',
-                mod_astra_exercise_round::TABLE,
-                $this->getExerciseRound()->getId(),
-                $this->getGradebookItemNumber(),
-                null, array('deleted' => 1));
     }
 
     /**
@@ -417,160 +394,8 @@ class mod_astra_exercise extends mod_astra_learning_object {
         return array($submissions, $count);
     }
 
-    /**
-     * Create or update the Moodle gradebook item for this exercise.
-     * (In order to add grades for students, use the method updateGrades.)
-     * @param bool $reset if true, delete all grades in the grade item
-     * @return int grade_update return value (one of GRADE_UPDATE_OK, GRADE_UPDATE_FAILED,
-     * GRADE_UPDATE_MULTIPLE or GRADE_UPDATE_ITEM_LOCKED)
-     */
-    public function updateGradebookItem($reset = false) {
-        global $CFG, $DB;
-        require_once($CFG->libdir.'/gradelib.php');
-        require_once($CFG->libdir .'/grade/grade_item.php');
-
-        $item = array();
-        $item['itemname'] = $this->getName(true, null, true);
-        $item['hidden'] = (int) ($this->isHidden() || $this->getExerciseRound()->isHidden()
-                || $this->getCategory()->isHidden());
-        // The hidden value must be zero or one. Integers above one are interpreted as timestamps (hidden until).
-
-        // update exercise grading information ($item)
-        if ($this->getMaxPoints() > 0) {
-            $item['gradetype'] = GRADE_TYPE_VALUE; // points
-            $item['grademax']  = $this->getMaxPoints();
-            $item['grademin']  = 0; // min allowed value (points cannot be below this)
-            // looks like min grade to pass (gradepass) cannot be set in this API directly
-        } else {
-            // Moodle core does not accept zero max points
-            $item['gradetype'] = GRADE_TYPE_NONE;
-        }
-
-        if ($reset) {
-            $item['reset'] = true;
-        }
-
-        $courseid = $this->getExerciseRound()->getCourse()->courseid;
-
-        // create gradebook item
-        $res = grade_update('mod/'. mod_astra_exercise_round::TABLE, $courseid, 'mod',
-                mod_astra_exercise_round::TABLE, $this->record->roundid,
-                $this->getGradebookItemNumber(), null, $item);
-
-        // parameters to find the grade item from DB
-        $grade_item_params = array(
-                'itemtype'     => 'mod',
-                'itemmodule'   => mod_astra_exercise_round::TABLE,
-                'iteminstance' => $this->record->roundid,
-                'itemnumber'   => $this->getGradebookItemNumber(),
-                'courseid'     => $courseid,
-        );
-        $gi = grade_item::fetch($grade_item_params);
-        if ($gi && $gi->gradepass != $this->getPointsToPass()) {
-            // Set min points to pass.
-            $gi->gradepass = $this->getPointsToPass();
-            $gi->update('mod/'. mod_astra_exercise_round::TABLE);
-        }
-
-        return $res;
-    }
-
-    /**
-     * Return the grade of this exercise for the given user from the Moodle gradebook.
-     * @param int $userid
-     * @param numeric the grade
-     */
-    public function getGradeFromGradebook($userid) {
-        global $CFG;
-        require_once($CFG->libdir.'/gradelib.php');
-        // The Moodle API returns the exercise round and exercise grades all at once
-        // since they use different item numbers with the same Moodle course module.
-        $grades = grade_get_grades($this->getExerciseRound()->getCourse()->courseid, 'mod',
-                mod_astra_exercise_round::TABLE,
-                $this->getExerciseRound()->getId(),
-                $userid);
-        $itemNum = $this->getGradebookItemNumber();
-        if (isset($grades->items[$itemNum]->grades[$userid])) {
-            return (int) $grades->items[$itemNum]->grades[$userid]->grade;
-        }
-        return 0;
-    }
-
-    /**
-     * Update the grades of students in the gradebook for this exercise.
-     * The gradebook item must have been created earlier.
-     * @param array $grades student grades of this exercise, indexed by Moodle user IDs.
-     * The grade is given either as an integer or as stdClass with fields
-     * userid and rawgrade. Do not mix these two input types in the same array!
-     *
-     * For example:
-     * array(userid => 100)
-     * OR
-     * $g = new stdClass(); $g->userid = userid; $g->rawgrade = 100;
-     * array(userid => $g)
-     *
-     * @return int grade_update return value (one of GRADE_UPDATE_OK, GRADE_UPDATE_FAILED,
-     * GRADE_UPDATE_MULTIPLE or GRADE_UPDATE_ITEM_LOCKED)
-     */
-    public function updateGrades(array $grades) {
-        global $CFG;
-        require_once($CFG->libdir.'/gradelib.php');
-
-        if ($this->getMaxPoints() == 0) {
-            // skip if the max points are zero (no grading)
-            return GRADE_UPDATE_OK;
-        }
-
-        // transform integer grades to objects (if the first array value is integer)
-        if (is_int(reset($grades))) {
-            $grades = mod_astra_exercise_round::gradeArrayToGradeObjects($grades);
-        }
-
-        return grade_update('mod/'. mod_astra_exercise_round::TABLE,
-                $this->getExerciseRound()->getCourse()->courseid, 'mod',
-                mod_astra_exercise_round::TABLE,
-                $this->getExerciseRound()->getId(),
-                $this->getGradebookItemNumber(), $grades, null);
-    }
-
-    /**
-     * Write grades for each student in this exercise to Moodle gradebook.
-     * The grades are read from the database tables of the plugin.
-     *
-     * @return array grade objects written to gradebook, indexed by user IDs
-     */
-    public function writeAllGradesToGradebook() {
-        global $DB;
-
-        if ($this->getMaxPoints() == 0) {
-            // skip if the max points are zero (no grading)
-            return array();
-        }
-
-        // get all user IDs of the students that have submitted to this exercise
-        $table = mod_astra_submission::TABLE;
-        $submitters = $DB->get_recordset_sql('SELECT DISTINCT submitter FROM {'. $table .'} WHERE exerciseid = ?',
-                array($this->getId()));
-        $grades = array(); // grade objects indexed by user IDs
-        foreach ($submitters as $row) {
-            // get the best points of each student
-            $sbms = $this->getBestSubmissionForStudent($row->submitter);
-            if ($sbms !== null) {
-                $grades[$row->submitter] = $sbms->getGradeObject();
-            }
-        }
-        $submitters->close();
-
-        $this->updateGrades($grades);
-
-        return $grades;
-    }
-
     public function save($skipGradebook = false) {
-        if (!$skipGradebook) {
-            $this->updateGradebookItem();
-        }
-
+        // Parameter $skipGradebook is deprecated and not used.
         return parent::save();
     }
 

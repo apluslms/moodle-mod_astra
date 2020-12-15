@@ -83,7 +83,6 @@ if ($fromform = $form->get_data()) {
         if ($learningObject->isSubmittable()) {
             // if the round of an exercise changes, gradebook requires additional changes
             if ($fromform->roundid == $lobjectRecord->roundid) { // round not changed 
-                $fromform->gradeitemnumber = $lobjectRecord->gradeitemnumber; // keep the old value
                 $updatedExercise = new mod_astra_exercise($fromform);
                 $updatedExercise->save();
                 
@@ -91,18 +90,15 @@ if ($fromform = $form->get_data()) {
                 $updatedExercise->getExerciseRound()->updateMaxPoints();
                 $updatedExercise->getExerciseRound()->synchronizeGrades();
             } else {
-                // round changed, delete old gradebook item, modify max points of both rounds
-                $learningObject->deleteGradebookItem();
-                
-                // gradeitemnumber must be unique in the new round
+                // round changed, modify max points of both rounds
                 $newRound = mod_astra_exercise_round::createFromId($fromform->roundid);
-                $fromform->gradeitemnumber = $newRound->getNewGradebookItemNumber();
                 $newExercise = new mod_astra_exercise($fromform);
                 $newExercise->save();
-                // save() updates gradebook item (creates new item)
-                
+
                 $newRound->updateMaxPoints(); // max points of the new round change
-                // Nobody has grades for the new grade item of the exercise, so update all grades in the gradebook.
+                // Update all grades in the gradebook for the new round.
+                // The new, moved exercise may have submissions and grades that
+                // should be taken into account in the total points of the new round.
                 $newRound->writeAllGradesToGradebook();
                 // reduce max points of previous round
                 $learningObject->getExerciseRound()->updateMaxPoints();

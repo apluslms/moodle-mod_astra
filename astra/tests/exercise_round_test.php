@@ -199,28 +199,25 @@ class mod_astra_exercise_round_testcase extends advanced_testcase {
         $this->assertTrue($fetchedLobjRecord !== false);
         $fetchedExRecord = $DB->get_record(mod_astra_exercise::TABLE, array('id' => $exercise->getSubtypeId()));
         $this->assertTrue($fetchedExRecord !== false);
-        
+
+        $exround = mod_astra_exercise_round::createFromId($roundId);
+        $this->assertEquals(10, $exround->getMaxPoints());
+
         // test gradebook
-        $this->assertTrue($exercise->getGradebookItemNumber() > 0); // zero reserved for round
         $grade_items = grade_get_grades($this->course->id, 'mod', mod_astra_exercise_round::TABLE, $roundId, null)->items;
-        $this->assertTrue(isset($grade_items[$exercise->getGradebookItemNumber()]));
-        $item = $grade_items[$exercise->getGradebookItemNumber()];
-        $this->assertEquals($exercise->getGradebookItemNumber(), $item->itemnumber);
-        $this->assertEquals($roundId, $item->iteminstance);
-        $this->assertEquals('1.1 Exercise A', $item->name);
-        $this->assertEquals($exerciseRecord->maxpoints, $item->grademax);
-        $this->assertEquals(0, $item->grademin);
-        $this->assertFalse($item->hidden);
-        
+        // Only the exercise round has a grade item in the gradebook.
+        // Item number 0 is reserved for round.
+        $this->assertTrue(isset($grade_items[0]));
+        $this->assertEquals(1, count($grade_items));
+        $this->assertEquals(10, $grade_items[0]->grademax);
+        $this->assertEquals(0, $grade_items[0]->grademin);
+        $this->assertFalse($grade_items[0]->hidden);
+
         // test round gradebook
-        $this->assertTrue(isset($grade_items[0])); // item number 0 reserved for round
         $this->assertEquals(0, $grade_items[0]->itemnumber);
         $this->assertEquals($roundId, $grade_items[0]->iteminstance);
         $this->assertEquals($this->round1_data['name'], $grade_items[0]->name);
-        $this->assertEquals($exerciseRecord->maxpoints, $grade_items[0]->grademax);
-        $this->assertEquals(0, $grade_items[0]->grademin);
-        $this->assertFalse($grade_items[0]->hidden);
-        
+
         // round max points should have increased
         $this->assertEquals($exerciseRecord->maxpoints, $DB->get_field(mod_astra_exercise_round::TABLE, 'grade',
                 array('id' => $roundId), MUST_EXIST));

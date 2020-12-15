@@ -7,13 +7,16 @@ require_once(dirname(__FILE__) .'/exercise_test_data.php');
  * @group mod_astra
  */
 class mod_astra_exercise_testcase extends advanced_testcase {
-    
+
     use exercise_test_data;
-    
+
+    protected $timenow;
+
     public function setUp() {
+        $this->timenow = time();
         $this->add_test_data();
     }
-    
+
     public function test_isSubmissionAllowed() {
         $this->resetAfterTest(true);
         
@@ -178,12 +181,9 @@ class mod_astra_exercise_testcase extends advanced_testcase {
         // gradebook items
         $grade_items = grade_get_grades($this->course->id, 'mod', mod_astra_exercise_round::TABLE,
                 $this->round1->getId(), null)->items;
-        $this->assertFalse(isset($grade_items[$this->exercises[0]->getGradebookItemNumber()]));
-        $this->assertFalse(isset($grade_items[$this->exercises[1]->getGradebookItemNumber()]));
-        $this->assertFalse(isset($grade_items[$this->exercises[2]->getGradebookItemNumber()]));
-        $this->assertFalse(isset($grade_items[$this->exercises[3]->getGradebookItemNumber()]));
         $this->assertEquals(20, $grade_items[0]->grademax); // round max points in gradebook
-        
+        $this->assertEquals(1, count($grade_items));
+
         // round max points
         $this->assertEquals(20, $DB->get_field(mod_astra_exercise_round::TABLE, 'grade', array('id' => $this->round1->getId())));
     }
@@ -306,7 +306,19 @@ class mod_astra_exercise_testcase extends advanced_testcase {
     }
 
     protected function check_gradebook_grade(int $expectedgrade, mod_astra_exercise $exercise, stdClass $user) {
-        $grade = $exercise->getGradeFromGradebook($user->id);
-        $this->assertEquals($expectedgrade, $grade);
+        global $CFG;
+        require_once($CFG->libdir .'/gradelib.php');
+
+        $grade_items = grade_get_grades(
+            $exercise->getExerciseRound()->getCourse()->courseid,
+            'mod',
+            mod_astra_exercise_round::TABLE,
+            $exercise->getExerciseRound()->getId(),
+            $user->id
+        )->items;
+        $gotgrade = isset($grade_items[0]->grades[$user->id]->grade)
+                    ? $grade_items[0]->grades[$user->id]->grade
+                    : null;
+        $this->assertEquals($expectedgrade, $gotgrade);
     }
 }

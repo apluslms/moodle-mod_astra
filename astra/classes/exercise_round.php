@@ -602,8 +602,6 @@ class mod_astra_exercise_round extends mod_astra_database_object {
     /**
      * Create or update the Moodle gradebook item for this exercise round.
      * (In order to add grades for students, use the method updateGrades.) 
-     * This method does not create or update the grade items for the exercises of
-     * the round. 
      * @param bool $reset if true, delete all grades in the grade item
      * @return int grade_update return value (one of GRADE_UPDATE_OK, GRADE_UPDATE_FAILED, 
      * GRADE_UPDATE_MULTIPLE or GRADE_UPDATE_ITEM_LOCKED)
@@ -633,9 +631,6 @@ class mod_astra_exercise_round extends mod_astra_database_object {
             $item['reset'] = true;
         }
 
-        // set course gradebook total grade aggregation method to "natural"
-        $this->setGradebookTotalAggregation();
-
         // create gradebook item
         $res = grade_update('mod/'. self::TABLE, $this->record->course, 'mod',
                 self::TABLE, $this->record->id, 0, null, $item);
@@ -650,28 +645,11 @@ class mod_astra_exercise_round extends mod_astra_database_object {
                     'itemnumber'   => 0,
                     'courseid'     => $this->record->course,
             ));
-            if ($gi &&
-                    ($gi->gradepass != $this->getPointsToPass()
-                    || $gi->aggregationcoef2 != 0.0
-                    || $gi->weightoverride != 1)) {
+            if ($gi && $gi->gradepass != $this->getPointsToPass()) {
                 // Set min points to pass.
                 $gi->gradepass = $this->getPointsToPass();
-                // Set zero coefficient so that the course total is not affected by rounds
-                // (round grades are only sums of the exercise grades in the round)
-                $gi->aggregationcoef2 = 0.0;
-                $gi->weightoverride = 1;
                 $gi->update('mod/'. self::TABLE);
             }
-
-            // If some students already have grades for the round in the gradebook,
-            // the changed coefficient may not be taken into account unless
-            // the course final grades are computed again. The API function
-            // grade_regrade_final_grades($this->record->course);
-            // is very heavy and should not be called here since the call must not
-            // be repeated for each round when automatically updating course configuration
-            // (auto setup). For now, we assume that the grade_regrade_final_grades
-            // call is not needed since nobody has grades when the grade item is
-            // initially created and its coefficient is then set to zero.
         }
 
         return $res;
@@ -700,39 +678,7 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         
         return $result;
     }
-    
-    /** Set the course gradebook total grade aggregation method to "natural" (sum) because
-     * it is the only one that allows setting the exercise round coefficients to zero.
-     */
-    public function setGradebookTotalAggregation() {
-        global $CFG, $DB;
-        require_once($CFG->libdir .'/grade/constants.php');
-        require_once($CFG->libdir .'/grade/grade_category.php');
 
-        $grade_category = grade_category::fetch(array(
-                'courseid' => $this->record->course,
-                'parent'   => null,
-        ));
-        // The default course total category is automatically created by Moodle.
-        // If the teacher creates additional gradebook categories,
-        // they become children to the root category.
-
-        if ($grade_category &&
-                ($grade_category->aggregation != GRADE_AGGREGATE_SUM
-                || $grade_category->aggregateonlygraded != 0)) {
-            // Set course gradebook total grade aggregation method to "natural" (sum).
-            $grade_category->aggregation = GRADE_AGGREGATE_SUM;
-            // Include ungraded assignments in the aggregation.
-            // (Course total does not show 100% when only one exercise has been
-            // submitted with correct solution.)
-            $grade_category->aggregateonlygraded = 0;
-            $grade_category->update('mod/'. self::TABLE);
-
-            $grade_item = $grade_category->load_grade_item();
-            $grade_item->update('mod/'. self::TABLE);
-        }
-    }
-    
     /**
      * Delete Moodle gradebook item for this astra (exercise round) instance.
      * @return int GRADE_UPDATE_OK or GRADE_UPDATE_FAILED (or GRADE_UPDATE_MULTIPLE)
@@ -745,9 +691,8 @@ class mod_astra_exercise_round extends mod_astra_database_object {
     }
     
     /**
-     * Update the grades of students in the gradebook for this exercise round 
-     * (only the round, not its exercises). The gradebook item must have been 
-     * created earlier.
+     * Update the grades of students in the gradebook for this exercise round.
+     * The gradebook item must have been created earlier.
      * @param array $grades student grades of this exercise round, indexed by Moodle user IDs.
      * The grade is given either as an integer or as stdClass with fields 
      * userid and rawgrade. Do not mix these two input types in the same array!
@@ -769,93 +714,22 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         if (is_int(reset($grades))) {
             $grades = self::gradeArrayToGradeObjects($grades);
         }
-        
+
         return grade_update('mod/'. self::TABLE, $this->record->course, 'mod',
                 self::TABLE, $this->record->id, 0, $grades, null);
     }
-    
-    /**
-     * Update the grade of this exercise round for one student in the gradebook.
-     * The new grade is the sum of the exercise grades stored in the gradebook.
-     * @param int $userid Moodle user ID of the student
-     * @return int grade_update return value (one of GRADE_UPDATE_OK, GRADE_UPDATE_FAILED, 
-     * GRADE_UPDATE_MULTIPLE or GRADE_UPDATE_ITEM_LOCKED)
-     */
-    public function updateGradeForOneStudent($userid) {
-        global $CFG;
-        require_once($CFG->libdir.'/gradelib.php');
-        // The Moodle API returns the exercise round and exercise grades all at once
-        // since they use different item numbers with the same Moodle course module.
-        $grades = grade_get_grades($this->getCourse()->courseid, 'mod',
-                self::TABLE,
-                $this->getId(),
-                $userid);
-        $sum = 0;
-        // sum the exercise points that were stored in the gradebook (should be
-        // the best points for each exercise)
-        foreach ($grades->items as $gradeItemNumber => $grade) {
-            if ($gradeItemNumber != 0 && isset($grade->grades[$userid]->grade)) { // do not add the old exercise round points
-                $sum += $grade->grades[$userid]->grade;
-            }
-        }
-        $sum = (int) round($sum);
-        return $this->updateGrades(array($userid => $sum));
-    }
 
     /**
-     * Synchronize exercise round grades in the gradebook by reading
-     * the exercise grades from the gradebook and summing those together.
-     * 
-     * @param array|null $userids array of user ids whose grades should be
-     * synchronized. If null, synchronize all users who have submitted in the round.
+     * Synchronize exercise round grades in the gradebook by fetching
+     * the best submissions from the Astra submissions table and saving
+     * the up-to-date round grades in the gradebook.
+     *
+     * DEPRECATED: use writeAllGradesToGradebook instead!
+     *
      * @return int grade_update return value
      */
-    public function synchronizeGrades(array $userids = null) {
-        global $CFG;
-        require_once($CFG->libdir.'/gradelib.php');
-        require_once($CFG->libdir .'/grade/constants.php');
-
-        if ($userids === null) {
-            // Read the user ids of submitters from the gradebook. If an exercise
-            // has been deleted, the actual submission has been deleted too, but
-            // the exercise round still contains an old grade in the gradebook
-            // that must be synchronized.
-            $gi = $this->getGradeItem();
-            if (!$gi) {
-                // No grade item, hence no grades to sync.
-                return GRADE_UPDATE_OK;
-            }
-            $oldgrades = $gi->get_final();
-            $userids = array_keys($oldgrades);
-            unset($oldgrades);
-        }
-        $grades = grade_get_grades($this->getCourse()->courseid, 'mod',
-                self::TABLE,
-                $this->getId(),
-                $userids);
-        // Sum exercise grades together and save the new exercise round grades
-        // in the gradebook.
-        $newgrades = array();
-        foreach ($grades->items as $gradeItemNumber => $item) {
-            if ($gradeItemNumber == 0 || $item->hidden) {
-                // skip the old exercise round grade and hidden exercises
-                continue;
-            }
-            foreach ($item->grades as $userid => $grade) {
-                if (isset($newgrades[$userid])) {
-                    if ($grade->grade !== null) {
-                        $newgrades[$userid]->rawgrade += $grade->grade;
-                    }
-                } else {
-                    $gradeobj = new stdClass();
-                    $gradeobj->userid = $userid;
-                    $gradeobj->rawgrade = $grade->grade;
-                    $newgrades[$userid] = $gradeobj;
-                }
-            }
-        }
-
-        return $this->updateGrades($newgrades);
+    public function synchronizeGrades() {
+        return $this->writeAllGradesToGradebook();
     }
 
     /**
@@ -893,48 +767,69 @@ class mod_astra_exercise_round extends mod_astra_database_object {
     }
     
     /**
-     * Write grades of this exercise round and its exercises to the Moodle gradebook.
+     * Write grades of this exercise round to the Moodle gradebook.
      * The grades are read from the database tables of the plugin.
      * @param int $userid update grade of a specific user only, 0 means all participants
      * @param bool $nullifnone If a single user is specified, $nullifnone is true and
      *     the user has no grade then a grade item with a null rawgrade should be inserted
+     * @return int grade_update return value (one of GRADE_UPDATE_OK, GRADE_UPDATE_FAILED,
+     * GRADE_UPDATE_MULTIPLE or GRADE_UPDATE_ITEM_LOCKED)
      */
     public function writeAllGradesToGradebook($userid = 0, $nullifnone = false) {
         global $DB;
         if ($userid != 0) {
             // one student
-            foreach ($this->getLearningObjects() as $ex) {
-                if ($ex->isSubmittable()) {
-                    $sbms = $ex->getBestSubmissionForStudent($userid);
-                    if (is_null($sbms)) {
-                        if ($nullifnone) {
-                            $g = new stdClass();
-                            $g->rawgrade = null;
-                            $g->userid = $userid;
-                            $ex->updateGrades(array($userid => $g));
-                        }
-                    } else {
-                        $sbms->writeToGradebook(false);
-                    }
+            $exercisegrades = $DB->get_records_sql(
+                "SELECT exerciseid,MAX(grade) AS exercisegrade
+                   FROM {". mod_astra_submission::TABLE ."}
+                  WHERE submitter = :submitter AND exerciseid IN (
+                      SELECT id
+                        FROM {". mod_astra_learning_object::TABLE ."}
+                       WHERE roundid = :roundid
+                  )
+               GROUP BY exerciseid
+                ",
+                array(
+                    'submitter' => $userid,
+                    'roundid' => $this->getId()
+                )
+            );
+            if (empty($exercisegrades) && $nullifnone) {
+                $g = new stdClass();
+                $g->rawgrade = null;
+                $g->userid = $userid;
+                return $this->updateGrades(array($userid => $g));
+            } else {
+                $totalpoints = 0;
+                foreach ($exercisegrades as $grade) {
+                    $totalpoints += $grade->exercisegrade;
                 }
+                return $this->updateGrades(array($userid => $totalpoints));
             }
-            $this->updateGradeForOneStudent($userid);
         } else {
             // all users in the course
-            $roundGrades = array();
-            foreach ($this->getLearningObjects() as $ex) {
-                if ($ex->isSubmittable()) {
-                    $exerciseGrades = $ex->writeAllGradesToGradebook();
-                    foreach ($exerciseGrades as $student => $grade) {
-                        if (isset($roundGrades[$student])) {
-                            $roundGrades[$student] += $grade->rawgrade;
-                        } else {
-                            $roundGrades[$student] = $grade->rawgrade;
-                        }
-                    }
+            $exercisegrades = $DB->get_recordset_sql(
+                "SELECT submitter,exerciseid,MAX(grade) AS exercisegrade
+                   FROM {". mod_astra_submission::TABLE ."}
+                  WHERE exerciseid IN (
+                      SELECT id
+                        FROM {". mod_astra_learning_object::TABLE ."}
+                       WHERE roundid = ?
+                  )
+               GROUP BY exerciseid,submitter
+                ",
+                array($this->getId())
+            );
+            $roundgrades = array();
+            foreach ($exercisegrades as $row) {
+                if (isset($roundgrades[$row->submitter])) {
+                    $roundgrades[$row->submitter] += (int) $row->exercisegrade;
+                } else {
+                    $roundgrades[$row->submitter] = (int) $row->exercisegrade;
                 }
             }
-            $this->updateGrades($roundGrades);
+            $exercisegrades->close();
+            return $this->updateGrades($roundgrades);
         }
     }
     
@@ -1090,8 +985,7 @@ class mod_astra_exercise_round extends mod_astra_database_object {
 
         $exercise->categoryid = $category->getId();
         $exercise->roundid = $this->getId();
-        $exercise->gradeitemnumber = $this->getNewGradebookItemNumber();
-        
+
         $exercise->lobjectid = $DB->insert_record(mod_astra_learning_object::TABLE, $exercise);
         $ex = null;
         if ($exercise->lobjectid) {
@@ -1104,9 +998,6 @@ class mod_astra_exercise_round extends mod_astra_database_object {
                 $DB->delete_records(mod_astra_learning_object::TABLE, array('id' => $exercise->lobjectid));
                 return null;
             }
-            
-            // create gradebook item
-            $ex->updateGradebookItem();
 
             // update the max points of the round
             if ($updateRoundMaxPoints) {
@@ -1145,24 +1036,7 @@ class mod_astra_exercise_round extends mod_astra_database_object {
         
         return $ch;
     }
-    
-    /**
-     * Find an unused gradebook item number from the exercises of this round.
-     */
-    public function getNewGradebookItemNumber() {
-        $exs = $this->getLearningObjects(true);
-        $max = 0;
-        foreach ($exs as $ex) {
-            if ($ex->isSubmittable()) {
-                $num = $ex->getGradebookItemNumber();
-                if ($num > $max) {
-                    $max = $num;
-                }
-            }
-        }
-        return $max + 1;
-    }
-    
+
     protected function getSiblingContext($next = true) {
         // if $next true, get the next sibling; if false, get the previous sibling
         global $DB;

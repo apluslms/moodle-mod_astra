@@ -8,10 +8,13 @@ require_once(dirname(dirname(__FILE__)) .'/async/async_lib.php');
  * @group mod_astra
  */
 class mod_astra_async_grading_testcase extends advanced_testcase {
-    
+
     use exercise_test_data;
-    
+
+    protected $timenow;
+
     public function setUp() {
+        $this->timenow = time();
         $this->add_test_data();
     }
     

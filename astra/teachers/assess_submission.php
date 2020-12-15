@@ -68,16 +68,8 @@ if ($fromform = $form->get_data()) {
     
     // update gradebook, in case best points changed due to the manual assessment
     // (previous best points could have been reduced now or new points could be better than previous best)
-    $submitterId = $submission->getSubmitter()->id;
-    $bestSubmission = $exercise->getBestSubmissionForStudent($submitterId);
-    $gradebookGrade = $exercise->getGradeFromGradebook($submitterId);
-    if ($gradebookGrade != $bestSubmission->getGrade() || $gradebookGrade === 0) {
-        // the gradebook had a grade that does not match the grade of the best submission any longer
-        // -> update the gradebook
-        // (zero in gradebook may imply that no grade has been written thus far, so always write then)
-        $bestSubmission->writeToGradebook(true);
-    }
-    
+    $exround->writeAllGradesToGradebook($submission->getSubmitter()->id);
+
     // send a notification to the student that she has received new assistant feedback
     astra_send_assistant_feedback_notification($submission, $USER, $submission->getSubmitter());
     

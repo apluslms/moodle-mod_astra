@@ -474,16 +474,8 @@ function astra_grade_item_update(stdClass $astra, $grades=NULL) {
     $exround = new mod_astra_exercise_round($astra);
     $reset = $grades === 'reset';
     $exround->updateGradebookItem($reset);
-    
-    foreach ($exround->getExercises(true, false) as $exercise) {
-        // Moodle core only calls this function if it needs to update the grade item,
-        // so the exercise grade items of the round must be updated here too.
-        $exercise->updateGradebookItem($reset);
-    }
-    
+
     if ($grades !== null && !$reset) {
-        // in case someone tries to update grades to students with this function
-        // (not recommended, since this function has to update the grade item every time)
         $exround->updateGrades($grades);
     }
 }

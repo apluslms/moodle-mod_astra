@@ -146,21 +146,6 @@ function astra_rename_rounds_with_numbers($courseid, $moduleNumberingStyle) {
 }
 
 /**
- * Update exercise gradebook item names with the current exercise settings stored
- * in the database.
- * @param int $courseid Moodle course ID in which exercises are updated
- */
-function astra_update_exercise_gradebook_item_names($courseid) {
-    foreach (mod_astra_exercise_round::getExerciseRoundsInCourse($courseid) as $exround) {
-        foreach ($exround->getExercises(false, false) as $ex) {
-            // exercise name and order is read from the database,
-            // gradebook item is updated and the new name is then visible in the gradebook
-            $ex->updateGradebookItem();
-        }
-    }
-}
-
-/**
  * Sort Astra items in the Moodle gradebook corresponding to the hierarchical
  * order of the course content.
  * @param int $courseid
@@ -178,22 +163,15 @@ function astra_sort_gradebook_items($courseid) {
     if (empty($gradeitems)) {
         return;
     }
-    
+
     // retrieve the rounds and exercises of the course in the sorted order
     // store them in a different format that helps with sorting grade_items
     $rounds = mod_astra_exercise_round::getExerciseRoundsInCourse($courseid, true);
-    $order = 1;
     $courseOrder = array();
     foreach ($rounds as $round) {
-        $roundItems = array(0 => $order++);
-        // round itself comes before the exercises, the round always has grade itemnumber zero
-        foreach ($round->getExercises(true, true) as $ex) {
-            $roundItems[$ex->getGradebookItemNumber()] = $order++;
-        }
-        $courseOrder[$round->getId()] = $roundItems;
-        // $courseOrder[round ID][grade item number] = order (int) of the grade item
+        $courseOrder[$round->getId()] = $round;
     }
-    
+
     // callback functions for sorting the $gradeitems array
     $compare = function($x, $y) {
       if ($x < $y) {
@@ -203,15 +181,15 @@ function astra_sort_gradebook_items($courseid) {
       }
       return 0;
     };
-    
+
     $sortfunc = function($a, $b) use ($courseOrder, &$compare) {
         if ($a->itemtype === 'mod' && $a->itemmodule === mod_astra_exercise_round::TABLE
                 && $b->itemtype === 'mod' && $b->itemmodule === mod_astra_exercise_round::TABLE) {
             // both grade_items are for Astra
             // $grade_item->iteminstance is the round id and itemnumber is set by the plugin
-            // (zero for rounds and greater for exercises)
-            return $compare($courseOrder[$a->iteminstance][$a->itemnumber],
-                    $courseOrder[$b->iteminstance][$b->itemnumber]);
+            // (zero for rounds and there are no grade items for exercises)
+            return $compare($courseOrder[$a->iteminstance]->getOrder(),
+                    $courseOrder[$b->iteminstance]->getOrder());
         }
         // at least one grade item originates from outside Astra:
         // sort them according to the old sort order

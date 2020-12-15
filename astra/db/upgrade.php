@@ -24,7 +24,7 @@ defined('MOODLE_INTERNAL') || die();
  * @return bool
  */
 function xmldb_astra_upgrade($oldversion) {
-    global $DB;
+    global $CFG, $DB;
 
     $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
 
@@ -77,6 +77,28 @@ function xmldb_astra_upgrade($oldversion) {
         
         // Astra savepoint reached.
         upgrade_mod_savepoint(true, 2018080900, 'astra');
+    }
+
+    if ($oldversion < 2020121100) {
+        // This version removes the grade items of Astra exercises from
+        // the Moodle gradebook.
+        // Moodle does not support changes in the gradebook during
+        // the server upgrade.
+        // Therefore, the Astra exercise grade items should be removed manually
+        // before starting the upgrade. There is a CLI script for that:
+        // astra/cli/remove_exercise_gradeitems.php.
+
+        // Define field gradeitemnumber to be dropped from astra_exercises.
+        $table = new xmldb_table('astra_exercises');
+        $field = new xmldb_field('gradeitemnumber');
+
+        // Conditionally launch drop field gradeitemnumber.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Astra savepoint reached.
+        upgrade_mod_savepoint(true, 2020121100, 'astra');
     }
 
     /*

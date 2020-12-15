@@ -30,7 +30,7 @@ class backup_astra_activity_structure_step extends backup_activity_structure_ste
                 ));
         $exercise = new backup_nested_element('exercise', array('id'),
                 array(
-                        'maxsubmissions', 'pointstopass', 'maxpoints', 'gradeitemnumber',
+                        'maxsubmissions', 'pointstopass', 'maxpoints',
                         'maxsbmssize', 'allowastviewing', 'allowastgrading',
                 ));
         $chapter = new backup_nested_element('chapter', array('id'),

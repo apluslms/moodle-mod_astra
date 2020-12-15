@@ -437,7 +437,7 @@ class mod_astra_submission extends mod_astra_database_object {
         }
         return $res;
     }
-    
+
     /**
      * Remove this submission and its submitted files from the database.
      * @param bool $updateGradebook if true, the points in the gradebook are updated
@@ -450,25 +450,16 @@ class mod_astra_submission extends mod_astra_database_object {
         $fs->delete_area_files(context_module::instance($this->getExercise()->getExerciseRound()->getCourseModule()->id)->id,
                 mod_astra_exercise_round::MODNAME, self::SUBMITTED_FILES_FILEAREA,
                 $this->record->id);
-        
+
         $DB->delete_records(self::TABLE, array('id' => $this->record->id));
-        
+
         if ($updateGradebook) {
             // the best points of the exercise may change when this submission is deleted
-            $newBestSubmission = $this->getExercise()->getBestSubmissionForStudent($this->record->submitter);
-            if ($newBestSubmission !== null) {
-                $newBestSubmission->writeToGradebook(true);
-            } else {
-                // no submission, zero points
-                $this->record->submissiontime = null;
-                $this->record->gradingtime = null;
-                $this->record->grade = null;
-                $this->writeToGradebook(true);
-            }
+            $this->getExercise()->getExerciseRound()->writeAllGradesToGradebook($this->record->submitter);
         }
         return true;
     }
-    
+
     /**
      * Grade this submission (with machine-generated feedback).
      * @param int $servicePoints points from the exercise service
@@ -487,10 +478,12 @@ class mod_astra_submission extends mod_astra_database_object {
         } else {
             $this->record->gradingdata = self::submissionDataToString($gradingData);
         }
-        
+
         $this->save();
+        // Update gradebook.
+        $this->getExercise()->getExerciseRound()->writeAllGradesToGradebook($this->record->submitter);
     }
-    
+
     /**
      * Set the points for this submission. If the given maximum points are
      * different than the ones for the exercise this submission is for,
@@ -542,8 +535,6 @@ class mod_astra_submission extends mod_astra_database_object {
         // check submit limit
         $submissions = $this->getExercise()->getSubmissionsForStudent($this->record->submitter);
         $count = 0;
-        $thisIsBest = true;
-        $bestSubmission = null;
         foreach ($submissions as $record) {
             if ($record->id != $this->record->id) {
                 $sbms = new mod_astra_submission($record);
@@ -551,42 +542,19 @@ class mod_astra_submission extends mod_astra_database_object {
                 if ($record->submissiontime <= $this->getSubmissionTime()) {
                     $count += 1;
                 }
-                // find the best submission from the other submissions besides this one
-                if ($bestSubmission === null || $sbms->getGrade() > $bestSubmission->getGrade()) {
-                    $bestSubmission = $sbms;
-                }
             }
         }
         $submissions->close();
         $count += 1;
-        // check if this submission is the best one
-        if ($bestSubmission !== null && $bestSubmission->getGrade() >= $adjustedGrade) {
-            $thisIsBest = false;
-        }
         $maxSubmissions = $this->getExercise()->getMaxSubmissionsForStudent($this->getSubmitter());
         if ($maxSubmissions > 0 && $count > $maxSubmissions) {
             // this submission exceeded the submission limit
             $this->record->grade = 0;
-            if ($count == 1)
-                $thisIsBest = true; // the only submission
-            else
-                $thisIsBest = false; // earlier submissions must be better, at least they were submitted earlier
         } else {
             $this->record->grade = $adjustedGrade;
         }
-        // write to gradebook if this is the best submission
-        if ($thisIsBest) {
-            $this->writeToGradebook();
-        } else {
-            // if this submission used to be the best and its grade decreased in regrading,
-            // it might not be the best anymore -> check if gradebook should be updated
-            $prevBestGrade = $exercise->getGradeFromGradebook($this->record->submitter);
-            if ($bestSubmission->getGrade() < $prevBestGrade) {
-                $bestSubmission->writeToGradebook();
-            }
-        }
     }
-    
+
     /**
      * Check if this submission was submitted after the exercise round closing time.
      * Deadline deviation is taken into account.
@@ -635,36 +603,7 @@ class mod_astra_submission extends mod_astra_database_object {
         $grade->datesubmitted = $this->getSubmissionTime(); // timestamp
         return $grade;
     }
-    
-    /**
-     * Write the grade of this submission to the Moodle gradebook.
-     * @param bool $updateRoundGrade if true, the grade of the exercise round is updated too
-     * @return int grade_update return value (one of GRADE_UPDATE_OK, GRADE_UPDATE_FAILED, 
-     * GRADE_UPDATE_MULTIPLE or GRADE_UPDATE_ITEM_LOCKED)
-     */
-    public function writeToGradebook($updateRoundGrade = true) {
-        global $CFG;
-        require_once($CFG->libdir.'/gradelib.php');
-        
-        if ($this->getExercise()->getMaxPoints() == 0) {
-            // skip if the max points are zero (no grading)
-            return GRADE_UPDATE_OK;
-        }
-        $ret =  grade_update('mod/'. mod_astra_exercise_round::TABLE,
-                $this->getExercise()->getExerciseRound()->getCourse()->courseid,
-                'mod',
-                mod_astra_exercise_round::TABLE,
-                $this->getExercise()->getExerciseRound()->getId(),
-                $this->getExercise()->getGradebookItemNumber(),
-                $this->getGradeObject(), null);
-        
-        if ($updateRoundGrade) {
-            $this->getExercise()->getExerciseRound()->updateGradeForOneStudent($this->record->submitter);
-        }
-        
-        return $ret;
-    }
-    
+
     public function getTemplateContext($includeFeedbackAndFiles = false, $includeSbmsAndGradingData = false,
             $includeManualGrader = false) {
         global $OUTPUT;

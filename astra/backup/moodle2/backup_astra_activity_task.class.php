@@ -95,7 +95,6 @@ exercises (no user info)
     maxsubmissions
     pointstopass
     maxpoints
-    gradeitemnumber
     maxsbmssize
     allowastviewing
     allowastgrading
