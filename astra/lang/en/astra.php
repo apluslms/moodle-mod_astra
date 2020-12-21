@@ -331,6 +331,9 @@ $string['hiddenarabicnum'] = 'Hidden arabic';
 $string['backtocourseedit'] = 'Back to the course edit page.';
 $string['clearcontentcache'] = 'Clear content cache';
 $string['cachescleared'] = 'Exercise caches have been cleared.';
+$string['gradesyncsuccess'] = 'Gradebook grades have been successfully synchronized!';
+$string['gradesyncaction'] = 'Synchronize Astra grades in the gradebook';
+$string['gradesyncdesc'] = 'If Astra grades are outdated in the gradebook (due to, e.g., a bug or manual changes), this action deletes and recreates the Astra grade items and inserts up-to-date grades to them.';
 
 // auto setup form
 $string['configurl'] = 'Configuration URL';
@@ -396,6 +399,9 @@ $string['nosecretkeyset'] = 'The Moodle site administrator has not set the manda
 $string['loadingfailed'] = 'Loading failed!';
 $string['usernotenrolled'] = 'The user is not enrolled in the course.';
 $string['lowermustbeless'] = 'The lower bound must be less than or equal to the upper bound.';
+$string['errorgradesyncdelete'] = 'Error in deleting the grade item for: ';
+$string['errorgradesyncupdate'] = 'Error in creating or updating the grade item for: ';
+$string['errorgradesyncwrite'] = 'Error in writing the grades for: ';
 
 // Events / logging
 $string['eventsubmitted'] = 'Student submitted a new solution';

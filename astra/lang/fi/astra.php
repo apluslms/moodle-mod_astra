@@ -331,6 +331,9 @@ $string['hiddenarabicnum'] = 'Piilotettu arabialainen';
 $string['backtocourseedit'] = 'Takaisin kurssin muokkaussivulle.';
 $string['clearcontentcache'] = 'Tyhjennä sisällön välimuisti';
 $string['cachescleared'] = 'Tehtävien välimuisti on tyhjennetty.';
+$string['gradesyncsuccess'] = 'Arviointikirjan arvosanat on synkronoitu onnistuneesti!';
+$string['gradesyncaction'] = 'Synkronoi Astra-arvosanat arviointikirjassa';
+$string['gradesyncdesc'] = 'Jos Astra-arvosanat ovat vanhentuneita arviointikirjassa (esim. bugin tai käsin tehtyjen muutosten takia), tämä toiminto poistaa ja luo arviointikohteet uudelleen ja syöttää ajantasaiset arvosanat arviointikirjaan.';
 
 // auto setup form
 $string['configurl'] = 'Kurssin asetusten osoite (URL)';
@@ -396,6 +399,9 @@ $string['nosecretkeyset'] = 'Moodle-sivuston ylläpitäjä ei ole asettanut Astr
 $string['loadingfailed'] = 'Lataus epäonnistui!';
 $string['usernotenrolled'] = 'Käyttäjä ei ole ilmoittautunut kurssille.';
 $string['lowermustbeless'] = 'Alarajan täytyy olla pienempi tai yhtä suuri kuin ylärajan.';
+$string['errorgradesyncdelete'] = 'Virhe arviointikohteen poistamisessa: ';
+$string['errorgradesyncupdate'] = 'Virhe arviointikohteen luomisessa tai päivittämisessä: ';
+$string['errorgradesyncwrite'] = 'Virhe arvosanojen tallentamisessa: ';
 
 // Events / logging
 $string['eventsubmitted'] = 'Opiskelija palautti uuden ratkaisun';

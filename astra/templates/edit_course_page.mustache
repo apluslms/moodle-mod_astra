@@ -35,6 +35,7 @@ Context variables:
         (in <select> element of the form).
 * content_numbering_options (callable), returns the HTML <option> elements for content numbering
         (in <select> element of the form).
+* sync_gradebook_url (string) URL target for the gradebook synchronization action
 }}
 
 <div class="card bg-light">
@@ -179,3 +180,13 @@ Context variables:
 </form>
 </div>
 </div>
+
+<div class="card bg-light">
+<div class="card-body">
+<form method="post" action="{{{ sync_gradebook_url }}}">
+    <p>{{#str}} gradesyncdesc, mod_astra {{/str}}</p>
+    <button class="btn btn-primary" type="submit" name="syncgradebook">{{#str}} gradesyncaction, mod_astra {{/str}}</button>
+</form>
+</div>
+</div>
+

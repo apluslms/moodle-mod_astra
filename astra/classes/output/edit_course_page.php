@@ -40,7 +40,8 @@ class edit_course_page implements \renderable, \templatable {
         }
         $ctx->create_module_url = \mod_astra\urls\urls::createExerciseRound($this->courseid);
         $ctx->renumber_action_url = \mod_astra\urls\urls::editCourse($this->courseid);
-        
+        $ctx->sync_gradebook_url = \mod_astra\urls\urls::editCourse($this->courseid);
+
         $ctx->module_numbering_options = function($mustacheHelper) {
             $options = array(
                 \mod_astra_course_config::MODULE_NUMBERING_NONE => 

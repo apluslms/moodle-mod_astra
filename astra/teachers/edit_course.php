@@ -4,6 +4,7 @@
  * based on the configuration in the Astra exercise service.
  */
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // defines MOODLE_INTERNAL for libraries
+require_once($CFG->libdir . '/gradelib.php');
 require_once(dirname(__FILE__) .'/editcourse_lib.php');
 require_once(dirname(dirname(__FILE__)) .'/locallib.php');
 
@@ -23,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['content_numbering'])) {
         $content_numbering = (int) $_POST['content_numbering'];
     }
-    
+
     $submitted = isset($_POST['save']) || isset($_POST['renumbermodule']) || isset($_POST['renumbercourse']);
     if ($submitted) {
         // renumerate rounds or learning objects
@@ -42,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         // clear (Moodle) cache so that course main page shows the updated exercise round names (Moodle course modules)
         rebuild_course_cache($cid);
-        
+
     } else if (isset($_POST['cache'])) {
         // clear the Astra exercise/learning object description cache for the course
         \mod_astra\cache\exercise_cache::invalidate_course($cid);
@@ -50,6 +51,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // It is clunky and old-fashioned, but Moodle does not have other built-in method for such flash messages.
         // Moodle 3.1 seems to have a new notification API for this purpose.
         redirect(\mod_astra\urls\urls::editCourse($cid, true), get_string('cachescleared', mod_astra_exercise_round::MODNAME));
+        exit(0);
+    } else if (isset($_POST['syncgradebook'])) {
+        // Delete Astra grade items from the gradebook and recreate them.
+        $exrounds = mod_astra_exercise_round::getExerciseRoundsInCourse($cid, true);
+        $errors = array();
+        foreach ($exrounds as $exround) {
+            $res1 = $exround->deleteGradebookItem();
+            $res2 = $exround->updateGradebookItem();
+            $res3 = false;
+            if ($res2 === GRADE_UPDATE_OK) {
+                $res3 = $exround->writeAllGradesToGradebook();
+            }
+
+            if ($res1 !== GRADE_UPDATE_OK) {
+                $errors[] = get_string('errorgradesyncdelete', mod_astra_exercise_round::MODNAME) . $exround->getName();
+            }
+            if ($res2 !== GRADE_UPDATE_OK) {
+                $errors[] = get_string('errorgradesyncupdate', mod_astra_exercise_round::MODNAME) . $exround->getName();
+            }
+            if ($res3 !== GRADE_UPDATE_OK) {
+                $errors[] = get_string('errorgradesyncwrite', mod_astra_exercise_round::MODNAME) . $exround->getName();
+            }
+        }
+        if (empty($errors)) {
+            $msg = get_string('gradesyncsuccess', mod_astra_exercise_round::MODNAME);
+            $type = \core\output\notification::NOTIFY_SUCCESS;
+        } else {
+            $msg = html_writer::alist($errors);
+            $type = \core\output\notification::NOTIFY_ERROR;
+        }
+        redirect(\mod_astra\urls\urls::editCourse($cid, true), $msg, null, $type);
+        exit(0);
     }
 }
 
