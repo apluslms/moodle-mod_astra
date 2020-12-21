@@ -11,7 +11,7 @@
  * 
  * @module mod_astra/aplus_chapter
  */
-define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/dropdown', 'mod_astra/aplus_modal'], function(jQuery, moodleEvent) {
+define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/bootstrap/dropdown', 'mod_astra/aplus_modal'], function(jQuery, moodleEvent) {
 
 /** Add CustomEvent for IE 11
  *  Source: A+ (a-plus/assets/js/aplus.js)

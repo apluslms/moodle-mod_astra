@@ -141,7 +141,7 @@ Blocks that child templates should override:
 
 {{#js}}
 require(['theme_boost/loader']); // this is needed to make Moodle Boostrap 4 AMD JS modules work; otherwise, jQuery could be undefined
-require(['jquery', 'theme_boost/tooltip', 'mod_astra/aplus_modal'], function($) {
+require(['jquery', 'theme_boost/bootstrap/tooltip', 'mod_astra/aplus_modal'], function($) {
   $(function() {
     /* enable Bootstrap tooltips */
     $('[data-toggle="tooltip"]').tooltip();

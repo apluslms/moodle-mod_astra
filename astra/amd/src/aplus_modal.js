@@ -6,7 +6,7 @@
  * 
  * @module mod_astra/aplus_modal
  */
-define(['jquery', 'core/event', 'mod_astra/aplus_highlightcode', 'theme_boost/dropdown', 'theme_boost/modal'], function(jQuery, moodleEvent) {
+define(['jquery', 'core/event', 'mod_astra/aplus_highlightcode', 'theme_boost/bootstrap/dropdown', 'theme_boost/bootstrap/modal'], function(jQuery, moodleEvent) {
 
 /**
  * Handle common modal dialog.
