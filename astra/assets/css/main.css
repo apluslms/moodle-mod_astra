@@ -44,12 +44,38 @@
     border: 1px solid #ccc;
     border-radius: 4px;
 }
-.path-mod-astra #region-main #exercise pre,
-.path-mod-astra #region-main #feedback pre {
+.path-mod-astra #region-main pre {
     background-color: #f5f5f5;
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 0.5rem;
+}
+
+/* Panels in the feedback when the exercise uses python-grader-utils. */
+.path-mod-astra #region-main .panel {
+    margin-bottom: 1rem;
+    background-color: #fff;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    box-shadow: 0 1px 1px rgba(0,0,0,.05);
+}
+.path-mod-astra #region-main .panel-heading {
+    padding: 10px 15px;
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+.path-mod-astra #region-main .panel-body {
+    padding: 15px;
+}
+.path-mod-astra #region-main .panel-default {
+    border-color: #ddd;
+}
+.path-mod-astra #region-main .panel-default > .panel-heading {
+    color: #333;
+    background-color: #f5f5f5;
+    border-color: #ddd;
 }
 
 /* menus */
@@ -82,7 +108,8 @@
 
 /* point progress and badges */
 .path-mod-astra #region-main .progress {
-    position: relative;
+    background-color: #e5e5e5;
+    border: 1px solid #aaa;
 }
 .path-mod-astra #region-main .progress .required-points {
     position: absolute;
@@ -133,14 +160,21 @@
     background-color: rgb(242, 242, 242);
     width: auto;
     height: auto;
+    color: #373a3c;
 }
-.path-mod-astra #region-main .exercise-summary .btn-secondary:hover {
+.path-mod-astra #region-main .exercise-summary .btn-secondary:hover,
+.path-mod-astra #region-main .exercise-summary .btn-secondary:focus {
     /* Aalto theme sets animations on mouse hover to all navbar buttons, so disable them. */
     -webkit-transform: none;
     -moz-transform: none;
     -ms-transform: none;
     -o-transform: none;
     transform: none;
+    color: #000;
+    background-color: rgb(230, 230, 230);
+}
+.path-mod-astra #region-main .exercise-summary .btn-secondary:focus {
+    outline: rgb(49, 112, 143) solid medium;
 }
 .path-mod-astra #region-main [data-aplus-exercise] .exercise-summary {
     border-top: none;
@@ -224,8 +258,135 @@ it is too difficult to use responsive, collapsing navbars. */
 /* badge-danger background-color is never active in the Moodle default styles
 because the default badge selector somehow has a higher precedence. */
 .path-mod-astra #region-main .badge-danger {
-    color: #fff !important;
-    background-color: #d9534f !important;
+    color: #000 !important;
+    background-color: #ff5c72 !important;
+}
+.path-mod-astra #region-main .badge-success {
+    color: #000 !important;
+    background-color: #8bc34a !important;
+}
+.path-mod-astra #region-main .badge-warning {
+    color: #000 !important;
+    background-color: #ffb74d !important;
+}
+
+.path-mod-astra #region-main .control-label {
+    font-weight: 700;
+}
+
+.path-mod-astra #region-main .badge {
+    background-color: #c5c5c5; /* gray */
+    color: #000; /* black */
+    font-size: 0.95rem;
+}
+
+/* Questionnaires */
+.path-mod-astra #region-main .aplus-quiz1 .quiz1-icon-correct {
+    color: #5cb85c; /* green */
+}
+.path-mod-astra #region-main .aplus-quiz1 .quiz1-icon-neutral {
+    color: #f5bc09; /* yellow */
+}
+.path-mod-astra #region-main .aplus-quiz1 .quiz1-icon-incorrect {
+    color: #d9534f; /* red */
+}
+
+.path-mod-astra #region-main .aplus-quiz1 input[type="radio"],
+.path-mod-astra #region-main .aplus-quiz1 input[type="checkbox"] {
+    /* Align the input and the label text vertically. */
+    vertical-align: middle;
+}
+
+.path-mod-astra #region-main .radio label,
+.path-mod-astra #region-main .radio input,
+.path-mod-astra #region-main .checkbox label,
+.path-mod-astra #region-main .checkbox input {
+    cursor: pointer;
+}
+
+.path-mod-astra #region-main .aplus-quiz1 .radio label,
+.path-mod-astra #region-main .aplus-quiz1 .checkbox label {
+    margin-bottom: 0px;
+}
+.path-mod-astra #region-main .aplus-quiz1 .radio,
+.path-mod-astra #region-main .aplus-quiz1 .checkbox {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.path-mod-astra #region-main .aplus-quiz1 .radio + .radio,
+.path-mod-astra #region-main .aplus-quiz1 .checkbox + .checkbox {
+    margin-top: -5px;
+}
+
+.path-mod-astra #region-main .aplus-quiz1 .question-area {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.path-mod-astra #region-main .aplus-quiz1 .question-description {
+    margin-bottom: 5px;
+}
+.path-mod-astra #region-main .aplus-quiz1 .question-feedback {
+    margin-top: 5px;
+}
+.path-mod-astra #region-main .aplus-quiz1 .question-hint {
+    display: block;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    color: #737373; /* gray */
+    font-style: italic;
+}
+.path-mod-astra #region-main .aplus-quiz1 .hint-checkbox {
+    padding-left: 20px;
+}
+.path-mod-astra #region-main .aplus-quiz1 .option-checked {
+    font-weight: bold;
+}
+.path-mod-astra #region-main .aplus-quiz1 .error-text {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    color: #a94442; /* red */
+    font-weight: bold;
+    margin-bottom: 0px;
+}
+.path-mod-astra #region-main .aplus-quiz1 .has-error .control-label {
+    color: #a94442;
+}
+.path-mod-astra #region-main .aplus-quiz1 .has-error .radio,
+.path-mod-astra #region-main .aplus-quiz1 .has-error .checkbox {
+    color: #333; /* black */
+}
+
+/* Exercise feedback error summary */
+.path-mod-astra #region-main .error-summary {
+    background: repeating-linear-gradient(
+        45deg,
+        #a50000,
+        #a50000 5px,
+        #fff 5px,
+        #fff 10px
+    );
+    padding: 5px;
+	color: #a50000; /* red */
+	margin: 20px 0px;
+}
+.path-mod-astra #region-main .error-summary .error-summary__text {
+    color: #a50000;
+    background: #fff;
+    padding: 10px;
+    padding-left: 15px;
+}
+.path-mod-astra #region-main .error-summary .error-summary__text ul {
+    list-style-type: none;
+    padding-left: 0px;
+}
+
+/* Points of interest */
+/* Moodle sets a max-width on .container which causes other content to float next to the POI. */
+.path-mod-astra #region-main .poi.container,
+.path-mod-astra #region-main .poi .poi-container.container,
+.path-mod-astra #region-main .poi .poi-title.container,
+.path-mod-astra #region-main .poi .poi-links.container {
+    max-width: none;
 }
 
 /* Aalto MyCourses theme removes carets from dropdowns, enable them again */
