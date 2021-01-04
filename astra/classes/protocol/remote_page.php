@@ -838,10 +838,10 @@ class remote_page {
         // URL scheme starts with an alphabetic character and may contain
         // alphabets, digits, dots as well as plus and minus characters.
         $pattern = '%^(#|//|[[:alpha:]][[:alnum:].+-]*:)%';
-        // link between chapters when the chapters are in different rounds
-        $chapter_pattern = '%(\.\./)?(?P<roundkey>[\w-]+)/(?P<chapterkey>[\w-]+)(\.html)(?P<anchor>#.+)?$%';
-        // link between chapters in the same round
-        $chapter_same_round = '%^(?P<chapterkey>[\w-]+)(\.html)(?P<anchor>#.+)?$%';
+        // link between chapters
+        $chapter_pattern = '%(\.\./)*(?P<roundkey>[\w-]+)/(?P<subdirs>([\w-]+/)*)(?P<chapterkey>[\w-]+)(\.html)(?P<anchor>#.+)?$%';
+        // Recognize multilang suffix chapter1_en
+        $multilang_pattern = '%^(?P<chapterkey>[\w-]+)(?P<lang>_[a-z]{2})$%';
 
         foreach ($this->DOMdoc->getElementsByTagName($tagName) as $elem) {
             if ($elem->nodeType == \XML_ELEMENT_NODE && $elem->hasAttribute($attrName)) {
@@ -856,24 +856,26 @@ class remote_page {
                     $chapter_record = null;
                     $matches = array();
                     if (preg_match($chapter_pattern, $value, $matches)) {
+                        $chapterkey = $matches['chapterkey'];
+                        if (!empty($matches['subdirs'])) {
+                            $chapterkey = str_replace('/', '_', $matches['subdirs']) . $chapterkey;
+                        }
+                        // Remove the multilang suffix chapter_en#anchor if it exists.
+                        // chapter1_en -> chapter1
+                        $langmatches = array();
+                        if (preg_match($multilang_pattern, $chapterkey, $langmatches)) {
+                            $chapterkey = $langmatches['chapterkey'];
+                        }
                         // find the chapter with the remote key and the exercise round key
                         $chapter_record = $DB->get_record_sql(
                                 \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_chapter::TABLE) .
                                 ' JOIN {'. \mod_astra_exercise_round::TABLE .'} round ON round.id = lob.roundid ' .
                                 ' WHERE lob.remotekey = ? AND round.remotekey = ? AND round.course = ?',
                                 array(
-                                    $matches['chapterkey'],
+                                    $chapterkey,
                                     $matches['roundkey'],
                                     $this->learningObject->getExerciseRound()->getCourse()->courseid,
                                 ));
-
-                    } else if ($this->learningObject !== null && preg_match($chapter_same_round, $value, $matches)) {
-                        // find the chapter with the remote key in the same round as the current exercise
-                        $chapter_record = $DB->get_record_sql(
-                                \mod_astra_learning_object::getSubtypeJoinSQL(\mod_astra_chapter::TABLE) .
-                                ' JOIN {'. \mod_astra_exercise_round::TABLE .'} round ON round.id = lob.roundid ' .
-                                ' WHERE lob.remotekey = ? AND round.id = ?',
-                                array($matches['chapterkey'], $this->learningObject->getExerciseRound()->getId()));
                     }
 
                     if ($chapter_record) {
@@ -896,8 +898,11 @@ class remote_page {
                         $fix_path = str_replace('{course}', explode('/', $path)[1],
                                 $elem->getAttribute('data-aplus-path'));
                         $fix_value = $value;
-                        if (mb_substr($value, 0, strlen('../')) === '../') { // $value starts with ../
-                            $fix_value = mb_substr($value, 2); // remote .. from the start
+                        while (mb_substr($fix_value, 0, strlen('../')) === '../') { // $fix_value starts with ../
+                            $fix_value = mb_substr($fix_value, 3); // Remove '../' from the start.
+                        }
+                        if (mb_substr($fix_value, 0, 1) !== '/') {
+                            $fix_value = '/' . $fix_value;
                         }
 
                         $newVal = $domain . $fix_path . $fix_value;
