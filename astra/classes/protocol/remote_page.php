@@ -335,6 +335,13 @@ class remote_page {
         }
         // fix relative URLs (make them absolute with the address of the origin server)
         $this->fixRelativeUrls();
+        // Fix correct and incorrect symbols (icons) in questionnaire feedback.
+        $this->findAndReplaceElementAttributesWithMatchingKey('i', 'class', array(
+                'quiz1-icon-correct' => 'icon fa fa-check',
+                'quiz1-icon-incorrect' => 'icon fa fa-times',
+                'quiz1-icon-neutral' => 'icon fa fa-question-circle',
+            ),
+            true);
 
         // find tags in <head> that have attribute data-aplus
         $this->aplusHeadElements = $this->findHeadElementsWithAttribute('data-aplus');
@@ -642,23 +649,27 @@ class remote_page {
 
     /**
      * Find elements of type $tagName that have attribute $attrName, and the value of
-     * the attribute is a key in $replaceValues. Then, replace the attributes of the
-     * element with the attribute values in $replaceValues. Only the attributes
-     * given in $replaceValues are affected.
+     * the attribute is a key in $replaceValues. Then, replace the attribute value of
+     * the element with the value in $replaceValues. Only the attributes whose values
+     * are given in $replaceValues are affected.
      * @param string $tagName name of the elements/tags that are searched
      * @param strig $attrName attribute name that is used in the search of elements
-     * @param array $replaceValues array of new attribute values, separately for each
-     * element. Outer array keys are values of attribute $attrName, the matching inner array
-     * is used to replace attribute values. The inner array has attribute names as keys and
-     * attribute values as array values.
+     * @param array $replaceValues array of new attribute values.
+     * Array keys are values of attribute $attrName and the array values are
+     * used to replace attribute values.
+     * @param bool $append if true, the old attribute value is preserved and
+     * the new replace values are appended after the old attribute values.
      */
-    protected function findAndReplaceElementAttributesWithMatchingKey($tagName, $attrName, array $replaceValues) {
+    protected function findAndReplaceElementAttributesWithMatchingKey(
+            $tagName, $attrName, array $replaceValues, bool $append=false) {
         foreach ($this->DOMdoc->getElementsByTagName($tagName) as $node) {
             if ($node->nodeType == \XML_ELEMENT_NODE && $node->hasAttribute($attrName)) {
                 if (isset($replaceValues[$node->getAttribute($attrName)])) {
-                    $attrsToReplace = $replaceValues[$node->getAttribute($attrName)];
-                    foreach ($attrsToReplace as $replaceAttrName => $replaceAttrValue) {
-                        $node->setAttribute($replaceAttrName, $replaceAttrValue);
+                    $replaceAttrValue = $replaceValues[$node->getAttribute($attrName)];
+                    if ($append) {
+                        $node->setAttribute($attrName, $node->getAttribute($attrName) .' '. $replaceAttrValue);
+                    } else {
+                        $node->setAttribute($attrName, $replaceAttrValue);
                     }
                 }
             }
