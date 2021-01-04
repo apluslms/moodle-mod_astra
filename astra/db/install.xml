@@ -50,7 +50,7 @@
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
                COMMENT="Ready = 0. Hidden = 1. No total points = 2."/>
-        <FIELD NAME="name" TYPE="char" LENGTH="35" NOTNULL="true" SEQUENCE="false"
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"
                COMMENT="Name that is displayed to users. Name should be unique within a course. If the value starts with |, it contains multiple language versions |en:val|fi:val|"/>
         <FIELD NAME="pointstopass" TYPE="int" LENGTH="7" NOTNULL="true" DEFAULT="0" SEQUENCE="false" 
                COMMENT="Min points to pass a category."/>

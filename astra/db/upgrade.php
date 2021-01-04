@@ -101,6 +101,19 @@ function xmldb_astra_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020121100, 'astra');
     }
 
+    if ($oldversion < 2021010400) {
+
+        // Changing precision of field name on table astra_categories to (255).
+        $table = new xmldb_table('astra_categories');
+        $field = new xmldb_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, 'status');
+
+        // Launch change of precision for field name.
+        $dbman->change_field_precision($table, $field);
+
+        // Astra savepoint reached.
+        upgrade_mod_savepoint(true, 2021010400, 'astra');
+    }
+
     /*
      * Finally, return of upgrade result (true, all went good) to Moodle.
      */
