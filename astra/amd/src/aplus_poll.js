@@ -1,7 +1,7 @@
 /**
  * Submission status poller from A+. It polls Moodle about the status of
  * a submission, i.e., if it has been graded yet. The JS code is wrapped
- * into an AMD module for Moodle.
+ * into an ES6 module for Moodle.
  * 
  * In an HTML page, run the following JS code once to activate it:
  * // Initialize the submission status poller
@@ -15,7 +15,7 @@
  * 
  * @module mod_astra/aplus_poll
  */
-define(['jquery'], function(jQuery) {
+import jQuery from 'jquery';
 
 /**
  * Polling for exercise status.
@@ -142,5 +142,3 @@ define(['jquery'], function(jQuery) {
 
 })(jQuery, window, document);
 
-return {}; // for AMD, no names are exported to the outside
-}); // end define

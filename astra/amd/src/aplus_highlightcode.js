@@ -12,7 +12,8 @@
  * 
  * @module mod_astra/aplus_highlightcode
  */
-define(['jquery', 'mod_astra/highlight'], function($, hljs) {
+import $ from 'jquery';
+import hljs from './highlight';
 
 /**
  * Highlights code element.
@@ -60,7 +61,7 @@ $.fn.highlightCode = function(options) {
     }
     */
 
-    hljs.highlightBlock(codeBlock[0]);
+    hljs.highlightElement(codeBlock[0]);
 
     // Add line numbers.
     var pre = $(codeBlock);
@@ -73,5 +74,3 @@ $.fn.highlightCode = function(options) {
   });
 };
 
-return {}; // for AMD, no names are exported to the outside
-}); // end define

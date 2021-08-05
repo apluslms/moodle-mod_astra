@@ -9,10 +9,10 @@ defined('MOODLE_INTERNAL') || die();
 function astra_page_require($page) {
     // custom CSS
     $page->requires->css(new moodle_url('/mod/'. mod_astra_exercise_round::TABLE .'/assets/css/main.css'));
-    
+
     // highlight.js for source code syntax highlighting
-    $page->requires->css(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/styles/default.min.css'));
-    // JS code is included as AMD module
+    $page->requires->css(new moodle_url('/mod/'. mod_astra_exercise_round::TABLE .'/assets/css/highlightdefault.min.css'));
+    // Highlight JS code is included in Astra as an ES6 module.
 }
 
 /**

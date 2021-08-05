@@ -1,5 +1,5 @@
 /**
- * A+ select widget (multiple select with search and remove) as an AMD module for Moodle.
+ * A+ select widget (multiple select with search and remove) as an ES6 module for Moodle.
  * In an HTML page, run the following JS code once to activate it:
  * $('.search-select').aplusSearchSelect();
  * (The targeted element should be a <select> element.)
@@ -9,7 +9,7 @@
  * 
  * @module mod_astra/aplus_searchselect
  */
-define(['jquery'], function(jQuery) {
+import jQuery from 'jquery';
 
 /**
  * Multiple select as search and remove.
@@ -130,5 +130,3 @@ define(['jquery'], function(jQuery) {
     };
 })(jQuery, window, document);
 
-return {}; // for AMD, no names are exported to the outside
-}); // end define

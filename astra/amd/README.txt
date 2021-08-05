@@ -1,5 +1,5 @@
 ==== AMD - Asynchronous Module Definition ====
-Frontend Javascript in Moodle uses AMD.
+Frontend Javascript in Moodle uses ES6 modules.
 See Moodle docs:
 * https://docs.moodle.org/dev/Javascript_Modules
 * https://docs.moodle.org/dev/jQuery

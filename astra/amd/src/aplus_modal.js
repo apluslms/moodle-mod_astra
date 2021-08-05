@@ -6,7 +6,11 @@
  * 
  * @module mod_astra/aplus_modal
  */
-define(['jquery', 'core/event', 'mod_astra/aplus_highlightcode', 'theme_boost/bootstrap/dropdown', 'theme_boost/bootstrap/modal'], function(jQuery, moodleEvent) {
+import jQuery from 'jquery';
+import * as moodleEvent from 'core/event';
+import './aplus_highlightcode';
+import 'theme_boost/bootstrap/dropdown';
+import 'theme_boost/bootstrap/modal';
 
 /**
  * Handle common modal dialog.
@@ -170,5 +174,3 @@ define(['jquery', 'core/event', 'mod_astra/aplus_highlightcode', 'theme_boost/bo
   };
 })(jQuery, moodleEvent, window, document);
 
-return {}; // for AMD, no names are exported to the outside
-}); // end define

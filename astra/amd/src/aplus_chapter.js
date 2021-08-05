@@ -1,5 +1,5 @@
 /**
- * A+ chapter learning object with embedded exercises as an AMD module for Moodle.
+ * A+ chapter learning object with embedded exercises as an ES6 module for Moodle.
  * The exercises are downloaded asynchronously (AJAX) and inserted in the DOM.
  * 
  * In an HTML page, run the following JS code once to activate it:
@@ -11,7 +11,12 @@
  * 
  * @module mod_astra/aplus_chapter
  */
-define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/bootstrap/dropdown', 'mod_astra/aplus_modal'], function(jQuery, moodleEvent) {
+
+import jQuery from 'jquery';
+import * as moodleEvent from 'core/event';
+import './aplus_poll';
+import 'theme_boost/bootstrap/dropdown';
+import './aplus_modal';
 
 /** Add CustomEvent for IE 11
  *  Source: A+ (a-plus/assets/js/aplus.js)
@@ -936,5 +941,3 @@ define(['jquery', 'core/event', 'mod_astra/aplus_poll', 'theme_boost/bootstrap/d
 	});
 })(jQuery);
 
-return {}; // for AMD, no names are exported to the outside
-}); // end define

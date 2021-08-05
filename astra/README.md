@@ -2,7 +2,7 @@ Astra: Moodle plugin for accessing A+ style exercise services
 =============================================================
 
 This Moodle plugin (mod_astra) implements most of the functionality
-available in the A+ system (https://github.com/Aalto-LeTech/a-plus), thus
+available in the A+ system (https://github.com/apluslms/a-plus), thus
 courses that have been running on A+ with automatically assessed exercises can
 be run in Moodle with this plugin. This plugin does not connect to an A+ server
 but it implements a similar platform that accepts submissions to exercises,
@@ -90,8 +90,8 @@ unnecessary to set the CA certificate configurations in the Astra plugin.
 Code organization
 =================
 
-- amd: frontend Javascript code as AMD modules, the format that Moodle expects
-  from JS code
+- amd: frontend Javascript code as ES6 modules, the format that Moodle expects
+  from JS code (previously, Moodle used AMD modules)
 - assets: CSS styles
 - async: PHP scripts that are used for asynchronous grading from the exercise service
 - backup: implementation of the Moodle backup API
