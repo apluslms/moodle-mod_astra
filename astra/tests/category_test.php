@@ -9,7 +9,7 @@ class mod_astra_category_testcase extends advanced_testcase {
     private $course;
     private $round1;
     
-    public function setUp() {
+    public function setUp(): void {
         // create a course instance for testing
         $this->setAdminUser();
         $this->course = $this->getDataGenerator()->create_course();

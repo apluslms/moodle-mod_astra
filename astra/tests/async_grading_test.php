@@ -13,7 +13,7 @@ class mod_astra_async_grading_testcase extends advanced_testcase {
 
     protected $timenow;
 
-    public function setUp() {
+    public function setUp(): void {
         $this->timenow = time();
         $this->add_test_data();
     }

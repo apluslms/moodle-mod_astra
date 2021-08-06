@@ -13,7 +13,7 @@ class mod_astra_submission_testcase extends advanced_testcase {
     private $tmpFiles = array();
     protected $timenow;
 
-    public function setUp() {
+    public function setUp(): void {
         $this->timenow = time();
         $this->add_test_data();
     }
@@ -106,7 +106,7 @@ class mod_astra_submission_testcase extends advanced_testcase {
         // method tearDown removes the files if this method is interrupted by an assertion error
     }
     
-    public function tearDown() {
+    public function tearDown(): void {
         foreach ($this->tmpFiles as $tmpFile) {
             @unlink($tmpFile);
         }
