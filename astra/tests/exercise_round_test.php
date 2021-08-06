@@ -63,7 +63,7 @@ class mod_astra_exercise_round_testcase extends advanced_testcase {
         $this->assertEquals($this->round1_data['closingtime'], $exround->getClosingTime());
         $this->assertEquals((bool) $this->round1_data['latesbmsallowed'], $exround->isLateSubmissionAllowed());
         $this->assertEquals($this->round1_data['latesbmsdl'], $exround->getLateSubmissionDeadline());
-        $this->assertEquals($this->round1_data['latesbmspenalty'], $exround->getLateSubmissionPenalty(), '', 0.01);
+        $this->assertEqualsWithDelta($this->round1_data['latesbmspenalty'], $exround->getLateSubmissionPenalty(), 0.01);
         // float comparison with delta
         $this->assertEquals(60, $exround->getLateSubmissionPointWorth());
         
